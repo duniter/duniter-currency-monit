@@ -22,14 +22,14 @@ const SERVER_PORT = 10500;
  ***************************************/
 
 const stack = duniter.statics.autoStack([{
-  name: 'specializenode',
+  name: 'specialnodemembers',
   required: {
 
     duniter: {
 
       cli: [{
-        name: 'specializenode [host] [port]',
-        desc: 'Starts specialize node',
+        name: 'specialnodemembers [host] [port]',
+        desc: 'Starts specialize node members',
 
         // Disables Duniter node's logs
         logs: false,
