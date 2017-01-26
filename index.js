@@ -9,7 +9,7 @@ const duniter = require('duniter');
  ***************************************/
 
 // Default Duniter node's database
-const HOME_DUNITER_DATA_FOLDER = 'specialize-node';
+const HOME_DUNITER_DATA_FOLDER = 'duniter-special-node-members';
 
 // host on which UI is available
 const SERVER_HOST = 'localhost';
