@@ -9,6 +9,6 @@ Requires Node.js v6
     npm install
     node index.js config --autoconf
     node index.js sync gtest.duniter.org 10900
-    node index.js special-node-members
+    node index.js specialnodemembers
 
 Then, visit http://localhost:10500.
