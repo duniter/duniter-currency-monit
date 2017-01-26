@@ -1,17 +1,14 @@
 # Remuniter
 
-Requires Node.js v5.12.0
+Requires Node.js v6
 
 ## Installation
 
-    git clone https://github.com/duniter/remuniter.git
-    cd remuniter
+    git clone https://github.com/librelois/duniter-special-node-members.git
+    cd duniter-special-node-members
     npm install
-    cd ui
-    npm install
-    cd ..
     node index.js config --autoconf
-    node index.js sync duniter.org 8999
-    node index.js start
+    node index.js sync gtest.duniter.org 10900
+    node index.js special-node-members
 
-Then, visit http://localhost:8555.
+Then, visit http://localhost:10500.
