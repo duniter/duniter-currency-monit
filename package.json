@@ -1,0 +1,29 @@
+{
+  "name": "remuniter",
+  "version": "1.1.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "brunch": "cd ui node && npm install && npm run-script brunch",
+    "brunch-build": "cd ui node && npm run-script brunch-build",
+    "brunch-w": "cd ui node && npm run-script brunch-w"
+  },
+  "dependencies": {
+    "body-parser": "1.15.1",
+    "co": "4.6.0",
+    "commander": "2.9.0",
+    "duniter": "^0.90.4",
+    "event-stream": "3.3.2",
+    "express": "4.13.4",
+    "http": "0.0.0",
+    "morgan": "1.7.0",
+    "node-pre-gyp": "^0.6.32",
+    "q": "1.4.1",
+    "request-promise": "3.0.0",
+    "underscore": "1.8.3",
+    "ws": "1.1.0"
+  },
+  "author": "",
+  "license": "GPLv3"
+}
