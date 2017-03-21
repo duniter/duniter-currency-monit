@@ -2,7 +2,7 @@ DAYS days
 SORT_BY sort by
 SORT_BY_CREATION_IDTY identity's expiration date
 SORT_BY_SIG_COUNT number of certifications received
-ORDER in the order
+ORDER in the following order : 
 ORDER_ASC ascending
 ORDER_DESC descending
 SUBMIT_TXT Submit
