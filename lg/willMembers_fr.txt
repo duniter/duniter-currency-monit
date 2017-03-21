@@ -23,3 +23,5 @@ COL_4 liste des certifications reçues (récentes -> anciennes)
 SIG_PERIOD_OK [disponible]
 LAST_TR1  total
 LAST_TR2  identités.
+LICENSE licence GPL-3.0
+SRC code source
