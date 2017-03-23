@@ -7,6 +7,7 @@ ORDER_ASC croissant
 ORDER_DESC décroissant
 SUBMIT_TXT envoyer
 CHECKBOX_HIDE_IDTY_WITH_ZERO_CERT Masquer les identités n'ayant reçu aucune certification.
+CHECKBOX_SORT_SIG trier les certifications par date de disponibilité.
 SIG_PERIOD_LEGEND darkred : [date à partir de laquelle cette certification pourra être écrite compte tenu de sigPeriod].
 SIG_PERIOD_LEGEND2 green : [disponible] : signifie que cette certification pourrait être écrite dès le prochain block.
 HOW_TO_BECOME_MEMBER_TITLE À quel moment une identité devient membre ?
@@ -20,6 +21,7 @@ COL_1 uid
 COL_2 création identité
 COL_3 expiration identité
 COL_4 liste des certifications reçues (récentes -> anciennes)
+COL_4_WITH_AVAIlABILITY_SORT liste des certifications reçues (par date de disponibilité)
 SIG_PERIOD_OK [disponible]
 LAST_TR1  total
 LAST_TR2  identités.
