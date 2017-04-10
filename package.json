@@ -14,15 +14,15 @@
     "co": "4.6.0",
     "commander": "2.9.0",
     "duniter": "^1.2.1",
-    "event-stream": "3.3.2",
+    "event-stream": "3.3.4",
     "express": "4.13.4",
     "http": "0.0.0",
     "morgan": "1.7.0",
-    "node-pre-gyp": "^0.6.32",
-    "q": "1.4.1",
-    "request-promise": "3.0.0",
+    "node-pre-gyp": "^0.6.34",
+    "q": "1.5.0",
+    "request-promise": "4.2.0",
     "underscore": "1.8.3",
-    "ws": "1.1.0"
+    "ws": "1.1.1"
   },
   "author": "",
   "license": "GPLv3"
