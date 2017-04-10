@@ -22,7 +22,8 @@ COL_2 création identité
 COL_3 expiration identité
 COL_4 liste des certifications reçues (récentes -> anciennes)
 COL_4_WITH_AVAIlABILITY_SORT liste des certifications reçues (par date de disponibilité)
-SIG_PERIOD_OK [disponible]
+SIG_PERIOD_OK disponible
+INVALID_BLOCKSTAMP blockstamp incorrect
 LAST_TR1  total
 LAST_TR2  identités.
 LICENSE licence GPL-3.0
