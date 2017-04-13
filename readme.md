@@ -1,4 +1,4 @@
-# Remuniter
+# Duniter Currency Monitoring
 
 Requires Node.js v6
 
