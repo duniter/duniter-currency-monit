@@ -9,7 +9,7 @@ const duniter = require('duniter');
  ***************************************/
 
 // Default Duniter node's database
-const HOME_DUNITER_DATA_FOLDER = 'duniter-special-node-members';
+const HOME_DUNITER_DATA_FOLDER = 'currency-monit';
 
 // host on which UI is available
 const SERVER_HOST = 'localhost';
@@ -29,7 +29,7 @@ const stack = duniter.statics.autoStack([{
 
       cli: [{
         name: 'currency-monit [host] [port]',
-        desc: 'Starts specialize node members',
+        desc: 'Starts specialized node currency-monit',
 
         // Disables Duniter node's logs
         logs: false,
@@ -42,7 +42,7 @@ const stack = duniter.statics.autoStack([{
           // Main Loop
           yield main(server, SERVER_HOST, SERVER_PORT);
 
-          // Wait forever, Remuniter is a permanent program
+          // Wait forever, this is a permanent program
           yield new Promise(() => null);
         })
       }]
