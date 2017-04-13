@@ -15,7 +15,7 @@ const HOME_DUNITER_DATA_FOLDER = 'duniter-special-node-members';
 const SERVER_HOST = 'localhost';
 
 // port on which UI is available
-const SERVER_PORT = 10500;
+const SERVER_PORT = 10501;
 
 /****************************************
  * SPECIALIZATION
