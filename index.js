@@ -22,13 +22,13 @@ const SERVER_PORT = 10500;
  ***************************************/
 
 const stack = duniter.statics.autoStack([{
-  name: 'specialnodemembers',
+  name: 'currency-monit',
   required: {
 
     duniter: {
 
       cli: [{
-        name: 'specialnodemembers [host] [port]',
+        name: 'currency-monit [host] [port]',
         desc: 'Starts specialize node members',
 
         // Disables Duniter node's logs
