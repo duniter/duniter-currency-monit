@@ -1,4 +1,4 @@
-# Remuniter
+# Currency-Monit
 
 Requires Node.js v6
 
