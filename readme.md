@@ -9,6 +9,6 @@ Requires Node.js v6
     npm install
     node index.js config --autoconf
     node index.js sync g1.duniter.org 10901
-    node index.js Change program name to currency-monit
+    node index.js currency-monit
 
 Then, visit http://localhost:10501.
