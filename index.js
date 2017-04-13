@@ -29,7 +29,7 @@ const stack = duniter.statics.autoStack([{
 
       cli: [{
         name: 'currency-monit [host] [port]',
-        desc: 'Starts specialize node members',
+        desc: 'Starts specialized node members',
 
         // Disables Duniter node's logs
         logs: false,
@@ -42,7 +42,7 @@ const stack = duniter.statics.autoStack([{
           // Main Loop
           yield main(server, SERVER_HOST, SERVER_PORT);
 
-          // Wait forever, Remuniter is a permanent program
+          // Wait forever, this is a permanent program
           yield new Promise(() => null);
         })
       }]
