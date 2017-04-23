@@ -1,6 +1,5 @@
 "use strict";
 
-const fs = require('fs')
 const co = require('co')
 const timestampToDatetime = require('../lib/timestampToDatetime')
 

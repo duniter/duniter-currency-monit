@@ -1,6 +1,5 @@
 "use strict";
 
-const fs = require('fs')
 const co = require('co')
 const timestampToDatetime = require('../lib/timestampToDatetime')
 
@@ -277,47 +276,6 @@ module.exports = (req, res, next) => co(function *() {
           return `#${hex}${hex}${hex}`
         }
       }
-      // Send html page
-      // res.status(200) // 200 n'est pas obligatoire, si on renvoie une réponse
-      //   .render('willMembers.html', {
-            
-      //       // Récupérer le fichier de langue
-      //       LANG: fs.readFileSync(`./lg/willMembers_${lg}.txt`,'utf-8')
-      //               .split('\n')
-      //               .reduce( (L,line)=> (words = line.split(' '),		// Coupe les mots
-      //                         L[words.shift()] = words.join(' '),		// Le 1er mot est la clé
-      //                         L										// L est retourné pour la ligne suivante
-      //               ), {id:lg}),// objet de départ de reduce qui sera `L` dans la fonction fléche
-            
-      //       // Les varibles à passer au template
-      //       days, sort_by, order, sortSig,
-      //       hideIdtyWithZeroCert,
-            
-      //       currentBlockchainTimestamp,
-      //       limitTimestamp,
-      //       sigWindow,
-      //       idtyWindow,
-      //       nbMaxCertifs,
-            
-      //       idtysListOrdered,
-      //       idtysListFiltered: idtysListOrdered.filter( idty=> 
-      //             idty.expires_on < limitTimestamp
-      //             && idty.expires_on > currentBlockchainTimestamp
-      //             && (hideIdtyWithZeroCert != "yes" || idty.pendingCertifications.length > 0)
-      //           ),
-            
-      //       // Template helpers
-            
-      //       // timestampToDatetime,
-      //       // Calculer la proportion de temps restant avant l'expiration
-      //       color: function( timestamp, idtyWindow, max )
-      //       {
-      //         let proportion = ((timestamp-currentBlockchainTimestamp)*max)/idtyWindow;
-      //         proportion = proportion < 0 ? 0 : proportion > max ? max : proportion 
-      //         let hex = parseInt( proportion ).toString(16)
-      //         return `#${hex}${hex}${hex}`
-      //       }
-      //     })
       next()
     }
   } catch (e) {
