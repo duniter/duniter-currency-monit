@@ -89,13 +89,13 @@ module.exports = (req, res, next) => co(function *() {
             legend: {
               display: false
             },
-            scales: {
-              yAxes: [{
-                ticks: {
-                    beginAtZero:true
-                }
-              }]
-            }
+            // scales: {
+            //   yAxes: [{
+            //     ticks: {
+            //         beginAtZero:true
+            //     }
+            //   }]
+            // }
           }
         }
       }

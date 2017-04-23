@@ -66,7 +66,7 @@ app.get('/willMembers',
 ***************************************/
 app.get('/members', require('./members.js'),
   (req, res)=> res.render('members.html', {
-                    // LANG: getLANG(`./lg/willMembers_${lg}.txt`)
+                    // LANG: getLANG(`./lg/members_${lg}.txt`)
                   })
 )
 
