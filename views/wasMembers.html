@@ -1,0 +1,22 @@
+<b>Membres dont le statut de membre a déjà expiré :</b><br>
+<table border="1">
+  <tr>
+    <td align="center">uid</td>
+    <td align="center"> date dernier renouvellement </td>
+    <td align="center">n° bloc sortie</td>
+    <td align="center"> date d'expiration </td>
+  </tr>
+  
+  ${membersListFiltered.map( member=>`
+    <tr>
+      <td align="center">${member[0]}</td>
+      <td align="center">${timestampToDatetime(member[1])}</td>
+      <td align="center">${member[2]}</td>
+      <td align="center">${timestampToDatetime(member[3])}</td>
+    </tr>
+  `).join('')}
+  
+  <tr><td align="center" colspan="4"> total : <b>${membersListFiltered.length}</b> membres.</td></tr>
+    
+</table><br>
+<hr>

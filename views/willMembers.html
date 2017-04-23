@@ -1,4 +1,6 @@
-<pre>
+${HTML_HEAD}
+${HTML_MENU}
+
 <!-- Afficher le formulaire -->
 <form action="" method="GET">
 	<input type="number" name="d" value="${days}"/>${LANG["DAYS"]} - ${LANG["SORT_BY"]}
@@ -61,7 +63,7 @@ ${LANG["TABLE_TITLE1"]} <b>${days}</b> ${LANG["TABLE_TITLE2"]} :
       <!--Printer la ligne-->
       <tr>
         <td align="center" style="background:${idty.colorPending=color(idty.expires_on,idtyWindow,200)}">
-        <!--<td align="center" style="background:${colorPendingIdty}">-->
+        <!--<td align="center" style="background:\${colorPendingIdty}">-->
           <a href="http://wotex.cgeek.fr/?to=${idty['uid']}&pending=on&mode=undefined">${idty['uid'].substring(0, 20)}</a><br>
           ${idty['pubkey'].substring(0, 8)}
           <br>->${idty.pendingCertifications.length}
@@ -87,11 +89,11 @@ ${LANG["TABLE_TITLE1"]} <b>${days}</b> ${LANG["TABLE_TITLE2"]} :
           `}
           </td>
         
-        `)}
+        `).join('')}
       
       </tr>
       
-  `)}
+  `).join('')}
   
   <tr>
     <td colspan="${4+nbMaxCertifs}" align="center">
@@ -101,5 +103,3 @@ ${LANG["TABLE_TITLE1"]} <b>${days}</b> ${LANG["TABLE_TITLE2"]} :
 </table><br>
 
 <hr>
-
-</pre>
