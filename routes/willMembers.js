@@ -20,10 +20,10 @@ module.exports = (req, res, next) => co(function *() {
     
     // Récupérer les paramètres
     var days = req.query.d || 65 // Valeur par défaut
-    var order = req.query.d && req.query.order || 'asc' // Valeur par défaut
-    var sort_by = req.query.sort_by || "creationIdty"; // Valeur par défaut
+    var order = req.query.d && req.query.order || 'desc' // Valeur par défaut
+    var sort_by = req.query.sort_by || "sigCount"; // Valeur par défaut
     var hideIdtyWithZeroCert = req.query.hideIdtyWithZeroCert || "no"; // Valeur par défaut
-    var sortSig = req.query.sortSig || "Creation"; // Valeur par défaut
+    var sortSig = req.query.sortSig || "Availability"; // Valeur par défaut
     var format = req.query.format || 'HTML'
     
     console.log(req.query);

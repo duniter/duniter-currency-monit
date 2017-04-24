@@ -11,7 +11,7 @@ module.exports = (req, res, next) => co(function *() {
     // get GET parameters
     var begin = req.query.begin >= 2 && req.query.begin || 2;// Default Value
     var end = req.query.end || -1;// Default Value is current timestamp
-    var format = req.query.format || 'HTML'
+    var format = req.query.format || 'HTML';
     
     // get beginBlock and endBlock
     var beginBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime` FROM block WHERE `number` = '+begin+' LIMIT 1');
@@ -66,69 +66,46 @@ module.exports = (req, res, next) => co(function *() {
       tabCurrency[i].relativeMonetaryMassPerMembers = (tabCurrency[i].monetaryMassPerMembers / currentDividend) * 100;
     }
     
-    // Appeler le module monetaryMassChart
-    // let monetaryMassChartMod = monetaryMassChart(req, res, HTML_HEADERS, HTML_MENU, tabCurrency, begin, end);
-    
-    // Si le client demande la réponse au format JSON =, le faire
+    // Si le client demande la réponse au format JSON, le faire
     if (format == 'JSON')
       res.status(200).jsonp( tabCurrency )
     else
     {
       // GET parameters
-      var unit = req.query.unit == 'relative' ? 'relative' : 'quantitative';
+      var unit = req.query.unit == 'quantitative' ? 'quantitative' : 'relative';
       var massByMembers = req.query.massByMembers == 'no' ? 'no' : 'yes';
+      var type = req.query.type == 'linear' ? 'linear' : 'logarithmic';
       
-      // Mettre en forme les données
-      // var tabLabels = []; tabCurrency.map(item=>item.dateTime)
-      // var tabMonetaryMass = []; 
-      // // var tabBackgroundColor = [];
-      // // var tabBorderColor = [];
-      // for (let i=0;i<tabCurrency.length;i++)
-      // {
-      //   // tabBackgroundColor.push('rgba(54, 162, 235, 0.5)');
-      //   // tabBorderColor.push('rgba(54, 162, 235, 1)');
-      //   if (unit == 'quantitative')
-      //   {
-      //     tabLabels.push(tabCurrency[i].dateTime);
-      //     if (massByMembers == "no")
-      //     {
-      //       tabMonetaryMass.push(tabCurrency[i].monetaryMass);
-      //     }
-      //     else
-      //     {
-      //       tabMonetaryMass.push(tabCurrency[i].monetaryMassPerMembers);
-      //     }
-      //   }
-      //   else if (unit == 'relative')
-      //   {
-      //     tabLabels.push(tabCurrency[i].dateTime);
-      //     if (massByMembers == "no")
-      //     {
-      //       tabMonetaryMass.push(tabCurrency[i].relativeMonetaryMass);
-      //       }
-      //     else
-      //     {
-      //       tabMonetaryMass.push(tabCurrency[i].relativeMonetaryMassPerMembers);
-      //     }
-      //   }
-      //   else { res.status(200).send("<pre>Error : undefined unit</pre>"); }
-      // }
-      
-      
+      // Define max yAxes 
+      var maxYAxes = 3743;
+      if (unit == "quantitative") { maxYAxes = maxYAxes*currentDividend/100; }
+      if (massByMembers == "no") { maxYAxes = maxYAxes*tabCurrency[tabCurrency.length-1].membersCount; }
+      console.log(maxYAxes);
+    
+      // Define full currency description
+      var fullCurrency = "The currency will be full when the money supply by member will be worth 3743 DU (because 1/c * dtReeval = 1/4,88% * 182,625j = 3743DU)<br>";
+	fullCurrency += "Currently, 1 DU = <b>"+(currentDividend/100)+"</b> Ğ1 and we have <b>"+tabCurrency[tabCurrency.length-1].membersCount+"</b> members. Thus in full currency we would have a total money supply of <b>"
+	  +(3743*currentDividend*tabCurrency[tabCurrency.length-1].membersCount/100)+"</b> Ğ1 (<b>"+(3743*currentDividend/100)+"</b> Ğ1/member)." ;
       
       res.locals = {
-         tabCurrency, 
+         tabCurrency,
+	 currentDividend,
          begin, 
          end,
          unit,
          massByMembers,
+	 type,
          form: `Begin #<input type="number" name="begin" value="${begin}"> - End #<input type="number" name="end" value="${end}"> <select name="unit">
   <option name="unit" value ="quantitative">quantitative
   <option name="unit" value ="relative" ${unit == 'relative' ? 'selected' : ''}>relative
 </select> <select name="massByMembers">
   <option name="massByMembers" value ="yes">mass by members
   <option name="massByMembers" value ="no" ${massByMembers == 'no' ? 'selected' : ''}>total mass
+</select> <select name="type">
+  <option name="type" value ="logarithmic">logarithmic
+  <option name="type" value ="linear" ${type == 'linear' ? 'selected' : ''}>linear
 </select>`,
+	description: `${fullCurrency}`,
         chart: {
           type: 'bar',
           data: {
@@ -165,8 +142,11 @@ module.exports = (req, res, next) => co(function *() {
             },
             scales: {
               yAxes: [{
+		type: type,
+                position: 'left',
                 ticks: {
-                    beginAtZero:true
+                    min: 1,
+                    max: maxYAxes
                 }
               }]
             }
@@ -175,8 +155,6 @@ module.exports = (req, res, next) => co(function *() {
       }
       next()
     }
-    // Appeler le module blockChart
-    // let blockChartMod = blockChart(req, res, HTML_HEADERS, HTML_MENU, tabNbBlockByMemberSort, begin, end);
     
   } catch (e) {
     // En cas d'exception, afficher le message

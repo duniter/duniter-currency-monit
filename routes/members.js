@@ -26,7 +26,7 @@ module.exports = (req, res, next) => co(function *() {
     
     // Récupéré les paramètres
     var days = req.query.d || 400// Valeur par défaut
-    var order = req.query.d && req.query.order || 'asc' // Valeur par défaut
+    var order = req.query.d && req.query.order || 'desc' // Valeur par défaut
     var sort_by = req.query.sort_by || "idtyWritten" // Valeur par défaut
     var pendingSigs = req.query.pendingSigs || "no";
     var format = req.query.format || 'HTML'
