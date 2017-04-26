@@ -62,7 +62,7 @@ ${LANG["TABLE_TITLE1"]} <b>${days}</b> ${LANG["TABLE_TITLE2"]} :
       
       <!--Printer la ligne-->
       <tr>
-        <td align="center" style="background:${idty.colorPending=color(idty.expires_on,idtyWindow,200)}">
+        <td align="center" style="background:${idty.colorPending=color(idty.expires_on,idtyWindow,250)}">
         <!--<td align="center" style="background:\${colorPendingIdty}">-->
           <a href="http://wotex.cgeek.fr/?to=${idty['uid']}&pending=on&mode=undefined">${idty['uid'].substring(0, 20)}</a><br>
           ${idty['pubkey'].substring(0, 8)}
@@ -78,7 +78,7 @@ ${LANG["TABLE_TITLE1"]} <b>${days}</b> ${LANG["TABLE_TITLE2"]} :
         <!--printer les certifications-->
         ${idty.pendingCertifications.map( (cert,j)=> `
           
-          <td align="center" style="background:${color(cert.timestampExpire,sigWindow,200)}">
+          <td align="center" style="background:${color(cert.timestampExpire,sigWindow,250)}">
           ${j==4?'<b>':''}
           ${cert['from']}
           <br>${timestampToDatetime(cert.timestampExpire)}
