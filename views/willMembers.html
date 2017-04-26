@@ -78,7 +78,8 @@ ${LANG["TABLE_TITLE1"]} <b>${days}</b> ${LANG["TABLE_TITLE2"]} :
         <!--printer les certifications-->
         ${idty.pendingCertifications.map( (cert,j)=> `
           
-          <td align="center ${j==4?'bold':''}" style="background:${color(cert.timestampExpire,sigWindow,200)}">
+          <td align="center" style="background:${color(cert.timestampExpire,sigWindow,200)}">
+          ${j==4?'<b>':''}
           ${cert['from']}
           <br>${timestampToDatetime(cert.timestampExpire)}
           <br>#${cert['blockNumber']}
@@ -87,6 +88,7 @@ ${LANG["TABLE_TITLE1"]} <b>${days}</b> ${LANG["TABLE_TITLE2"]} :
           ` : `
           <br><font color='green'>${LANG['SIG_PERIOD_OK']}</font>
           `}
+          ${j==4?'</b>':''}
           </td>
         
         `).join('')}
