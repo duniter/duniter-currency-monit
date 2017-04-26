@@ -62,6 +62,7 @@ module.exports = (req, res, next) => co(function *() {
         begin, 
         end,
         form: `Begin #<input type="number" name="begin" value="${begin}"> - End #<input type="number" name="end" value="${end}">`,
+	description: ``,
         chart: {
           type: 'bar',
           data: {
