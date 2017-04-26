@@ -9,13 +9,13 @@ const duniter = require('duniter');
  ***************************************/
 
 // Default Duniter node's database
-const HOME_DUNITER_DATA_FOLDER = 'currency-monit';
+const HOME_DUNITER_DATA_FOLDER = 'currency-monit-clean-dev';
 
 // host on which UI is available
 const SERVER_HOST = 'localhost';
 
 // port on which UI is available
-const SERVER_PORT = 10501;
+const SERVER_PORT = 10503;
 
 /****************************************
  * SPECIALIZATION
