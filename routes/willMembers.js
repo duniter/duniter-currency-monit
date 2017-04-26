@@ -270,8 +270,9 @@ module.exports = (req, res, next) => co(function *() {
         // Calculer la proportion de temps restant avant l'expiration
         color: function( timestamp, idtyWindow, max )
         {
-          let proportion = ((timestamp-currentBlockchainTimestamp)*max)/idtyWindow;
-          proportion = proportion < 0 ? 0 : proportion > max ? max : proportion 
+	  const MIN = 80;
+          let proportion = ((timestamp-currentBlockchainTimestamp)*(max-MIN))/idtyWindow;
+          proportion = proportion < MIN ? MIN : proportion > max ? max : proportion 
           let hex = parseInt( proportion ).toString(16)
           return `#${hex}${hex}${hex}`
         }
