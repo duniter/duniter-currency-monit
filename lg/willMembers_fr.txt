@@ -25,6 +25,6 @@ COL_4_WITH_AVAIlABILITY_SORT liste des certifications reçues (par date de dispo
 SIG_PERIOD_OK disponible
 INVALID_BLOCKSTAMP blockstamp incorrect
 LAST_TR1  total
-LAST_TR2  identités.
+LAST_TR2  identités
 LICENSE licence GPL-3.0
 SRC code source

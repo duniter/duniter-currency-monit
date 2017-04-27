@@ -189,16 +189,11 @@ module.exports = (req, res, next) => co(function *() {
 	  identitiesList[i].nbValidCert = nbValidCert;
 	  identitiesList[i].registrationAvailability = registrationAvailability;
 	  
-	  // Trier les identités au dossier complet par durée entre date de disponibilité et date d'expiration maximale théorique (=currentBlockchainTimestamp + sigValidity)
-	  if (nbValidCert >= sigQty)
-	  {
-	    tabSort.push(currentBlockchainTimestamp + sigValidity - registrationAvailability);
-	  }
-	  // Ajouter aux identités aux dossiers incomplet une pénalité de sigValidity par certification manquante
-	  else
-	  {
-	    tabSort.push((registrationAvailability - (sigQty - nbValidCert)*(sigValidity*86400)));
-	  }
+	  // Calculate registrationAvailabilityDelay
+	  let registrationAvailabilityDelay = (registrationAvailability > currentBlockchainTimestamp) ? (registrationAvailability-currentBlockchainTimestamp):0;
+	  
+	  // Trier les identités au dossier complet par durée entre date de disponibilité et date d'expiration maximale théorique (=sigWindow-registrationAvailabilityDelay)
+	  tabSort.push(sigWindow-registrationAvailabilityDelay + (sigValidity*nbValidCert));
         }
     }
     else { errors += "<p>ERREUR : param <i>sort_by</i> invalid !</p>"; }
@@ -257,7 +252,7 @@ module.exports = (req, res, next) => co(function *() {
       idtysListOrdered = idtysListOrdered2;
     }
     
-    // Si le client demande la réponse au format JSON =, le faire
+    // Si le client demande la réponse au format JSON, le faire
     if (format == 'JSON')
     {
       // Send JSON reponse
