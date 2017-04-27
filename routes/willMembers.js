@@ -5,7 +5,7 @@ const timestampToDatetime = require('../lib/timestampToDatetime')
 
 module.exports = (req, res, next) => co(function *() {
   
-  var { duniterServer, sigValidity, msValidity, sigWindow, idtyWindow } = req.app.locals
+  var { duniterServer, sigValidity, msValidity, sigWindow, idtyWindow, sigQty } = req.app.locals
   
   try {
     // get blockchain timestamp
@@ -108,7 +108,8 @@ module.exports = (req, res, next) => co(function *() {
         uid: resultQueryIdtys[i].uid,
         hash: resultQueryIdtys[i].hash,
         expires_on: resultQueryIdtys[i].expires_on,
-        nbValidCert: 0
+        nbValidCert: 0,
+	registrationAvailability: 0
       });
       
       // Calculer le nombre maximal de certifications reçues par l'identité courante
@@ -170,17 +171,35 @@ module.exports = (req, res, next) => co(function *() {
       { tabSort.push(idty.expires_on); }
     }
     else if (sort_by == "sigCount")
-    { 
-      for (let i=0;i<idtysPendingCertifsList.length;i++)
-      {
-        let nbValidCert = 0;
-        for (const cert of idtysPendingCertifsList[i])
+    {
+        // idtys loop
+	for (let i=0;i<idtysPendingCertifsList.length;i++)
         {
-          if (cert.validBlockStamp) { nbValidCert++; }
+	  let nbValidCert = 0;
+	  let registrationAvailability= 0;
+	  // Count nbValidCert and calculate registrationAvailability timestamp
+	  for (const cert of idtysPendingCertifsList[i])
+	  {
+	    if (cert.validBlockStamp)
+	    {
+	      nbValidCert++;
+	      registrationAvailability = (cert.timestampWritable > registrationAvailability) ? cert.timestampWritable : registrationAvailability;
+	    }
+	  }
+	  identitiesList[i].nbValidCert = nbValidCert;
+	  identitiesList[i].registrationAvailability = registrationAvailability;
+	  
+	  // Trier les identités au dossier complet par durée entre date de disponibilité et date d'expiration maximale théorique (=currentBlockchainTimestamp + sigValidity)
+	  if (nbValidCert >= sigQty)
+	  {
+	    tabSort.push(currentBlockchainTimestamp + sigValidity - registrationAvailability);
+	  }
+	  // Ajouter aux identités aux dossiers incomplet une pénalité de sigValidity par certification manquante
+	  else
+	  {
+	    tabSort.push((registrationAvailability - (sigQty - nbValidCert)*(sigValidity*86400)));
+	  }
         }
-        identitiesList[i].nbValidCert = nbValidCert;
-        tabSort.push(nbValidCert);
-      }
     }
     else { errors += "<p>ERREUR : param <i>sort_by</i> invalid !</p>"; }
     
