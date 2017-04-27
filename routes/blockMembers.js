@@ -47,7 +47,8 @@ module.exports = (req, res, next) => co(function *() {
         pubkey: idtys[i].pub,
         nbBlocks: 0,
         writtenPercent: 0,
-        meanNonce: 0
+        meanNonce: 0,
+	color: 0
       });
       tabIndexMembers[idtys[i].pub] = i;
     }
@@ -101,6 +102,13 @@ module.exports = (req, res, next) => co(function *() {
       tabExcluded.push(tabNbBlockByMember[idMax].uid);
     }
     
+    // Define bar color
+    for (let m=0;m<tabNbBlockByMemberSort.length;m++)
+    {
+      let proportion = ((255*tabNbBlockByMemberSort[m].nbBlocks)/tabNbBlockByMemberSort[0].nbBlocks);
+      tabNbBlockByMemberSort[m].color = parseInt(proportion);
+    }
+    
     // Si le client demande la réponse au format JSON =, le faire
     if (format == 'JSON')
       res.status(200).jsonp( tabNbBlockByMemberSort )
@@ -110,7 +118,7 @@ module.exports = (req, res, next) => co(function *() {
          tabNbBlockByMemberSort, 
          begin, 
          end,
-         NB_PARTS: 34
+         NB_PARTS: 50
       }
       next()
     }

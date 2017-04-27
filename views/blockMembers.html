@@ -12,24 +12,26 @@ ${HTML_MENU}
   // Formatting data
   var tabLabels = [];
   var tabNbBlocks = [];
+  var tabBackgroundColor = [];
+  var tabBorderColor = [];
   var nbBlocks = 0;
   var nbMembers = 0;
   const NB_PARTS = ${NB_PARTS};
-  for (let i=0;i<NB_PARTS-1;i++)
+  const nbCols = (tabNbBlockByMemberSort.length < NB_PARTS) ? tabNbBlockByMemberSort.length:NB_PARTS;
+  for (let i=0;i<nbCols;i++)
   {
     if (tabNbBlockByMemberSort[i].nbBlocks > 0)
     {
       tabLabels.push(tabNbBlockByMemberSort[i].uid);
       tabNbBlocks.push(tabNbBlockByMemberSort[i].nbBlocks);
       nbBlocks += tabNbBlockByMemberSort[i].nbBlocks;
+      
+      // Define bar color
+      let red = tabNbBlockByMemberSort[i].color;
+      tabBackgroundColor.push('rgba('+red+', '+(255-red)+', 0, 0.5)');
+      tabBorderColor.push('rgba('+red+', '+(255-red)+', 0, 1)');
       nbMembers++;
     }
-  }
-  // Other Part
-  if ( ( (end- begin) - nbBlocks) > 0 )
-  {
-    tabLabels.push("Others");
-    tabNbBlocks.push( (end- begin) - nbBlocks);
   }
   
   // Define Chart Data
@@ -38,78 +40,8 @@ ${HTML_MENU}
     datasets: [{
       label: '#Written blocks',
       data: tabNbBlocks,
-      backgroundColor: [
-        'rgba(255, 99, 132, 0.3)', // Red
-        'rgba(255, 129, 98, 0.3)', // Red-Orange
-        'rgba(255, 159, 64, 0.3)', // Orange
-        'rgba(255, 182, 75, 0.3)', // Orange-Yellow
-        'rgba(255, 206, 86, 0.3)', // Yellow
-        'rgba(165, 199, 139, 0.3)', // Yellow-Green
-        'rgba(75, 192, 192, 0.3)', // Green
-        'rgba(64, 177, 213, 0.3)', // Green-Blue
-        'rgba(54, 162, 235, 0.3)', // Blue
-        'rgba(103, 132, 245, 0.3)', // Blue-Purple
-        'rgba(153, 102, 255, 0.3)', // Purple
-        'rgba(255, 99, 132, 0.3)', // Red
-        'rgba(255, 129, 98, 0.3)', // Red-Orange
-        'rgba(255, 159, 64, 0.3)', // Orange
-        'rgba(255, 182, 75, 0.3)', // Orange-Yellow
-        'rgba(255, 206, 86, 0.3)', // Yellow
-        'rgba(165, 199, 139, 0.3)', // Yellow-Green
-        'rgba(75, 192, 192, 0.3)', // Green
-        'rgba(64, 177, 213, 0.3)', // Green-Blue
-        'rgba(54, 162, 235, 0.3)', // Blue
-        'rgba(103, 132, 245, 0.3)', // Blue-Purple
-        'rgba(153, 102, 255, 0.3)', // Purple
-        'rgba(255, 99, 132, 0.3)', // Red
-        'rgba(255, 129, 98, 0.3)', // Red-Orange
-        'rgba(255, 159, 64, 0.3)', // Orange
-        'rgba(255, 182, 75, 0.3)', // Orange-Yellow
-        'rgba(255, 206, 86, 0.3)', // Yellow
-        'rgba(165, 199, 139, 0.3)', // Yellow-Green
-        'rgba(75, 192, 192, 0.3)', // Green
-        'rgba(64, 177, 213, 0.3)', // Green-Blue
-        'rgba(54, 162, 235, 0.3)', // Blue
-        'rgba(103, 132, 245, 0.3)', // Blue-Purple
-        'rgba(153, 102, 255, 0.3)', // Purple
-        'rgba(128, 128, 128, 0.3)' // Grey
-      ],
-      borderColor: [
-        'rgba(255, 99, 132, 1)', // Red
-        'rgba(255, 129, 98, 1)', // Red-Orange
-        'rgba(255, 159, 64, 1)', // Orange
-        'rgba(255, 182, 75, 1)', // Orange-Yellow
-        'rgba(255, 206, 86, 1)', // Yellow
-        'rgba(165, 199, 139, 1)', // Yellow-Green
-        'rgba(75, 192, 192, 1)', // Green
-        'rgba(64, 177, 213, 1)', // Green-Blue
-        'rgba(54, 162, 235, 1)', // Blue
-        'rgba(103, 132, 245, 1)', // Blue-Purple
-        'rgba(153, 102, 255, 1)', // Purple
-        'rgba(255, 99, 132, 1)', // Red
-        'rgba(255, 129, 98, 1)', // Red-Orange
-        'rgba(255, 159, 64, 1)', // Orange
-        'rgba(255, 182, 75, 1)', // Orange-Yellow
-        'rgba(255, 206, 86, 1)', // Yellow
-        'rgba(165, 199, 139, 1)', // Yellow-Green
-        'rgba(75, 192, 192, 1)', // Green
-        'rgba(64, 177, 213, 1)', // Green-Blue
-        'rgba(54, 162, 235, 1)', // Blue
-        'rgba(103, 132, 245, 1)', // Blue-Purple
-        'rgba(153, 102, 255, 1)', // Purple
-        'rgba(255, 99, 132, 1)', // Red
-        'rgba(255, 129, 98, 1)', // Red-Orange
-        'rgba(255, 159, 64, 1)', // Orange
-        'rgba(255, 182, 75, 1)', // Orange-Yellow
-        'rgba(255, 206, 86, 1)', // Yellow
-        'rgba(165, 199, 139, 1)', // Yellow-Green
-        'rgba(75, 192, 192, 1)', // Green
-        'rgba(64, 177, 213, 1)', // Green-Blue
-        'rgba(54, 162, 235, 1)', // Blue
-        'rgba(103, 132, 245, 1)', // Blue-Purple
-        'rgba(153, 102, 255, 1)', // Purple
-        'rgba(128, 128, 128, 1)' // Grey
-      ],
+      backgroundColor: tabBackgroundColor,
+      borderColor: tabBorderColor,
       borderWidth: 1
   }]
   }
