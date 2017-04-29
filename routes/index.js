@@ -81,12 +81,12 @@ app.get('/wasMembers', require('./wasMembers.js'), (req, res)=> res.render('wasM
 app.get('/blockMembers', require('./blockMembers.js'), (req, res)=> res.render('blockMembers.html') )
 
 /***************************************
-* Lister les anciens membres
+* Évolution de la masse monétaire totale
 ***************************************/
 app.get('/monetaryMass', require('./monetaryMass.js'), (req, res)=> res.render('Chart.html') )
 
 /***************************************
-* Lister les anciens membres
+* Évolution du nombre de membres
 ***************************************/
 app.get('/membersCount', require('./membersCount.js'), (req, res)=> res.render('Chart.html') )
 
