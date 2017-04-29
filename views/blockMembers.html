@@ -2,14 +2,13 @@ ${HTML_HEAD}
 <script src="https://librelois.fr/js/Chart.min.js"></script>
 ${HTML_MENU}
 
-<form action="" method="GET">Begin #<input type="number" name="begin" value="${begin}"> - End #<input type="number" name="end" value="${end}"><input type="submit" value="submit">
+<form action="" method="GET">Begin #<input type="number" name="begin" value="${begin}"> - End #<input type="number" name="end" value="${end}">
 <select name="data">
 	<option name="data" value ="nbBlocks">Number of written Blocks
 	<option name="data" value ="writtenPercent" ${data == 'writtenPercent' ? 'selected' : ''}>Percent of written Blocks
 	<option name="data" value ="writtenPercentSinceBecomeMember" ${data == 'writtenPercentSinceBecomeMember' ? 'selected' : ''}>Percent of written Blocks since become member
 	<option name="data" value ="meanNonce" ${data == 'meanNonce' ? 'selected' : ''}>mean nonce
-</select>
-</form><br>
+</select> <input type="submit" value="submit"></form><br>
 <canvas id="myChart"></canvas>
 <script>
   var tabBlockMembersSort = ${JSON.stringify(tabBlockMembersSort)};

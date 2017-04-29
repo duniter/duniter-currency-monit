@@ -126,7 +126,7 @@ module.exports = (req, res, next) => co(function *() {
     var dataLabel = '#Written blocks';
     if (data == 'writtenPercent') { dataLabel = "\% blockchain"; }
     else if (data == 'writtenPercentSinceBecomeMember') { dataLabel = "\% blockchain (since become member)"; }
-    else if (data == 'meanNonce') { dataLabel = '#Mean nonce'; }
+    else if (data == 'meanNonce') { dataLabel = '#Mean nonce (in billions)'; }
     
     // Si le client demande la réponse au format JSON =, le faire
     if (format == 'JSON')
