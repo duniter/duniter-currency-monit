@@ -9,9 +9,10 @@ module.exports = (req, res, next) => co(function *() {
   
   try {
     // get GET parameters
-    var begin = req.query.begin >= 0 && req.query.begin || 0;// Default Value
-    var end = req.query.end >= 0 && req.query.end || -1;// Default Value is current timestamp
-    var format = req.query.format || 'HTML'
+    var begin = req.query.begin >= 0 && req.query.begin || 0; // Default begin Value is zero
+    var end = req.query.end >= 0 && req.query.end || -1; // Default Value is -1 (=current block)
+    var format = req.query.format || 'HTML';
+    var data = req.query.data || 'nbBlocks';
     
     // get beginBlock and endBlock
     var beginBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime` FROM block WHERE `fork`=0 AND `number` = '+begin+' LIMIT 1');
@@ -32,22 +33,24 @@ module.exports = (req, res, next) => co(function *() {
     if (end == -1) { end = begin+blockchain.length-1; }
     
     // get idtys list
-    var idtys = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`pub` FROM i_index WHERE `wasMember`=1');
+    var idtys = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`pub`,`written_on` FROM i_index WHERE `wasMember`=1');
 
     // get current membersCount
     const currentMembersCount = blockchain[blockchain.length-1].membersCount;
     
-    // create and initialize tabNbBlockByMember and tabIndexMembers
-    var tabNbBlockByMember = [ [] ];
+    // create and initialize tabBlockMembers and tabIndexMembers
+    var tabBlockMembers = [ [] ];
     var tabIndexMembers = [];
     for (let i=0;i<idtys.length;i++)
     {
-      tabNbBlockByMember.push ({
+      let tmpBecomeMember = idtys[i].written_on.split("-");
+      tabBlockMembers.push ({
         uid: idtys[i].uid,
         pubkey: idtys[i].pub,
+	becomeMember: (tmpBecomeMember[0] > begin) ? tmpBecomeMember[0]:begin,
         nbBlocks: 0,
-        writtenPercent: 0,
-        meanNonce: 0,
+        totalNonce: 0,
+	data: 0,
 	color: 0
       });
       tabIndexMembers[idtys[i].pub] = i;
@@ -55,75 +58,91 @@ module.exports = (req, res, next) => co(function *() {
     
     for (let b=0;b<blockchain.length;b++)
     {
-      for (let m=0;m<tabNbBlockByMember.length;m++)
+      for (let m=0;m<tabBlockMembers.length;m++)
       {
-        if (tabNbBlockByMember[m].pubkey == blockchain[b].issuer)
+        if (tabBlockMembers[m].pubkey == blockchain[b].issuer)
         {
-          tabNbBlockByMember[m].nbBlocks++;
-          tabNbBlockByMember[m].meanNonce += blockchain[b].nonce;
+          tabBlockMembers[m].nbBlocks++;
+          tabBlockMembers[m].totalNonce += blockchain[b].nonce;
         }
       }
     }
     
-    // calculate writtenPercent and meanNonce
-    for (let m=0;m<tabNbBlockByMember.length;m++)
+    // calculate data (writtenPercent or meanNonce or writtenPercentSinceBecomeMember or  
+    for (let m=0;m<tabBlockMembers.length;m++)
     {
-      tabNbBlockByMember[m].writtenPercent = ((tabNbBlockByMember[m].nbBlocks * 100) / (blockchain.length)).toFixed(2);
-      if (tabNbBlockByMember[m].nbBlocks > 0)
+      if (data == 'nbBlocks') { tabBlockMembers[m].data = tabBlockMembers[m].nbBlocks; }
+      else if (data == 'writtenPercent')
       {
-        tabNbBlockByMember[m].meanNonce = (tabNbBlockByMember[m].meanNonce / (tabNbBlockByMember[m].nbBlocks*1000000000)).toFixed(0)+"*10^9";
+        tabBlockMembers[m].data = parseFloat( ((tabBlockMembers[m].nbBlocks * 100) / (blockchain.length)).toFixed(2) );
+	//if (tabBlockMembers[m].nbBlocks > 0) { console.log('%s written %s % of blockchain', tabBlockMembers[m].uid, tabBlockMembers[m].data); }
+      }
+      else if (data == 'meanNonce' && tabBlockMembers[m].nbBlocks > 0)    
+      {
+        tabBlockMembers[m].data = parseInt( (tabBlockMembers[m].totalNonce / (tabBlockMembers[m].nbBlocks*1000000000)).toFixed(0)+"*10^9" );
+      }
+      else if (data == 'writtenPercentSinceBecomeMember')
+      {
+	
+        tabBlockMembers[m].data = parseFloat( ((tabBlockMembers[m].nbBlocks * 100) / (blockchain.length-tabBlockMembers[m].becomeMember)).toFixed(2) );
       }
     }
     
-    // trier le tableau par ordre croissant de nbBlocks
-    var tabNbBlockByMemberSort = [ [] ];
+    // trier le tableau par ordre croissant de data nbBlocks
+    var tabBlockMembersSort = [ [] ];
     var tabExcluded = [];
-    for (let m=0;m<tabNbBlockByMember.length;m++)
+    for (let m=0;m<tabBlockMembers.length;m++)
     {
       let max = -1;
       let idMax = 0;
-      for (let m2=0;m2<tabNbBlockByMember.length;m2++)
+      for (let m2=0;m2<tabBlockMembers.length;m2++)
       {
-        if (tabNbBlockByMember[m2].nbBlocks > max)
+        if (tabBlockMembers[m2].data > max)
         {
           let exclude = false;
           for (let e=0;e<tabExcluded.length;e++)
           {
-            if (tabExcluded[e] == tabNbBlockByMember[m2].uid) { exclude = true; }
+            if (tabExcluded[e] == tabBlockMembers[m2].uid) { exclude = true; }
           }
           if (!exclude)
           {
-            max = tabNbBlockByMember[m2].nbBlocks;
+            max = tabBlockMembers[m2].data;
             idMax = m2;
           }
         }
       }
-      tabNbBlockByMemberSort[m] = tabNbBlockByMember[idMax];
-      tabExcluded.push(tabNbBlockByMember[idMax].uid);
+      tabBlockMembersSort[m] = tabBlockMembers[idMax];
+      tabExcluded.push(tabBlockMembers[idMax].uid);
     }
     
     // Define bar color
-    for (let m=0;m<tabNbBlockByMemberSort.length;m++)
+    for (let m=0;m<tabBlockMembersSort.length;m++)
     {
-      let proportion = ((255*tabNbBlockByMemberSort[m].nbBlocks)/tabNbBlockByMemberSort[0].nbBlocks);
-      tabNbBlockByMemberSort[m].color = parseInt(proportion);
+      let proportion = ((255*tabBlockMembersSort[m].data)/tabBlockMembersSort[0].data);
+      tabBlockMembersSort[m].color = parseInt(proportion);
     }
+    
+    //define dataLabel
+    var dataLabel = '#Written blocks';
+    if (data == 'writtenPercent') { dataLabel = "\% blockchain"; }
+    else if (data == 'writtenPercentSinceBecomeMember') { dataLabel = "\% blockchain (since become member)"; }
+    else if (data == 'meanNonce') { dataLabel = '#Mean nonce'; }
     
     // Si le client demande la réponse au format JSON =, le faire
     if (format == 'JSON')
-      res.status(200).jsonp( tabNbBlockByMemberSort )
+      res.status(200).jsonp( tabBlockMembersSort )
     else
     {
       res.locals = {
-         tabNbBlockByMemberSort, 
+         tabBlockMembersSort, 
          begin, 
          end,
+	 data,
+	 dataLabel,
          NB_PARTS: 50
       }
       next()
     }
-    // Appeler le module blockChart
-    // let blockChartMod = blockChart(req, res, HTML_HEADERS, HTML_MENU, tabNbBlockByMemberSort, begin, end);
     
   } catch (e) {
     // En cas d'exception, afficher le message

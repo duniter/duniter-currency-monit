@@ -2,32 +2,40 @@ ${HTML_HEAD}
 <script src="https://librelois.fr/js/Chart.min.js"></script>
 ${HTML_MENU}
 
-<form action="" method="GET">Begin #<input type="number" name="begin" value="${begin}"> - End #<input type="number" name="end" value="${end}"><input type="submit" value="submit"></form><br>
+<form action="" method="GET">Begin #<input type="number" name="begin" value="${begin}"> - End #<input type="number" name="end" value="${end}"><input type="submit" value="submit">
+<select name="data">
+	<option name="data" value ="nbBlocks">Number of written Blocks
+	<option name="data" value ="writtenPercent" ${data == 'writtenPercent' ? 'selected' : ''}>Percent of written Blocks
+	<option name="data" value ="writtenPercentSinceBecomeMember" ${data == 'writtenPercentSinceBecomeMember' ? 'selected' : ''}>Percent of written Blocks since become member
+	<option name="data" value ="meanNonce" ${data == 'meanNonce' ? 'selected' : ''}>mean nonce
+</select>
+</form><br>
 <canvas id="myChart"></canvas>
 <script>
-  var tabNbBlockByMemberSort = ${JSON.stringify(tabNbBlockByMemberSort)};
+  var tabBlockMembersSort = ${JSON.stringify(tabBlockMembersSort)};
   var begin = ${JSON.stringify(begin)};
   var end = ${JSON.stringify(end)};
+  var dataLabel = ${JSON.stringify(dataLabel)};
   
   // Formatting data
   var tabLabels = [];
-  var tabNbBlocks = [];
+  var tabDataX = [];
   var tabBackgroundColor = [];
   var tabBorderColor = [];
-  var nbBlocks = 0;
+  var total = 0;
   var nbMembers = 0;
   const NB_PARTS = ${NB_PARTS};
-  const nbCols = (tabNbBlockByMemberSort.length < NB_PARTS) ? tabNbBlockByMemberSort.length:NB_PARTS;
+  const nbCols = (tabBlockMembersSort.length < NB_PARTS) ? tabBlockMembersSort.length:NB_PARTS;
   for (let i=0;i<nbCols;i++)
   {
-    if (tabNbBlockByMemberSort[i].nbBlocks > 0)
+    if (tabBlockMembersSort[i].data > 0)
     {
-      tabLabels.push(tabNbBlockByMemberSort[i].uid);
-      tabNbBlocks.push(tabNbBlockByMemberSort[i].nbBlocks);
-      nbBlocks += tabNbBlockByMemberSort[i].nbBlocks;
+      tabLabels.push(tabBlockMembersSort[i].uid);
+      tabDataX.push(tabBlockMembersSort[i].data);
+      total += tabBlockMembersSort[i].data;
       
       // Define bar color
-      let red = tabNbBlockByMemberSort[i].color;
+      let red = tabBlockMembersSort[i].color;
       tabBackgroundColor.push('rgba('+red+', '+(255-red)+', 0, 0.5)');
       tabBorderColor.push('rgba('+red+', '+(255-red)+', 0, 1)');
       nbMembers++;
@@ -38,8 +46,8 @@ ${HTML_MENU}
   var myChartData = {
     labels: tabLabels,
     datasets: [{
-      label: '#Written blocks',
-      data: tabNbBlocks,
+      label: dataLabel,
+      data: tabDataX,
       backgroundColor: tabBackgroundColor,
       borderColor: tabBorderColor,
       borderWidth: 1
