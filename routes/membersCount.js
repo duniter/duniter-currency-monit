@@ -11,7 +11,7 @@ module.exports = (req, res, next) => co(function *() {
     // get GET parameters
     var begin = req.query.begin || 0;// Default Value
     var end = req.query.end || -1;// Default Value is current timestamp
-    var step = req.query.step > 0 && req.query.step || 288;// Default Value is current timestamp
+    var step = req.query.step > 0 && req.query.step || 1;// Default Value is 1
     var format = req.query.format || 'HTML'
     
     // get beginBlock and endBlock
@@ -21,11 +21,11 @@ module.exports = (req, res, next) => co(function *() {
     // get blockchain
     if (end >= begin && begin >= 0)
     {
-      var blockchain = yield duniterServer.dal.peerDAL.query('SELECT `issuer`,`membersCount`,`monetaryMass`,`medianTime`,`dividend`,`number`,`nonce` FROM block WHERE `fork`=0 AND `medianTime` <= '+endBlock[0].medianTime+' AND `medianTime` >= '+beginBlock[0].medianTime+' ORDER BY `medianTime` ASC');
+      var blockchain = yield duniterServer.dal.peerDAL.query('SELECT `issuer`,`membersCount`,`medianTime`,`dividend`,`number`,`nonce` FROM block WHERE `fork`=0 AND `medianTime` <= '+endBlock[0].medianTime+' AND `medianTime` >= '+beginBlock[0].medianTime+' ORDER BY `medianTime` ASC');
     }
     else
     {
-      var blockchain = yield duniterServer.dal.peerDAL.query('SELECT `issuer`,`membersCount`,`monetaryMass`,`medianTime`,`dividend`,`number`,`nonce` FROM block WHERE `fork`=0 AND `medianTime` >= '+beginBlock[0].medianTime+' ORDER BY `medianTime` ASC');
+      var blockchain = yield duniterServer.dal.peerDAL.query('SELECT `issuer`,`membersCount`,`medianTime`,`dividend`,`number`,`nonce` FROM block WHERE `fork`=0 AND `medianTime` >= '+beginBlock[0].medianTime+' ORDER BY `medianTime` ASC');
     }
     
     // get blockchain timestamp
@@ -33,20 +33,34 @@ module.exports = (req, res, next) => co(function *() {
     const currentBlockchainTimestamp = blockchain[blockchain.length-1].medianTime;
     if (end == -1) { end = begin+blockchain.length-1; }
     
-    // create and fill tabMembersCount, tabMonetaryMass, tabCurrency and currentDividend
+    // create and fill tabMembersCount
     var tabMembersCount = [];
+    var currentStepDU = 0;
     for (let b=0;b<blockchain.length;b++)
     {
-      if ( (b % step) == 0)
+      if (blockchain[b].dividend > 0)
       {
-        tabMembersCount.push({
-          blockNumber: blockchain[b].number,
-          timestamp: blockchain[b].medianTime,
-          dateTime: timestampToDatetime(blockchain[b].medianTime),
-          membersCount: blockchain[b].membersCount,
-        });
+        currentStepDU++;
+	if (currentStepDU == step)
+	{
+	  currentStepDU = 0;
+	  tabMembersCount.push({
+	    blockNumber: blockchain[b].number,
+	    timestamp: blockchain[b].medianTime,
+	    dateTime: timestampToDatetime(blockchain[b].medianTime),
+	    membersCount: blockchain[b].membersCount,
+	  });
+	}
       }
     }
+    
+    // Add current block data
+    tabMembersCount.push({
+	    blockNumber: blockchain[currentBlockNumber-begin].number,
+	    timestamp: blockchain[currentBlockNumber-begin].medianTime,
+	    dateTime: timestampToDatetime(blockchain[currentBlockNumber-begin].medianTime),
+	    membersCount: blockchain[currentBlockNumber-begin].membersCount,
+	  });
     
     if (format == 'JSON')
       res.status(200).jsonp( tabMembersCount )
@@ -61,10 +75,10 @@ module.exports = (req, res, next) => co(function *() {
         tabMembersCount,
         begin, 
         end,
-        form: `Begin #<input type="number" name="begin" value="${begin}"> - End #<input type="number" name="end" value="${end}">`,
+        form: `Begin #<input type="number" name="begin" value="${begin}"> - End #<input type="number" name="end" value="${end}"> - step <input type="number" name="step" value="${step}">DU`,
 	description: ``,
         chart: {
-          type: 'bar',
+          type: 'line',
           data: {
             labels: tabMembersCount.map(item=>item.dateTime),
             datasets: [{
@@ -101,8 +115,6 @@ module.exports = (req, res, next) => co(function *() {
       }
       next()
     }
-    // Appeler le module membersCountChart
-    // let membersCountChartMod = membersCountChart(req, res, HTML_HEADERS, HTML_MENU, tabMembersCount, begin, end);
     
   } catch (e) {
     // En cas d'exception, afficher le message
