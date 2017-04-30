@@ -43,10 +43,10 @@ module.exports = (req, res, next) => co(function *() {
         tabCurrency.push({
           blockNumber: blockchain[b].number,
           timestamp: blockchain[b].medianTime,
-          dateTime: timestampToDatetime(blockchain[b].medianTime),
+          dateTime: timestampToDatetime(blockchain[b].medianTime, true),
           membersCount: blockchain[b].membersCount,
           monetaryMass: parseInt(blockchain[b].monetaryMass / 100),
-          monetaryMassPerMembers: parseInt((blockchain[b].monetaryMass / 100) / blockchain[b].membersCount),
+          monetaryMassPerMembers: parseFloat(((blockchain[b].monetaryMass / 100) / blockchain[b].membersCount).toFixed(2)),
           relativeMonetaryMass: 0,
           relativeMonetaryMassPerMembers: 0
         });
@@ -62,8 +62,8 @@ module.exports = (req, res, next) => co(function *() {
     // calculate relativMonetaryMass
     for (let i=0;i<tabCurrency.length;i++)
     {
-      tabCurrency[i].relativeMonetaryMass = (tabCurrency[i].monetaryMass / currentDividend) * 100;
-      tabCurrency[i].relativeMonetaryMassPerMembers = (tabCurrency[i].monetaryMassPerMembers / currentDividend) * 100;
+      tabCurrency[i].relativeMonetaryMass = parseFloat(((tabCurrency[i].monetaryMass / currentDividend) * 100).toFixed(2));
+      tabCurrency[i].relativeMonetaryMassPerMembers = parseFloat(((tabCurrency[i].monetaryMassPerMembers / currentDividend) * 100).toFixed(2));
     }
     
     // Si le client demande la réponse au format JSON, le faire
