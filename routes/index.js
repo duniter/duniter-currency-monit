@@ -78,7 +78,7 @@ app.get('/wasMembers', require('./wasMembers.js'), (req, res)=> res.render('wasM
 /***************************************
 * Lister les block en graph
 ***************************************/
-app.get('/blockMembers', require('./blockMembers.js'), (req, res)=> res.render('blockMembers.html') )
+app.get('/blockCount', require('./blockCount.js'), (req, res)=> res.render('blockCount.html') )
 
 /***************************************
 * Évolution de la masse monétaire totale
