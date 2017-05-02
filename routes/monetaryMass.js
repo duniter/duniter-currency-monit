@@ -84,7 +84,7 @@ module.exports = (req, res, next) => co(function *() {
     
       // Define full currency description
       var fullCurrency = "The currency will be full when the money supply by member will be worth 3743 DU (because 1/c * dtReeval = 1/4,88% * 182,625j = 3743DU)<br>";
-	fullCurrency += "Currently, 1 DU = <b>"+(currentDividend/100)+"</b> Ğ1 and we have <b>"+tabCurrency[tabCurrency.length-1].membersCount+"</b> members. Thus in full currency we would have a total money supply of <b>"
+	fullCurrency += "Currently, 1 DU<sub>ğ1</sub> = <b>"+(currentDividend/100)+"</b> Ğ1 and we have <b>"+tabCurrency[tabCurrency.length-1].membersCount+"</b> members. Thus in full currency we would have a total money supply of <b>"
 	  +(3743*currentDividend*tabCurrency[tabCurrency.length-1].membersCount/100)+"</b> Ğ1 (<b>"+(3743*currentDividend/100)+"</b> Ğ1/member)." ;
       
       res.locals = {
