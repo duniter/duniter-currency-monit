@@ -255,9 +255,9 @@ module.exports = (req, res, next) => co(function *() {
       let continue_ = true;
       while (continue_)
       {
-	  let tmpcheckIdty = yield duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `member`=1 AND `pub`=\''+identitiesList[i].pubkey+'\' LIMIT 1');
+	  let tmpCheckIdty = yield duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `member`=1 AND `pub`=\''+identitiesList[i].pubkey+'\' LIMIT 1');
 	  // Si l'on trouve une identité membre correspondante ou que l'identité a expirée, alors supprimer cette identité des tableaux identitiesList et idtysPendingCertifsList
-	  if (tmpcheckIdty.length > 0 || identitiesList[i].expires_on <= currentBlockchainTimestamp)
+	  if (tmpCheckIdty.length > 0 || identitiesList[i].expires_on <= currentBlockchainTimestamp)
 	  {
 	    // Décrementer countMembersWithSigQtyValidCert
 	    if (identitiesList[i].nbValidCert > sigQty) { countMembersWithSigQtyValidCert--; }
