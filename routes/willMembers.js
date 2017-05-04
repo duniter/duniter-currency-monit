@@ -21,16 +21,13 @@ module.exports = (req, res, next) => co(function *() {
     var errors = "";
     var identitiesList = [];
     var idtysPendingCertifsList = [ [ [] ] ];
-    var previousBlockNumber = 0;
-    var previousBlockHash = "";
-    var previousBlochainTimestamp = 0;
     var nbMaxCertifs = 0;
     var countMembersWithSigQtyValidCert = 0;
     
     // Récupérer les paramètres
     var days = req.query.d || 65 // Valeur par défaut
     var order = req.query.d && req.query.order || 'desc' // Valeur par défaut
-    var sort_by = req.query.sort_by || "sigCount"; // Valeur par défaut
+    var sort_by = req.query.sort_by || "registrationPackage"; // Valeur par défaut
     var hideIdtyWithZeroCert = req.query.hideIdtyWithZeroCert || "no"; // Valeur par défaut
     var sortSig = req.query.sortSig || "Availability"; // Valeur par défaut
     var format = req.query.format || 'HTML'
@@ -117,7 +114,7 @@ module.exports = (req, res, next) => co(function *() {
 	    }
 	  }
       }
-	  
+
       // Calculer le nombre maximal de certifications reçues par l'identité courante
       if ( identitiesList[i].nbCert > nbMaxCertifs) { nbMaxCertifs = identitiesList[i].nbCert; }
       
@@ -257,11 +254,6 @@ module.exports = (req, res, next) => co(function *() {
       }
       idtysListOrdered = idtysListOrdered2;
     }
-    
-    // Stocker le blockNumber, hash et le medianTime de la branche courante
-    previousBlockNumber = currentBlockNumber;
-    previousBlockHash = currentBlockHash;
-    previousBlochainTimestamp = currentBlockchainTimestamp;
     
     // Si le client demande la réponse au format JSON, le faire
     if (format == 'JSON')
