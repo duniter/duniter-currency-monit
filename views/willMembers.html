@@ -75,15 +75,15 @@ ${LANG["COUNT_READY_MEMBERS"]} : <b>${countMembersWithSigQtyValidCert}</b>.<br>
         <!--printer les certifications-->
         ${idty.pendingCertifications.map( (cert,j)=> `
           
-          <td align="center" style="background:${color(cert.timestampExpire,sigWindow,250)}">
+          <td align="center" style="background:${(cert.validBlockStamp) ? color(cert.timestampExpire,sigWindow,250) : '#FF8000'}">
           ${j==4?'<b>':''}
           ${cert['from']}
           <br>${timestampToDatetime(cert.timestampExpire)}
           <br>#${cert['blockNumber']}
-          ${ ( cert['timestampWritable'] > currentBlockchainTimestamp ) ? `
-            <br><font color="DarkRed">[${timestampToDatetime(cert['timestampWritable'])}]</font>
+          ${ ( !cert.validBlockStamp || cert['timestampWritable'] > currentBlockchainTimestamp ) ? `
+            <br><font color="DarkRed">[${ (cert.validBlockStamp) ? timestampToDatetime(cert['timestampWritable']):LANG['INVALID_BLOCKSTAMP']}]</font>
           ` : `
-          <br><font color='green'>${LANG['SIG_PERIOD_OK']}</font>
+          <br><font color='green'>[${LANG['SIG_PERIOD_OK']}]</font>
           `}
           ${j==4?'</b>':''}
           </td>
