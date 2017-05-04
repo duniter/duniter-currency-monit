@@ -63,7 +63,7 @@ module.exports = (req, res, next) => co(function *() {
         if (tabBlockMembers[m].pubkey == blockchain[b].issuer)
         {
           tabBlockMembers[m].nbBlocks++;
-          tabBlockMembers[m].totalNonce += blockchain[b].nonce;
+          tabBlockMembers[m].totalNonce += parseInt((blockchain[b].nonce).toString().substr(3));
         }
       }
     }
@@ -75,11 +75,10 @@ module.exports = (req, res, next) => co(function *() {
       else if (data == 'writtenPercent')
       {
         tabBlockMembers[m].data = parseFloat( ((tabBlockMembers[m].nbBlocks * 100) / (blockchain.length)).toFixed(2) );
-	//if (tabBlockMembers[m].nbBlocks > 0) { console.log('%s written %s % of blockchain', tabBlockMembers[m].uid, tabBlockMembers[m].data); }
       }
       else if (data == 'meanNonce' && tabBlockMembers[m].nbBlocks > 0)    
       {
-        tabBlockMembers[m].data = parseInt( (tabBlockMembers[m].totalNonce / (tabBlockMembers[m].nbBlocks*1000000000)).toFixed(0)+"*10^9" );
+        tabBlockMembers[m].data = parseInt( (tabBlockMembers[m].totalNonce / (tabBlockMembers[m].nbBlocks*1000)).toFixed(0)+"*10^3" );
       }
       else if (data == 'writtenPercentSinceBecomeMember')
       {
@@ -126,7 +125,7 @@ module.exports = (req, res, next) => co(function *() {
     var dataLabel = '#Written blocks';
     if (data == 'writtenPercent') { dataLabel = "\% blockchain"; }
     else if (data == 'writtenPercentSinceBecomeMember') { dataLabel = "\% blockchain (since become member)"; }
-    else if (data == 'meanNonce') { dataLabel = '#Mean nonce (in billions)'; }
+    else if (data == 'meanNonce') { dataLabel = '#Mean nonce (in thousands)'; }
     
     // Si le client demande la réponse au format JSON =, le faire
     if (format == 'JSON')
