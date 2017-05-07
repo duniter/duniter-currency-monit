@@ -21,6 +21,7 @@ ${HTML_MENU}
   var tabDataX = [];
   var tabBackgroundColor = [];
   var tabBorderColor = [];
+  var tabHoverBackgroundColor = [];
   var total = 0;
   var nbMembers = 0;
   const NB_PARTS = ${NB_PARTS};
@@ -37,52 +38,19 @@ ${HTML_MENU}
       let red = tabBlockMembersSort[i].color;
       tabBackgroundColor.push('rgba('+red+', '+(255-red)+', 0, 0.5)');
       tabBorderColor.push('rgba('+red+', '+(255-red)+', 0, 1)');
+      tabHoverBackgroundColor.push('rgba('+red+', '+(255-red)+', 0, 0.2)');
       nbMembers++;
     }
   }
   
   // Define Chart Data
-  var myChartData = {
-    labels: tabLabels,
-    datasets: [{
-      label: dataLabel,
-      data: tabDataX,
-      backgroundColor: tabBackgroundColor,
-      borderColor: tabBorderColor,
-      borderWidth: 1
-  }]
-  }
+  var myChartData = 
   
   // Define Chart Options
-  var myChartOptions = {
-    // plugins: {
-    //   afterDraw: function (chart, easing) {
-    //     var self = chart.config;    /* Configuration object containing type, data, options */
-    //     var ctx = chart.chart.ctx;  /* Canvas context used to draw with */
-    //   }
-    // },
-    title: {
-      display: true,
-      text: nbMembers+' members have written blocks in the range #'+begin+'-#'+end
-    },
-    legend: {
-      display: false
-    },
-    scales: {
-      yAxes: [{
-        ticks: {
-            beginAtZero:true
-        }
-      }]
-    }
-  }
+  var myChartOptions = 
   
   // creating chartJs Object
-  var chartJs = {
-    type: 'bar',
-    data: myChartData,
-    options: myChartOptions
-  }
+  var chartJs = 
   
 
 var ctx = document.getElementById("myChart").getContext("2d");
