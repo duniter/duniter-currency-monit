@@ -75,7 +75,7 @@ module.exports = (req, res, next) => co(function *() {
         tabMembersCount,
         begin, 
         end,
-        form: `Begin #<input type="number" name="begin" value="${begin}"> - End #<input type="number" name="end" value="${end}"> - step <input type="number" name="step" value="${step}">DU`,
+        form: `Begin #<input type="number" name="begin" value="${begin}" min="0"> - End #<input type="number" name="end" value="${end}" min="1"> - step <input type="number" name="step" value="${step}" min="1">days`,
 	description: ``,
         chart: {
           type: 'line',
