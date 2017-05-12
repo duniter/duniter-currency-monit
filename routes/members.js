@@ -18,8 +18,8 @@ module.exports = (req, res, next) => co(function *() {
     var membersIdentity = [];
     var membersFirstCertifExpire = [];
     var membersIssuerFirstCertif = [];
-    var membersCertifsList = [ [ [] ] ];
-    var membersPendingCertifsList = [ [ [] ] ];
+    var membersCertifsList = [];
+    var membersPendingCertifsList = [];
     var membershipsTimeList = [];
     var membershipsBlockNumberList = [];
     var membershipsExpireTimeList = [];
@@ -30,7 +30,6 @@ module.exports = (req, res, next) => co(function *() {
     var sort_by = req.query.sort_by || "idtyWritten" // Valeur par défaut
     var pendingSigs = req.query.pendingSigs || "no";
     var format = req.query.format || 'HTML'
-    console.log(req.query);
     
     // Récupérer la liste des identités ayant actuellement le statut de membre
     const membersList = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`pub`,`member`,`written_on` FROM i_index WHERE `member`=1');

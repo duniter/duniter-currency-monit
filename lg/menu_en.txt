@@ -1,0 +1,8 @@
+LG en
+WILL_MEMBERS willMembers
+MEMBERS members
+MEMBERS_COUNT membersCount
+BLOCK_COUNT blockCount
+MONETARY_MASS monetaryMass
+PUBKEY_BALANCE pubkeyBalance
+ABOUT about

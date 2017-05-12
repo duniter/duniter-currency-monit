@@ -1,8 +1,27 @@
 ${HTML_HEAD}
-${HTML_MENU}
+
+<!-- Afficher le menu -->
+<table align="center" width="100%">
+  <tr>
+    <td><a href="willMembers?lg=${MENU_LANG['LG']}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
+    <td><a href="members?lg=${MENU_LANG['LG']}">${MENU_LANG["MEMBERS"]}</a></td>
+    <td><a href="membersCount?lg=${MENU_LANG['LG']}">${MENU_LANG["MEMBERS_COUNT"]}</a></td>
+    <td><a href="blockCount?lg=${MENU_LANG['LG']}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
+    <td><a href="monetaryMass?lg=${MENU_LANG['LG']}">${MENU_LANG["MONETARY_MASS"]}</a></td>
+    <td><a href="pubkeyBalance?lg=${MENU_LANG['LG']}">${MENU_LANG["PUBKEY_BALANCE"]}</a></td>
+    <td><a href="about?lg=${MENU_LANG['LG']}">${MENU_LANG["ABOUT"]}</a></td>
+    <td>
+      <form action="" method="GET">
+	<select name="lg" onchange="this.form.submit()">
+	  <option name="lg" value="fr" ${MENU_LANG['LG'] == 'fr' ? 'selected' : ''}>FR
+	  <option name="lg" value="en" ${MENU_LANG['LG'] == 'en' ? 'selected' : ''}>EN
+	</select>
+    </td>
+</tr>
+</table>
+<hr>
 
 <!-- Afficher le formulaire -->
-<form action="" method="GET">
 	<input type="number" name="d" value="${days}"/>${LANG["DAYS"]} - ${LANG["SORT_BY"]}
 	<select name="sort_by">
 		<option name="sort_by" value ="creationIdty">${LANG["SORT_BY_CREATION_IDTY"]}
@@ -11,17 +30,9 @@ ${HTML_MENU}
 	</select> ${LANG["ORDER"]} : <select name="order">
 		<option name="order" value ="asc">${LANG["ORDER_ASC"]}
 		<option name="order" value ="desc" ${order == 'desc' ? 'selected' : ''}>${LANG["ORDER_DESC"]}
-	</select> <input type="submit" value="${LANG["SUBMIT_TXT"]}">
-	<div align="right">
-		<select name="lg">
-			<option name="lg" value="fr">FR
-			<option name="lg" value="en" ${LANG['id'] == 'en' ? 'selected' : ''}>EN
-		</select>
-	</div>
-	<br>
+	</select> <input type="submit" value="${LANG["SUBMIT_TXT"]}"><br>
 	
-	<input type="checkbox" name="hideIdtyWithZeroCert" value="yes" ${hideIdtyWithZeroCert == 'yes' ? 'checked' : ''}>${LANG["CHECKBOX_HIDE_IDTY_WITH_ZERO_CERT"]}
-	<br>
+	<input type="checkbox" name="hideIdtyWithZeroCert" value="yes" ${hideIdtyWithZeroCert == 'yes' ? 'checked' : ''}>${LANG["CHECKBOX_HIDE_IDTY_WITH_ZERO_CERT"]}<br>
 	
 	<input type="checkbox" name="sortSig" value="Availability" ${sortSig == 'Availability' ? 'checked' : ''}>${LANG["CHECKBOX_SORT_SIG"]}
 </form>

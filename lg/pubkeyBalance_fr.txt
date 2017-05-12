@@ -1,0 +1,20 @@
+BEGIN Début
+END Fin
+PUBKEY Clé publique
+SELECT_MODE1 solde de la clé
+SELECT_MODE2 bilan des échanges avec les autres clés
+UNIT_Q en ğ1
+UNIT_R en DUğ1
+STEP précision
+HOURS heures
+DAYS jours
+WEEKS semaines
+MONTHS mois
+YEARS années
+SUBMIT_BUTTON recharger
+CHART_TITLE1 Solde de la clé
+CHART_TITLE2 sur la période
+LEGEND_TOTAL_BALANCE solde
+LEGEND_DU_LINE création monétaire
+LEGEND_TX_BALANCE bilan des transactions
+DESCRIPTION /!\ ATTENTION : Ces données sont présentées à titre indicatif et ne font pas foi. Seul le solde affiché par la dernière version stable d'un client Ğ1 officiel fait foi. De plus, le solde indiqué n'est fiable que si la période commence avant le/la 1er(è) DU/transaction du compte. 

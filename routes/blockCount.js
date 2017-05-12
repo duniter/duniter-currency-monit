@@ -301,7 +301,7 @@ module.exports = (req, res, next) => co(function *() {
 		label: dataLabel,
 		data: tabDataX,
 		backgroundColor: colorScale(nbMembers, 0.5),
-		borderColor: colorScale(nbMembers, 1),
+                borderColor: colorScale(nbMembers, 1.0),
 		borderWidth: 1,
 		hoverBackgroundColor: colorScale(nbMembers, 0.2),
 		hoverBorderColor: colorScale(nbMembers, 0.2)

@@ -1,8 +1,28 @@
 ${HTML_HEAD}
-${HTML_MENU}
 
-<form action="" method="GET">
-  <input type="number" name="d" value="${days}"/>jours - tri par <select name="sort_by">
+<!-- Afficher le menu -->
+<table align="center" width="100%">
+  <tr>
+    <td><a href="willMembers?lg=${MENU_LANG['LG']}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
+    <td><a href="members?lg=${MENU_LANG['LG']}">${MENU_LANG["MEMBERS"]}</a></td>
+    <td><a href="membersCount?lg=${MENU_LANG['LG']}">${MENU_LANG["MEMBERS_COUNT"]}</a></td>
+    <td><a href="blockCount?lg=${MENU_LANG['LG']}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
+    <td><a href="monetaryMass?lg=${MENU_LANG['LG']}">${MENU_LANG["MONETARY_MASS"]}</a></td>
+    <td><a href="pubkeyBalance?lg=${MENU_LANG['LG']}">${MENU_LANG["PUBKEY_BALANCE"]}</a></td>
+    <td><a href="about?lg=${MENU_LANG['LG']}">${MENU_LANG["ABOUT"]}</a></td>
+    <td>
+      <form action="" method="GET">
+	<select name="lg" onchange="this.form.submit()">
+	  <option name="lg" value="fr" ${MENU_LANG['LG'] == 'fr' ? 'selected' : ''}>FR
+	  <option name="lg" value="en" ${MENU_LANG['LG'] == 'en' ? 'selected' : ''}>EN
+	</select>
+    </td>
+</tr>
+</table>
+<hr>
+
+<!-- Afficher le formulaire -->
+<input type="number" name="d" value="${days}"/>jours - tri par <select name="sort_by">
 <option name="sort_by" value ="idtyWritten">date d\'obtention du statut de membre
 <option name="sort_by" value ="expireMembership" ${sort_by == 'expireMembership' ? 'selected' : ''}>date d\'expiration du membership
 <option name="sort_by" value ="lastRenewal" ${sort_by == 'lastRenewal' ? 'selected' : ''}>date de dernier renouvellement
