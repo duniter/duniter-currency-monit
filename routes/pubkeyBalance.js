@@ -18,17 +18,9 @@ module.exports = (req, res, next) => co(function *() {
     var unit = req.query.unit == 'relative' ? 'relative' : 'quantitative';
     var step = req.query.step || 1;
     var unitStep = req.query.stepUnit || 'days';
-    var meanCurrencyMass = (req.query.meanCurrencyMass == 'no') ? 'no':'yes';
-    var showDividend = (req.query.showDividend == 'no') ? 'no':'yes';
-    var onlyTxBalance = (req.query.onlyTxBalance == 'yes') ? 'yes':'no';
     
-    // In balanceWithOthers mode, disable options : meanCurrencyMass, showDividend and onlyTxBalance
-    if (mode == "balanceWithOthers")
-    {
-      meanCurrencyMass = "no";
-      showDividend = "no";
-      onlyTxBalance = "no";
-    }
+    // limit stepMin to 8 hours
+    if (unitStep == "hours" && step < 8) { step=8; }
     
     // get medianTime of beginBlock and endBlock
     if (begin >= 0)
@@ -131,14 +123,13 @@ module.exports = (req, res, next) => co(function *() {
         +'AND `medianTime` >=\''+joinersTimePubkey1[0].medianTime+'\' AND `medianTime` >=\''+beginBlock[0].medianTime+'\' AND `medianTime` <=\''+endBlock[0].medianTime+'\' '
 	+'ORDER BY `medianTime` ASC');
     }
-    // If pubkey1 was no-member, force showDividend to "no"
-    else { showDividend = "no"; }
     
     // get currentDividend
     var currentDividend = yield duniterServer.dal.peerDAL.query('SELECT `dividend` FROM block WHERE `fork`=0 AND `dividend` > 0 ORDER BY `medianTime` DESC LIMIT 1');
     
-    // Initialize tabBalance
+    // Initialize tabBalance and tabTxBalance
     var tabBalance = [];
+    if (pubkey1WasMember) { var tabTxBalance = []; }
     
     // If mode is "balanceWithOthers", initialize tabindexOthersMembers and full tabBalance with zero
     if (mode == "balanceWithOthers")
@@ -153,147 +144,179 @@ module.exports = (req, res, next) => co(function *() {
       }
     }
     
-    // Initialize nextStepTime, pubkey1TotalBalance and idDividend
+    // Initialize nextStepTime, pubkey1TotalBalance, pubkey1TotalTxBalance and idDividend
     var nextStepTime = beginBlock[0].medianTime;
     var pubkey1TotalBalance = 0;
+    var pubkey1TotalTxBalance = 0;
     var idDividend = 0;
     
+    // calculate stepTime
+    var stepTime=0;
+    switch (unitStep)
+    {
+      case "hours": stepTime += step*3600; break;
+      case "days": stepTime += step*86400; break;
+      case "weeks": stepTime += step*604800; break;
+      case "months": stepTime += step*18144000; break;
+      case "years": stepTime += step*31557600; break;
+    }
+    
     // Initialize tabDividend and pubkey1Dividend
-    if (showDividend == "yes") { var tabDividend = [];  var pubkey1Dividend = 0; }
+    if (pubkey1WasMember) { var tabDividend = [];  var pubkey1Dividend = 0; }
     
     // pubkey1 txs loop
     var tabTimes = [];
-    if (meanCurrencyMass == "yes") { var tabMeanCurrencyMass = []; }
+    var tabMeanCurrencyMass = [];
     if (format == 'JSON') { var tabJson = []; }
     var stepTxsBlocks = [];
-    for (let t=0;t<pubkey1TxsHashs.length;t++)
+    var lastLoop = false;
+    for (let t=0;t<=pubkey1TxsHashs.length;t++)
     {
       let pubkey1TxBalance = 0;
       
       // get tx data
       let tx = [];
-      if (mode == "balanceWithOthers")
+      if (t<pubkey1TxsHashs.length)
       {
-	tx = yield duniterServer.dal.peerDAL.query('SELECT `time`,`block_number`,`inputs`,`outputs`,`issuers`,`recipients` FROM txs WHERE `hash` >= \''+pubkey1TxsHashs[t].hash+'\' LIMIT 1');
-      }
-      else
-      {
-        tx = yield duniterServer.dal.peerDAL.query('SELECT `time`,`block_number`,`inputs`,`outputs` FROM txs WHERE `hash` >= \''+pubkey1TxsHashs[t].hash+'\' LIMIT 1');
-      }
-      
-      // push tx.block_number
-      stepTxsBlocks.push(tx[0].block_number);
-      
-      if (pubkey1TxsHashs[t].pubkey1IsIssuer)
-      {
-	// selfBalance inputs traitment
-	if (mode == "selfBalance")
+	if (mode == "balanceWithOthers")
 	{
-	  // parse inputs
-	  let inputs = JSON.parse(tx[0].inputs);
-	  // sum pubkey1 inputs (in negative)
-	  for (let i=0;i<inputs.length;i++)
-	  {
-	    inputs[i] = inputs[i].split(":");
-	    pubkey1TxBalance -= parseInt(inputs[i][0]);
-	  }
+	  tx = yield duniterServer.dal.peerDAL.query('SELECT `time`,`block_number`,`inputs`,`outputs`,`issuers`,`recipients` FROM txs WHERE `hash` >= \''+pubkey1TxsHashs[t].hash+'\' LIMIT 1');
 	}
-	// balanceWithOthers outputs traitment
 	else
 	{
-	  // parse recipients and outputs
-	  let outputs = JSON.parse(tx[0].outputs);
-	  
-	  // outputs traitment
-	  for (let o=0;o<outputs.length;o++)
+	  tx = yield duniterServer.dal.peerDAL.query('SELECT `time`,`block_number`,`inputs`,`outputs` FROM txs WHERE `hash` >= \''+pubkey1TxsHashs[t].hash+'\' LIMIT 1');
+	}
+      
+        // push tx.block_number
+        stepTxsBlocks.push(tx[0].block_number);
+      
+	if (pubkey1TxsHashs[t].pubkey1IsIssuer)
+	{
+	  // selfBalance inputs traitment
+	  if (mode == "selfBalance")
 	  {
-	    // split outputs
-	    outputs[o] = outputs[o].split(":");
-	  
-	    // find recipientIndex
-	    let recipientIndex=0;
-	    for (let i=0;i<tabindexOthersKeys.length;i++) { if (outputs[o][2] == ("SIG("+tabindexOthersKeys[i]+")")) { recipientIndex=i; i=tabindexOthersKeys.length; } }
+	    // parse inputs
+	    let inputs = JSON.parse(tx[0].inputs);
+	    // sum pubkey1 inputs (in negative)
+	    for (let i=0;i<inputs.length;i++)
+	    {
+	      inputs[i] = inputs[i].split(":");
+	      pubkey1TxBalance -= parseInt(inputs[i][0]);
+	    }
+	  }
+	  // balanceWithOthers outputs traitment
+	  else
+	  {
+	    // parse recipients and outputs
+	    let outputs = JSON.parse(tx[0].outputs);
 	    
-	    // add output to recipientIndex balance
-	    tabBalance[recipientIndex] += parseInt(outputs[o][0]);
+	    // outputs traitment
+	    for (let o=0;o<outputs.length;o++)
+	    {
+	      // split outputs
+	      outputs[o] = outputs[o].split(":");
+	    
+	      // find recipientIndex
+	      let recipientIndex=0;
+	      for (let i=0;i<tabindexOthersKeys.length;i++) { if (outputs[o][2] == ("SIG("+tabindexOthersKeys[i]+")")) { recipientIndex=i; i=tabindexOthersKeys.length; } }
+	      
+	      // add output to recipientIndex balance
+	      tabBalance[recipientIndex] += parseInt(outputs[o][0]);
+	    }
 	  }
 	}
-      }
-      else if (mode == "balanceWithOthers")
-      {
-	// parse inputs and issuers
-	let inputs = JSON.parse(tx[0].inputs);
-	let issuers = JSON.parse(tx[0].issuers);
-	
-	// find issuerIndex
-	  let issuerIndex=0;
-	  for (let i=0;i<tabindexOthersKeys.length;i++) { if (tabindexOthersKeys[i] == issuers[0]) { issuerIndex=i; i=tabindexOthersKeys.length; } }
+	else if (mode == "balanceWithOthers")
+	{
+	  // parse inputs and issuers
+	  let inputs = JSON.parse(tx[0].inputs);
+	  let issuers = JSON.parse(tx[0].issuers);
 	  
-	  // delete inputs to issuerIndex
-	  for (let i=0;i<inputs.length;i++)
-	  {
-	    inputs[i] = inputs[i].split(":");
-	    tabBalance[issuerIndex] -= parseInt(inputs[i][0]);
-	  }
+	  // find issuerIndex
+	    let issuerIndex=0;
+	    for (let i=0;i<tabindexOthersKeys.length;i++) { if (tabindexOthersKeys[i] == issuers[0]) { issuerIndex=i; i=tabindexOthersKeys.length; } }
+	    
+	    // delete inputs to issuerIndex
+	    for (let i=0;i<inputs.length;i++)
+	    {
+	      inputs[i] = inputs[i].split(":");
+	      tabBalance[issuerIndex] -= parseInt(inputs[i][0]);
+	    }
+	}
       }
       
       if (mode == "selfBalance")
       {
-	// selfBalance outputs traitment
-	if (pubkey1TxsHashs[t].pubkey1IsRecipient)
-	{
-	  // parse outputs
-	  let outputs = JSON.parse(tx[0].outputs);
-	  // sum pubkey1 outputs
-	  for (let o=0;o<outputs.length;o++)
+	if (t<pubkey1TxsHashs.length)
+        {
+	  // selfBalance outputs traitment
+	  if (pubkey1TxsHashs[t].pubkey1IsRecipient)
 	  {
-	    outputs[o] = outputs[o].split(":");
-	    if ( outputs[o][2] == ("SIG("+pubkey1+")") ) { pubkey1TxBalance += parseInt(outputs[o][0]); }
+	    // parse outputs
+	    let outputs = JSON.parse(tx[0].outputs);
+	    // sum pubkey1 outputs
+	    for (let o=0;o<outputs.length;o++)
+	    {
+	      outputs[o] = outputs[o].split(":");
+	      if ( outputs[o][2] == ("SIG("+pubkey1+")") ) { pubkey1TxBalance += parseInt(outputs[o][0]); }
+	    }
+	  }
+	
+	  // Force push of the latest Tx
+	  if ( (t+1) == pubkey1TxsHashs.length && (nextStepTime+stepTime) > endBlock[0].medianTim)
+	  {
+	    pubkey1TotalTxBalance += pubkey1TxBalance;
+	    pubkey1TotalBalance += pubkey1TxBalance;
+	    if (pubkey1TotalBalance < 100)
+	    {
+	      pubkey1TotalTxBalance -= pubkey1TotalBalance;
+	      pubkey1TotalBalance = 0;
+	    }
+	    tx[0].time = nextStepTime;
 	  }
 	}
       
-	// Force push of the latest Tx
-	if ( (t+1) == pubkey1TxsHashs.length)
-	{
-	  pubkey1TotalBalance += pubkey1TxBalance;
-	  tx[0].time = nextStepTime;
-	}
-      
-	// if tx.time achieve nextStepTime, push tx and dividends in tabs
-	if (tx[0].time >= nextStepTime)
+	// if tx.time achieve nextStepTime or all tx are pushed, push tx and dividends in tabs
+	if (t == pubkey1TxsHashs.length || tx[0].time >= nextStepTime)
 	{
 	  // push dividend to pubkey1TotalBalance until nextStepTime
 	  if (pubkey1WasMember)
 	  {
-	    while (idDividend < pubkey1Dividends.length && pubkey1Dividends[idDividend].medianTime < nextStepTime)
+	    while (idDividend < pubkey1Dividends.length && pubkey1Dividends[idDividend].medianTime <= nextStepTime)
 	    {
-	      if (onlyTxBalance  == "no") { pubkey1TotalBalance += pubkey1Dividends[idDividend].dividend; }
-	      if (showDividend == "yes") { pubkey1Dividend += pubkey1Dividends[idDividend].dividend; }
+	      pubkey1TotalBalance += pubkey1Dividends[idDividend].dividend;
+	      pubkey1Dividend += pubkey1Dividends[idDividend].dividend;
 	      idDividend++;
 	    }
 	  }
 	  
-	  // Calculate meanCurrencyMass and push tabMeanCurrencyMass
-	  if (meanCurrencyMass == "yes")
+	  
+	  
+	  // push tabBalance & tabMeanCurrencyMass for chart data (+ tabDividend & tabTxBalance for member pubkeys)
+	  if (mode == "selfBalance")
 	  {
-	    let block = yield duniterServer.dal.peerDAL.query('SELECT `membersCount`,`monetaryMass` FROM block WHERE `fork`=0 AND `medianTime` > \''+nextStepTime+'\' ORDER BY `medianTime` ASC LIMIT 1');
+	    // Calculate meanCurrencyMass and push tabMeanCurrencyMass
+	    let block = yield duniterServer.dal.peerDAL.query('SELECT `membersCount`,`monetaryMass` FROM block WHERE `fork`=0 AND `medianTime` >= \''+nextStepTime+'\' ORDER BY `medianTime` ASC LIMIT 1');
 	    if ( typeof(block[0]) == 'undefined') { block = endBlock; }
 	    if (unit == 'relative') { tabMeanCurrencyMass.push( (block[0].monetaryMass/(block[0].membersCount*currentDividend[0].dividend)).toFixed(2) ) }
 	    else { tabMeanCurrencyMass.push( (block[0].monetaryMass/(block[0].membersCount*100)).toFixed(2) ); }
-	  }
-	  
-	  // push tabBalance for chart data
-	  if (mode == "selfBalance")
-	  {
+	    
 	    if (unit == 'relative')
 	    {
 	      tabBalance.push( ((pubkey1TotalBalance) / (currentDividend[0].dividend)).toFixed(2) );
-	      if (showDividend == "yes") { tabDividend.push( ((pubkey1Dividend) / (currentDividend[0].dividend)).toFixed(2)); }
+	      if (pubkey1WasMember)
+	      {
+		tabDividend.push( ((pubkey1Dividend) / (currentDividend[0].dividend)).toFixed(2));
+		tabTxBalance.push( ((pubkey1TotalTxBalance) / (currentDividend[0].dividend)).toFixed(2) );
+	      }
 	    }
 	    else
 	    {
 	      tabBalance.push((pubkey1TotalBalance/100).toFixed(2));
-	      if (showDividend == "yes") { tabDividend.push( (pubkey1Dividend/100).toFixed(2) ); }
+	      if (pubkey1WasMember)
+	      { 
+		tabDividend.push( (pubkey1Dividend/100).toFixed(2) );
+		tabTxBalance.push((pubkey1TotalTxBalance/100).toFixed(2));
+	      }
 	    }
 	  }
 	    
@@ -306,32 +329,38 @@ module.exports = (req, res, next) => co(function *() {
 	    if (mode == "selfBalance")
 	    {
 	      tabJson.push({
-		totalBalance: (onlyTxBalance == "no") ? pubkey1TotalBalance:"-",
-		dividendBalance: (showDividend == "yes") ? pubkey1Dividend:"-",
-		txbalance: (onlyTxBalance == "yes") ? pubkey1TotalBalance:"-",
-		meanCurrencyMass: (meanCurrencyMass == "yes") ? tabMeanCurrencyMass[tabMeanCurrencyMass.length-1]:"-",
+		totalBalance: pubkey1TotalBalance,
+		dividendBalance: (pubkey1WasMember) ? pubkey1Dividend:"-",
+		txbalance: (pubkey1WasMember) ? pubkey1TotalTxBalance:"-",
+		meanCurrencyMass: tabMeanCurrencyMass[tabMeanCurrencyMass.length-1],
 		time: tabTimes[tabTimes.length-1],
 		txsBlocks: stepTxsBlocks.splice(0, stepTxsBlocks.length)
 	      });
 	    }
 	  }
 	  
-	  // calculate next nextStepTime
-	  switch (unitStep)
-	  {
-	    case "hours": nextStepTime += step*3600; break;
-	    case "days": nextStepTime += step*86400; break;
-	    case "weeks": nextStepTime += step*604800; break;
-	    case "months": nextStepTime += step*18144000; break;
-	    case "years": nextStepTime += step*31557600; break;
-	  }
+	  // increment nextStepTime
+	  nextStepTime += stepTime;
 	  
-	  // limit nextStepTime
-	  if (nextStepTime > endBlock[0].medianTime) { nextStepTime = endBlock[0].medianTime; }
+	  // In selfBalance mode, if all tx pushed and no lastLoop, force to continue
+	  if (mode == 'selfBalance' && t == pubkey1TxsHashs.length && !lastLoop) { t -= 1; }
+	  
+	  // Detect endTime echievment
+	  if (nextStepTime >= endBlock[0].medianTime)
+	  {
+	    nextStepTime = endBlock[0].medianTime;
+	    lastLoop = true;
+	  }
 	}
 
-	// Push TxBalance to pubkey1TotalBalance
+	// Push TxBalance to pubkey1TotalBalance and pubkey1TotalTxBalance
 	pubkey1TotalBalance += pubkey1TxBalance;
+	pubkey1TotalTxBalance += pubkey1TxBalance;
+	if (pubkey1TotalBalance < 100)
+	{
+	  pubkey1TotalTxBalance -= pubkey1TotalBalance;
+	  pubkey1TotalBalance = 0;
+	}
       }
     }
     
@@ -356,7 +385,7 @@ module.exports = (req, res, next) => co(function *() {
       if (mode == "selfBalance")
       {
 	datasets.push({
-		  label: `${unit == "relative" ? "DUğ1" : 'ğ1'}`,
+		  label: LANG["LEGEND_TOTAL_BALANCE"]+' ('+((unit == "relative") ? LANG["UNIT_R"]:LANG["UNIT_Q"])+')',
 		  data: tabBalance,
 		  fill: false,
 		  backgroundColor: 'rgba(0, 162, 245, 0.5)',
@@ -365,9 +394,7 @@ module.exports = (req, res, next) => co(function *() {
 		  hoverBackgroundColor: 'rgba(0, 162, 245, 0.2)',
 		  hoverborderColor: 'rgba(0, 162, 245, 0.2)'
 		});
-	if (meanCurrencyMass == "yes")
-	{
-	  datasets.push({
+	datasets.push({
 		  label: `${unit == "relative" ? "(M/N) DUğ1" : '(M/N) ğ1'}`,
 		  data: tabMeanCurrencyMass,
 		  fill: false,
@@ -377,11 +404,10 @@ module.exports = (req, res, next) => co(function *() {
 		  hoverBackgroundColor: 'rgba(255, 128, 0, 0.2)',
 		  hoverborderColor: 'rgba(255, 128, 0, 0.2)'
 		});
-	}
-	if (showDividend == "yes")
+	if (pubkey1WasMember)
 	{
 	  datasets.push({
-		  label: idtyPubkey1[0].uid+' '+LANG["LEGEND_DU_LINE"]+' ('+((unit == "relative") ? LANG["UNIT_R"]:LANG["UNIT_Q"])+')',
+		  label: LANG["LEGEND_DU_LINE"]+' ('+((unit == "relative") ? LANG["UNIT_R"]:LANG["UNIT_Q"])+')',
 		  data: tabDividend,
 		  fill: false,
 		  backgroundColor: 'rgba(0, 255, 0, 0.5)',
@@ -389,6 +415,16 @@ module.exports = (req, res, next) => co(function *() {
 		  borderWidth: 1,
 		  hoverBackgroundColor: 'rgba(0, 255, 0, 0.2)',
 		  hoverborderColor: 'rgba(0, 255, 0, 0.2)'
+		});
+	  datasets.push({
+		  label: LANG["LEGEND_TX_BALANCE"]+' ('+((unit == "relative") ? LANG["UNIT_R"]:LANG["UNIT_Q"])+')',
+		  data: tabTxBalance,
+		  fill: false,
+		  backgroundColor: 'rgba(255, 0, 0, 0.5)',
+		  borderColor: 'rgba(255, 0, 0, 1)',
+		  borderWidth: 1,
+		  hoverBackgroundColor: 'rgba(255, 0, 0, 0.2)',
+		  hoverborderColor: 'rgba(255, 0, 0, 0.2)'
 		});
 	}
       }
@@ -409,7 +445,6 @@ module.exports = (req, res, next) => co(function *() {
          begin, 
          end,
 	 pubkey1,
-	 meanCurrencyMass,
 	 description: `${LANG["DESCRIPTION"]}`,
 	 chart: {
 	    type: (mode == "selfBalance") ? 'line':'bar',
@@ -420,7 +455,7 @@ module.exports = (req, res, next) => co(function *() {
 	    options: {
 	      title: {
 		display: (mode == "selfBalance") ? true:false,
-		text: `${LANG["CHART_TITLE1"]+' '+pubkey1+' '+LANG["CHART_TITLE2"]+' #'+begin+'-#'+end}`
+		text: LANG["CHART_TITLE1"]+' '+( (pubkey1WasMember) ? idtyPubkey1[0].uid:pubkey1 )+' '+LANG["CHART_TITLE2"]+' #'+begin+'-#'+end
 	      },
 	      legend: {
 		display: true
@@ -452,10 +487,7 @@ module.exports = (req, res, next) => co(function *() {
 	      <option name="stepUnit" value ="weeks" ${unitStep == 'weeks' ? 'selected' : ''}>${LANG["WEEKS"]}
 	      <option name="stepUnit" value ="months" ${unitStep == 'months' ? 'selected' : ''}>${LANG["MONTHS"]}
 	      <option name="stepUnit" value ="years" ${unitStep == 'years' ? 'selected' : ''}>${LANG["YEARS"]}
-	    </select>`,
-	    form2: `<input type="checkbox" name="meanCurrencyMass" value="yes" ${meanCurrencyMass == 'yes' ? 'checked' : ''}> ${LANG["CHECKBOX_MEAN_M"]}
-	    <input type="checkbox" name="showDividend" value="yes" ${showDividend == 'yes' ? 'checked' : ''}> ${LANG["CHECKBOX_SHOW_DU"]}
-	    <input type="checkbox" name="onlyTxBalance" value="yes" ${onlyTxBalance == 'yes' ? 'checked' : ''}> ${LANG["CHECKBOX_ONLY_TX"]}`
+	    </select>`
       }
       next()
     }

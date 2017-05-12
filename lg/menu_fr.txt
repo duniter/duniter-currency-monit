@@ -1,6 +1,6 @@
 LG fr
-WILL_MEMBERS futur membres
-MEMBERS membres
+WILL_MEMBERS futurs membres
+MEMBERS listes des membres
 MEMBERS_COUNT nombre de membres
 BLOCK_COUNT nombre de blocs
 MONETARY_MASS masse monétaire

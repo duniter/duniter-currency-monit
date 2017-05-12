@@ -12,10 +12,9 @@ WEEKS weeks
 MONTHS months
 YEARS years
 SUBMIT_BUTTON submit
-CHECKBOX_MEAN_M show mean currency mass
-CHECKBOX_SHOW_DU show dividend creation
-CHECKBOX_ONLY_TX onlyTxBalance
 CHART_TITLE1 Balance of the account
 CHART_TITLE2 in the range
+LEGEND_TOTAL_BALANCE balance
 LEGEND_DU_LINE monetary creation
-DESCRIPTION /!\ WARNING FRESH PAINT : these data are presented has purely indicative title and are maybe not valid, it is possible that the indicated balance does not correspond to the reality ! Only the balance shown by the last stable version of an official Ğ1 client is safe.
+LEGEND_TX_BALANCE transactions balance
+DESCRIPTION /!\ WARNING : These data are presented for information purposes. Only the balance indicate by the last stable version of an official Ğ1 client is safe. Furthermore, the indicated balance is reliable only if the period begins before the 1st DU/transaction of the account.
