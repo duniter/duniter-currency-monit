@@ -20,7 +20,7 @@ module.exports = (req, res, next) => co(function *() {
     // Initaliser les variables
     var errors = "";
     var identitiesList = [];
-    var idtysPendingCertifsList = [ [ [] ] ];
+    var idtysPendingCertifsList = [];
     var nbMaxCertifs = 0;
     var countMembersWithSigQtyValidCert = 0;
     

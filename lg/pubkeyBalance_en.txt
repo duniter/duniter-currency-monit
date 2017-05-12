@@ -1,0 +1,21 @@
+BEGIN Begin
+END End
+PUBKEY Pubkey
+SELECT_MODE1 self balance
+SELECT_MODE2 balance with others
+UNIT_Q in ğ1
+UNIT_R in DUğ1
+STEP step
+HOURS hours
+DAYS days
+WEEKS weeks
+MONTHS months
+YEARS years
+SUBMIT_BUTTON submit
+CHECKBOX_MEAN_M show mean currency mass
+CHECKBOX_SHOW_DU show dividend creation
+CHECKBOX_ONLY_TX onlyTxBalance
+CHART_TITLE1 Balance of the account
+CHART_TITLE2 in the range
+LEGEND_DU_LINE monetary creation
+DESCRIPTION /!\ WARNING FRESH PAINT : these data are presented has purely indicative title and are maybe not valid, it is possible that the indicated balance does not correspond to the reality ! Only the balance shown by the last stable version of an official Ğ1 client is safe.

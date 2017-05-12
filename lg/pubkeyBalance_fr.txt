@@ -1,0 +1,21 @@
+BEGIN Début
+END Fin
+PUBKEY Clé publique
+SELECT_MODE1 solde de la clé
+SELECT_MODE2 bilan des échanges avec les autres clés
+UNIT_Q en ğ1
+UNIT_R en DUğ1
+STEP précision
+HOURS heures
+DAYS jours
+WEEKS semaines
+MONTHS mois
+YEARS années
+SUBMIT_BUTTON recharger
+CHECKBOX_MEAN_M afficher la masse monétaire moyenne
+CHECKBOX_SHOW_DU afficher les dividendes créer
+CHECKBOX_ONLY_TX bilan transactionnel uniquement
+CHART_TITLE1 Solde de la clé
+CHART_TITLE2 sur la période
+LEGEND_DU_LINE création monétaire
+DESCRIPTION /!\ ATTENTION PEINTURE FRAICHE : Ces données sont présentées a titre purement indicatif et ne font pas foi, il se peut que le solde indiqué ne corresponde pas à la réalité ! Seul le solde affiché par la dernière version stable d'un client Ğ1 officiel fait foi.

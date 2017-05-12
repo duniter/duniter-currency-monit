@@ -1,4 +1,3 @@
-ID en
 DAYS days
 SORT_BY sort by
 SORT_BY_CREATION_IDTY identity's expiration date

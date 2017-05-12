@@ -1,4 +1,3 @@
-ID fr
 DAYS jours
 SORT_BY tri par
 SORT_BY_CREATION_IDTY date d'expiration de l'identité
