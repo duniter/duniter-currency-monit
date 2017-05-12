@@ -80,7 +80,6 @@ module.exports = (req, res, next) => co(function *() {
       var maxYAxes = 3743;
       if (unit == "quantitative") { maxYAxes = maxYAxes*currentDividend/100; }
       if (massByMembers == "no") { maxYAxes = maxYAxes*tabCurrency[tabCurrency.length-1].membersCount; }
-      console.log(maxYAxes);
     
       // Define full currency description
       var fullCurrency = "The currency will be full when the money supply by member will be worth 3743 DU (because 1/c * dtReeval = 1/4,88% * 182,625j = 3743DU)<br>";

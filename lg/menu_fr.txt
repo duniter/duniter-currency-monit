@@ -4,5 +4,5 @@ MEMBERS listes des membres
 MEMBERS_COUNT nombre de membres
 BLOCK_COUNT nombre de blocs
 MONETARY_MASS masse monétaire
-PUBKEY_BALANCE Solde d'une clé
+PUBKEY_BALANCE solde d'une clé
 ABOUT a propos
