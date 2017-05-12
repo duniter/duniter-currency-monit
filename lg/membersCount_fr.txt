@@ -1,1 +1,6 @@
 SUBMIT_BUTTON recharger
+HOURS heures
+DAYS jours
+WEEKS semaines
+MONTHS mois
+YEARS années
