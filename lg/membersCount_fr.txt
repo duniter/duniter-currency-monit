@@ -1,6 +1,15 @@
-SUBMIT_BUTTON recharger
+BEGIN Début
+END Fin
+STEP précision
 HOURS heures
 DAYS jours
 WEEKS semaines
 MONTHS mois
 YEARS années
+SUBMIT_BUTTON recharger
+DESCRIPTION1 *Tout membre devient automatiquement référent dès lors qu'il a émis <b><u>et</u></b> reçu Y[n] certifications. (Y[n] = CEILING(N(t)^(1/5))).
+DESCRIPTION2 Actuellement, Y[n] =
+CHART_TITLE Évolution du nombre de membres, de membres référents et de membres écrivains de la blockchain sur la période
+MEMBERS_COUNT Membres
+SENTRIES_COUNT Membres référents*
+ISSUERS_COUNT Membres co-écrivains de la blockchain Ğ1

@@ -1,6 +1,15 @@
-SUBMIT_BUTTON submit
+BEGIN Begin
+END End
+STEP step
 HOURS hours
 DAYS days
 WEEKS weeks
 MONTHS months
 YEARS years
+SUBMIT_BUTTON submit
+DESCRIPTION1 *Every member automatically becomes a referring member as soon as he has emitted <b><u>and</u></b> received Y[n] certifications. (Y[n] = CEILING(N(t)^(1/5))).
+DESCRIPTION2 Currently, Y[n] =
+CHART_TITLE Évolution du nombre de membres, de membres référents et de membres écrivains de la blockchain sur la période
+MEMBERS_COUNT members
+SENTRIES_COUNT referring* members
+ISSUERS_COUNT Members co-writers blockchain
