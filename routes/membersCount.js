@@ -46,15 +46,17 @@ module.exports = (req, res, next) => co(function *() {
       case "years": stepTime += step*31557600; break;
     }
     
-    // Initialize nextStepTime and minIssuerCount
+    // Initialize nextStepTimen, stepIssuerCount and bStep
     var nextStepTime = blockchain[0].medianTime;
-    let minIssuerCount = blockchain[0].membersCount; // max borne
+    let stepIssuerCount = 0;
+    let bStep = 0;
     
     // Create and fill tabMembersCount
     var tabMembersCount = [];
     for (let b=0;b<blockchain.length;b++)
     {
-      minIssuerCount = (blockchain[b].issuersCount < minIssuerCount) ? blockchain[b].issuersCount:minIssuerCount;
+      stepIssuerCount += blockchain[b].issuersCount;
+      bStep++;
       if (blockchain[b].medianTime >= nextStepTime)
       {
 	  tabMembersCount.push({
@@ -62,11 +64,12 @@ module.exports = (req, res, next) => co(function *() {
 	    timestamp: blockchain[b].medianTime,
 	    dateTime: timestampToDatetime(blockchain[b].medianTime),
 	    membersCount: blockchain[b].membersCount,
-	    issuersCount: minIssuerCount
+	    issuersCount: parseInt(stepIssuerCount/bStep)
 	  });
 	  
 	  nextStepTime += stepTime;
-	  minIssuerCount = blockchain[b].membersCount; // max borne
+	  stepIssuerCount = 0;
+	  bStep = 0;
       }
     }
     
