@@ -24,11 +24,11 @@ module.exports = (req, res, next) => co(function *() {
     // get blockchain
     if (end >= begin && begin >= 0)
     {
-      var blockchain = yield duniterServer.dal.peerDAL.query('SELECT `hash`,`issuer`,`membersCount`,`medianTime`,`dividend`,`number`,`nonce`,`issuersCount` FROM block WHERE `fork`=0 AND `medianTime` <= '+endBlock[0].medianTime+' AND `medianTime` >= '+beginBlock[0].medianTime+' ORDER BY `medianTime` ASC');
+      var blockchain = yield duniterServer.dal.peerDAL.query('SELECT `hash`,`membersCount`,`medianTime`,`number`,`certifications`,`issuersCount` FROM block WHERE `fork`=0 AND `medianTime` <= '+endBlock[0].medianTime+' AND `medianTime` >= '+beginBlock[0].medianTime+' ORDER BY `medianTime` ASC');
     }
     else
     {
-      var blockchain = yield duniterServer.dal.peerDAL.query('SELECT `hash`,`issuer`,`membersCount`,`medianTime`,`dividend`,`number`,`nonce`,`issuersCount` FROM block WHERE `fork`=0 AND `medianTime` >= '+beginBlock[0].medianTime+' ORDER BY `medianTime` ASC');
+      var blockchain = yield duniterServer.dal.peerDAL.query('SELECT `hash`,`membersCount`,`medianTime`,`number`,`certifications`,`issuersCount` FROM block WHERE `fork`=0 AND `medianTime` >= '+beginBlock[0].medianTime+' ORDER BY `medianTime` ASC');
     }
     
     // Get blockchain timestamp
@@ -52,8 +52,22 @@ module.exports = (req, res, next) => co(function *() {
     let stepIssuerCount = 0;
     let bStep = 0;
     
-    // Create and fill members and tabMembersCount
+    // Initilize members and certs
     var members = [];
+    if (blockchain[0].number > 0)
+    {
+      let newMembers = yield duniterServer.dal.peerDAL.query('SELECT `pub` FROM i_index WHERE `member`=1');
+      for (let nm=0;nm<blockchain[0].membersCount;nm++)
+      {
+	members.push({
+	  pub: newMembers[nm].pub,
+	  writtenCerts: 0,
+	  receivedCerts: 0
+	});
+      }
+    }
+    
+    // fill members and tabMembersCount
     var tabMembersCount = [];
     for (let b=0;b<blockchain.length;b++)
     {
@@ -64,7 +78,30 @@ module.exports = (req, res, next) => co(function *() {
       if (blockchain[b].membersCount > members.length)
       {
 	let newMembers = yield duniterServer.dal.peerDAL.query('SELECT `pub` FROM i_index WHERE `written_on`=\''+blockchain[b].number+'-'+blockchain[b].hash+'\'');
-	for (let nm=0;nm<newMembers.length;nm++) { members.push(newMembers[nm].pub); }
+	for (let nm=0;nm<newMembers.length;nm++)
+	{
+	  members.push({
+	    pub: newMembers[nm].pub,
+	    writtenCerts: 0,
+	    receivedCerts: 0
+	  });
+	}
+      }
+      
+      // push new certs
+      if (JSON.parse(blockchain[b].certifications).length)
+      {
+	for (let m=0;m<members.length;m++)
+	{
+	  // push new WrittenCerts
+	  let newWrittenCerts = yield duniterServer.dal.peerDAL.query(
+	    'SELECT `issuer`,`receiver` FROM c_index WHERE `written_on`=\''+blockchain[b].number+'-'+blockchain[b].hash+'\' AND `issuer`=\''+members[m].pub+'\'');
+	  members[m].writtenCerts += newWrittenCerts.length;
+	  // push new Receivedcerts
+	  let newReceivedCerts = yield duniterServer.dal.peerDAL.query(
+	    'SELECT `issuer`,`receiver` FROM c_index WHERE `written_on`=\''+blockchain[b].number+'-'+blockchain[b].hash+'\' AND `receiver`=\''+members[m].pub+'\'');
+	  members[m].receivedCerts += newReceivedCerts.length;
+	}
       }
       
       // If achieve next step
@@ -73,12 +110,7 @@ module.exports = (req, res, next) => co(function *() {
 	// count sentries
 	let Yn = Math.ceil(Math.pow(blockchain[b].membersCount, 1/5));
 	let sentriesCount = 0;
-	for (let m=0;m<members.length;m++)
-	{
-	  let writtenCerts = yield duniterServer.dal.peerDAL.query('SELECT `op` FROM c_index WHERE `issuer`=\''+members[m]+'\'');
-	  let receivedCerts = yield duniterServer.dal.peerDAL.query('SELECT `op` FROM c_index WHERE `receiver`=\''+members[m]+'\'');
-	  if (writtenCerts.length >= Yn && receivedCerts.length >= Yn) { sentriesCount++; }
-	}
+	for (let m=0;m<members.length;m++) { if (members[m].writtenCerts >= Yn && members[m].receivedCerts >= Yn) { sentriesCount++; } }
 	
 	// push tabMembersCount
 	tabMembersCount.push({
@@ -98,13 +130,8 @@ module.exports = (req, res, next) => co(function *() {
     
     // count sentries at current block
     let Yn = Math.ceil(Math.pow(blockchain[blockchain.length-1].membersCount, 1/5));
-	let sentriesCount = 0;
-	for (let m=0;m<members.length;m++)
-	{
-	  let writtenCerts = yield duniterServer.dal.peerDAL.query('SELECT `op` FROM c_index WHERE `issuer`=\''+members[m]+'\'');
-	  let receivedCerts = yield duniterServer.dal.peerDAL.query('SELECT `op` FROM c_index WHERE `receiver`=\''+members[m]+'\'');
-	  if (writtenCerts.length >= Yn && receivedCerts.length >= Yn) { sentriesCount++; }
-	}
+    let sentriesCount = 0;
+    for (let m=0;m<members.length;m++) { if (members[m].writtenCerts >= Yn && members[m].receivedCerts >= Yn) { sentriesCount++; } }
     
     // Add current block data
     tabMembersCount.push({

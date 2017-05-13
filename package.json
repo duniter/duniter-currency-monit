@@ -13,7 +13,7 @@
     "body-parser": "1.15.1",
     "co": "4.6.0",
     "commander": "2.9.0",
-    "duniter": "^1.2.1",
+    "duniter": "^1.2.3",
     "duniter-bma": "1.1.2",
     "duniter-crawler": "1.1.4",
     "duniter-keypair": "1.1.3",
