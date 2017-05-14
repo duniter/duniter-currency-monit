@@ -6,7 +6,7 @@ const getLang = require('../lib/getLang')
 
 module.exports = (req, res, next) => co(function *() {
   
-  var { duniterServer, sigValidity, msValidity, sigWindow, idtyWindow } = req.app.locals
+  var { duniterServer, sigValidity, msValidity, sigWindow, idtyWindow, cache  } = req.app.locals
   
   try {
     // get GET parameters

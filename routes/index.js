@@ -54,7 +54,7 @@ app.get('/willMembers',
 /***************************************
 * Lister les membres
 ***************************************/
-app.get('/members', require('./members.js'),
+app.get('/members', /*require('../lib/updateCache.js'),*/ require('./members.js'),
   (req, res)=> res.render('members.html', {
 		    MENU_LANG: getLang(`./lg/menu_${req.query.lg||'fr'}.txt`),
                     LANG: getLang(`./lg/members_${req.query.lg||'fr'}.txt`)
@@ -73,7 +73,7 @@ app.get('/members', require('./members.js'),
 /***************************************
 * Évolution du nombre de membres
 ***************************************/
-app.get('/membersCount', require('./membersCount.js'), (req, res)=> res.render('Chart.html', {
+app.get('/membersCount', require('../lib/updateCache.js'), require('./membersCount.js'), (req, res)=> res.render('Chart.html', {
             MENU_LANG: getLang(`./lg/menu_${req.query.lg||'fr'}.txt`),
             LANG: getLang(`./lg/membersCount_${req.query.lg||'fr'}.txt`)
          })
@@ -82,7 +82,7 @@ app.get('/membersCount', require('./membersCount.js'), (req, res)=> res.render('
 /***************************************
 * Lister les block en graph
 ***************************************/
-app.get('/blockCount', require('./blockCount.js'), (req, res)=> res.render('Chart.html', {
+app.get('/blockCount', /*require('../lib/updateCache.js'),*/ require('./blockCount.js'), (req, res)=> res.render('Chart.html', {
             MENU_LANG: getLang(`./lg/menu_${req.query.lg||'fr'}.txt`),
             LANG: getLang(`./lg/blockCount_${req.query.lg||'fr'}.txt`)
          })
@@ -101,11 +101,10 @@ app.get('/monetaryMass', require('./monetaryMass.js'), (req, res)=> res.render('
 /***************************************
 * Évolution de la masse monétaire totale
 ***************************************/
-app.get('/pubkeyBalance', require('./pubkeyBalance.js'), (req, res)=> res.render('Chart.html', {
+app.get('/pubkeyBalance', require('../lib/updateCache.js'), require('./pubkeyBalance.js'), (req, res)=> res.render('Chart.html', {
             MENU_LANG: getLang(`./lg/menu_${req.query.lg||'fr'}.txt`),
             LANG: getLang(`./lg/pubkeyBalance_${req.query.lg||'fr'}.txt`)
          })
  )
-
 
 module.exports = app
