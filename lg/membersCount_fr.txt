@@ -1,6 +1,7 @@
 BEGIN Début
 END Fin
 STEP précision
+BLOCKS blocs
 HOURS heures
 DAYS jours
 WEEKS semaines

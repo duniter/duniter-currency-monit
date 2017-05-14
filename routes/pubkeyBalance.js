@@ -4,6 +4,8 @@ const co = require('co')
 const timestampToDatetime = require('../lib/timestampToDatetime')
 const getLang = require('../lib/getLang')
 
+const STEP_COUNT_LIMIT=100;
+
 module.exports = (req, res, next) => co(function *() {
   
   var { duniterServer, sigValidity, msValidity, sigWindow, idtyWindow, cache  } = req.app.locals
@@ -18,9 +20,6 @@ module.exports = (req, res, next) => co(function *() {
     var unit = req.query.unit == 'relative' ? 'relative' : 'quantitative';
     var step = req.query.step || 1;
     var unitStep = req.query.stepUnit || 'days';
-    
-    // limit stepMin to 8 hours
-    if (unitStep == "hours" && step < 8) { step=8; }
     
     
     // get medianTime of beginBlock and endBlock
@@ -53,6 +52,21 @@ module.exports = (req, res, next) => co(function *() {
 	var endBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`number`,`hash`,`membersCount`,`monetaryMass` FROM block ORDER BY `medianTime` DESC LIMIT 1 ');
 	end = endBlock[0].number;
     }
+    
+    // Apply STEP_COUNT_LIMIT and calculate stepTime
+    var stepTime = 0;
+    let unitTime=0;
+    switch (unitStep)
+    {
+	case "hours": unitTime = 3600; break;
+	case "days": unitTime = 86400; break;
+	case "weeks": unitTime = 604800; break;
+	case "months": unitTime = 18144000; break;
+	case "years": unitTime = 31557600; break;
+    }
+    if ( Math.ceil((endBlock[0].medianTime-beginBlock[0].medianTime)/(step*unitTime)) > STEP_COUNT_LIMIT  )
+    { step = Math.ceil((endBlock[0].medianTime-beginBlock[0].medianTime)/(STEP_COUNT_LIMIT*unitTime)); }
+    stepTime = step*unitTime;
       
     if (pubkey1.length > 0)
     {
@@ -127,7 +141,7 @@ module.exports = (req, res, next) => co(function *() {
 	let joinersTimePubkey1 = yield duniterServer.dal.peerDAL.query('SELECT `medianTime` FROM block WHERE `fork`=0 AND `number`=\''+joinersBlockPubkey1[0]+'\' LIMIT 1');
 	
 	// get all dividend created by pubkey1
-	var pubkey1Dividends = yield duniterServer.dal.peerDAL.query('SELECT `dividend`,`medianTime` FROM block WHERE `fork`=0 AND `dividend` > 0 '
+	var pubkey1Dividends = yield duniterServer.dal.peerDAL.query('SELECT `dividend`,`medianTime`,`number` FROM block WHERE `fork`=0 AND `dividend` > 0 '
 	  +'AND `medianTime` >=\''+joinersTimePubkey1[0].medianTime+'\' AND `medianTime` >=\''+beginBlock[0].medianTime+'\' AND `medianTime` <=\''+endBlock[0].medianTime+'\' '
 	  +'ORDER BY `medianTime` ASC');
       }
@@ -157,17 +171,6 @@ module.exports = (req, res, next) => co(function *() {
       var pubkey1TotalBalance = 0;
       var pubkey1TotalTxBalance = 0;
       var idDividend = 0;
-    
-      // calculate stepTime
-      var stepTime=0;
-      switch (unitStep)
-      {
-	case "hours": stepTime += step*3600; break;
-	case "days": stepTime += step*86400; break;
-	case "weeks": stepTime += step*604800; break;
-	case "months": stepTime += step*18144000; break;
-	case "years": stepTime += step*31557600; break;
-      }
       
       // Initialize tabDividend and pubkey1Dividend
       if (pubkey1WasMember) { var tabDividend = [];  var pubkey1Dividend = 0; }
@@ -284,7 +287,7 @@ module.exports = (req, res, next) => co(function *() {
 	  }
 	
 	  // if tx.time achieve nextStepTime or all tx are pushed, push tx and dividends in tabs
-	  if (t == pubkey1TxsHashs.length || tx[0].time >= nextStepTime)
+	  if (t == pubkey1TxsHashs.length || tx[0].time >= nextStepTime )
 	  {
 	    // push dividend to pubkey1TotalBalance until nextStepTime
 	    if (pubkey1WasMember)

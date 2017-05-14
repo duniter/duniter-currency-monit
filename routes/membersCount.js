@@ -4,6 +4,8 @@ const co = require('co')
 const timestampToDatetime = require('../lib/timestampToDatetime')
 const getLang = require('../lib/getLang')
 
+const STEP_COUNT_LIMIT=150;
+
 module.exports = (req, res, next) => co(function *() {
   
   var { duniterServer, sigValidity, msValidity, sigWindow, idtyWindow, sigQty, stepMax, cache } = req.app.locals
@@ -45,98 +47,51 @@ module.exports = (req, res, next) => co(function *() {
 	var endBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime` FROM block ORDER BY `medianTime` DESC LIMIT 1 ');
     }
     
-    console.log("begin = %s", begin); // DEBUG
-    
     // get blockchain
-    if (cache.end >= begin && begin >= 0)
-    {
-      var blockchain = yield duniterServer.dal.peerDAL.query('SELECT `hash`,`membersCount`,`medianTime`,`number`,`certifications`,`issuersCount` FROM block WHERE `fork`=0 AND `medianTime` <= '+endBlock[0].medianTime+' AND `medianTime` >= '+beginBlock[0].medianTime+' ORDER BY `medianTime` ASC');
-    }
-    else
-    {
-      var blockchain = yield duniterServer.dal.peerDAL.query('SELECT `hash`,`membersCount`,`medianTime`,`number`,`certifications`,`issuersCount` FROM block WHERE `fork`=0 AND `medianTime` >= '+beginBlock[0].medianTime+' ORDER BY `medianTime` ASC');
-    }
+    var blockchain = yield duniterServer.dal.peerDAL.query('SELECT `hash`,`membersCount`,`medianTime`,`number`,`certifications`,`issuersCount` FROM block WHERE `fork`=0 AND `medianTime` <= '+endBlock[0].medianTime+' AND `medianTime` >= '+beginBlock[0].medianTime+' ORDER BY `medianTime` ASC');
+
     
     // Get blockchain timestamp
     const currentBlockNumber = begin+blockchain.length-1;
     const currentBlockchainTimestamp = blockchain[blockchain.length-1].medianTime;
     
-    // Calculate stepTime
+    // Apply STEP_COUNT_LIMIT and calculate stepTime
     var stepTime = 0;
-    switch (stepUnit)
+    if (stepUnit == "blocks")
     {
-      case "hours": stepTime += step*3600; break;
-      case "days": stepTime += step*86400; break;
-      case "weeks": stepTime += step*604800; break;
-      case "months": stepTime += step*18144000; break;
-      case "years": stepTime += step*31557600; break;
+      if ( Math.ceil((cache.end-begin)/step) > STEP_COUNT_LIMIT  ) { step = Math.ceil((cache.end-begin)/STEP_COUNT_LIMIT); }
+    }
+    else
+    {
+      let unitTime=0;
+      switch (stepUnit)
+      {
+	case "hours": unitTime = 3600; break;
+	case "days": unitTime = 86400; break;
+	case "weeks": unitTime = 604800; break;
+	case "months": unitTime = 18144000; break;
+	case "years": unitTime = 31557600; break;
+      }
+      stepTime += step*unitTime;
+      if ( Math.ceil((endBlock[0].medianTime-beginBlock[0].medianTime)/stepTime) > STEP_COUNT_LIMIT  )
+      { step = Math.ceil((endBlock[0].medianTime-beginBlock[0].medianTime)/(STEP_COUNT_LIMIT*unitTime)); }
     }
     
     // Initialize nextStepTimen, stepIssuerCount and bStep
     var nextStepTime = blockchain[0].medianTime;
     let stepIssuerCount = 0;
     let bStep = 0;
-    
-    /*// Initilize members and certs
-    var members = [];
-    if (blockchain[0].number > 0)
-    {
-      let newMembers = yield duniterServer.dal.peerDAL.query('SELECT `pub` FROM i_index WHERE `member`=1');
-      for (let nm=0;nm<blockchain[0].membersCount;nm++)
-      {
-	members.push({
-	  pub: newMembers[nm].pub,
-	  writtenCerts: 0,
-	  receivedCerts: 0
-	});
-      }
-    }*/
-    
+
     // fill tabMembersCount
     var tabMembersCount = [];
     for (let b=0;b<blockchain.length;b++)
     {
       stepIssuerCount += blockchain[b].issuersCount;
       bStep++;
-      
-      /*// push new members
-      if (blockchain[b].membersCount > members.length)
-      {
-	let newMembers = yield duniterServer.dal.peerDAL.query('SELECT `pub` FROM i_index WHERE `written_on`=\''+blockchain[b].number+'-'+blockchain[b].hash+'\'');
-	for (let nm=0;nm<newMembers.length;nm++)
-	{
-	  members.push({
-	    pub: newMembers[nm].pub,
-	    writtenCerts: 0,
-	    receivedCerts: 0
-	  });
-	}
-      }
-      
-      // push new certs
-      if (JSON.parse(blockchain[b].certifications).length)
-      {
-	for (let m=0;m<members.length;m++)
-	{
-	  // push new WrittenCerts
-	  let newWrittenCerts = yield duniterServer.dal.peerDAL.query(
-	    'SELECT `issuer`,`receiver` FROM c_index WHERE `written_on`=\''+blockchain[b].number+'-'+blockchain[b].hash+'\' AND `issuer`=\''+members[m].pub+'\'');
-	  members[m].writtenCerts += newWrittenCerts.length;
-	  // push new Receivedcerts
-	  let newReceivedCerts = yield duniterServer.dal.peerDAL.query(
-	    'SELECT `issuer`,`receiver` FROM c_index WHERE `written_on`=\''+blockchain[b].number+'-'+blockchain[b].hash+'\' AND `receiver`=\''+members[m].pub+'\'');
-	  members[m].receivedCerts += newReceivedCerts.length;
-	}
-      }*/
-      
+
       // If achieve next step
-      if (blockchain[b].medianTime >= nextStepTime)
+      if ( (bStep == step && stepUnit == "blocks") || blockchain[b].medianTime >= nextStepTime)
       {
-	// count sentries
-	/*let Yn = Math.ceil(Math.pow(blockchain[b].membersCount, 1/stepMax));
-	let sentriesCount = 0;
-	for (let m=0;m<members.length;m++) { if (members[m].writtenCerts >= Yn && members[m].receivedCerts >= Yn) { sentriesCount++; } }*/
-	
 	// push tabMembersCount
 	tabMembersCount.push({
 	    blockNumber: blockchain[b].number,
@@ -147,18 +102,11 @@ module.exports = (req, res, next) => co(function *() {
 	    issuersCount: parseInt(stepIssuerCount/bStep)
 	});
 	  
-	nextStepTime += stepTime;
+	if (stepUnit != "blocks") { nextStepTime += stepTime; }
 	stepIssuerCount = 0;
 	bStep = 0;
       }
     }
-    
-    /*// count sentries at current block
-    let Yn = Math.ceil(Math.pow(blockchain[blockchain.length-1].membersCount, 1/stepMax));
-    let sentriesCount = 0;
-    for (let m=0;m<members.length;m++) { if (members[m].writtenCerts >= Yn && members[m].receivedCerts >= Yn) { sentriesCount++; } }*/
-    
-    console.log("cache.blockchain.length = %s, begin+blockchain.length-1 = %s", cache.blockchain.length, parseInt(begin)+blockchain.length-1); // DEBUG
     
     // Add current block data
     tabMembersCount.push({
@@ -188,6 +136,7 @@ module.exports = (req, res, next) => co(function *() {
         end: cache.end,
         form: `${LANG["BEGIN"]} #<input type="number" name="begin" value="${begin}" min="0"> - ${LANG["END"]} #<input type="number" name="end" value="${cache.end}" min="1"> - ${LANG["STEP"]} <input type="number" name="step" value="${step}" min="1">
 	  <select name="stepUnit">
+	      <option name="stepUnit" value ="blocks"${stepUnit == 'blocks' ? 'selected' : ''}>${LANG["BLOCKS"]}
 	      <option name="stepUnit" value ="hours"${stepUnit == 'hours' ? 'selected' : ''}>${LANG["HOURS"]}
 	      <option name="stepUnit" value ="days" ${stepUnit == 'days' ? 'selected' : ''}>${LANG["DAYS"]}
 	      <option name="stepUnit" value ="weeks" ${stepUnit == 'weeks' ? 'selected' : ''}>${LANG["WEEKS"]}

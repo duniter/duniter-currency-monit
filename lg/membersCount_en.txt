@@ -1,6 +1,7 @@
 BEGIN Begin
 END End
 STEP step
+BLOCKS blocks
 HOURS hours
 DAYS days
 WEEKS weeks
