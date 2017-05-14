@@ -8,7 +8,7 @@ const timestampToDatetime = require('../lib/timestampToDatetime')
 
 module.exports = (req, res, next) => co(function *() {
   
-  var { duniterServer, sigValidity, msValidity, sigWindow, idtyWindow, sigQty } = req.app.locals
+  var { duniterServer, sigValidity, msValidity, sigWindow, idtyWindow, sigQty, stepMax, cache } = req.app.locals
   
   try {
     // get blockchain timestamp
