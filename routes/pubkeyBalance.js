@@ -489,8 +489,8 @@ module.exports = (req, res, next) => co(function *() {
 	      }
 	    }
 	  },
-	  form: `${LANG["BEGIN"]} #<input type="number" name="begin" value="${begin}" size="7" style="width:60px;" min="0" max="${end - 1}">
-	     - ${LANG["END"]} #<input type="number" name="end" value="${end}" size="7" style="width:60px;" min="1" max="${end}">
+	  form: `${LANG["BEGIN"]} #<input type="number" name="begin" value="${begin}" size="7" style="width:60px;" min="0">
+	     - ${LANG["END"]} #<input type="number" name="end" value="${end}" size="7" style="width:60px;" min="1">
 	     - ${LANG["PUBKEY"]} : <input type="text" name="pubkey1" value="${pubkey1}" size="44">
 	    <select name="mode" disabled>
 	      <option name="mode" value ="selfBalance">${LANG["SELECT_MODE1"]}
