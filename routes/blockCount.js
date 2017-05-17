@@ -340,7 +340,7 @@ module.exports = (req, res, next) => co(function *() {
 	      barPercentage: 1.0
 	    }
 	  },
-	  form: `Begin #<input type="number" name="begin" value="${begin}" min="0" max="${end - 1}" size="7" style="width:60px;"> - End #<input type="number" name="end" value="${end}" min="1" max="${end}" size="7" style="width:60px;">
+	  form: `Begin #<input type="number" name="begin" value="${begin}" min="0" size="7" style="width:60px;"> - End #<input type="number" name="end" value="${end}" min="1" size="7" style="width:60px;">
 	    <select name="data">
 	      <option name="data" value ="nbBlocks">Number of written Blocks
 	      <option name="data" value ="writtenPercent" ${data == 'writtenPercent' ? 'selected' : ''}>Percent of written Blocks
