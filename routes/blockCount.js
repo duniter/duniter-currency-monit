@@ -340,7 +340,7 @@ module.exports = (req, res, next) => co(function *() {
 	      barPercentage: 1.0
 	    }
 	  },
-	  form: `Begin #<input type="number" name="begin" value="${begin}" size="7" style="width:60px;"> - End #<input type="number" name="end" value="${end}" size="7" style="width:60px;">
+	  form: `Begin #<input type="number" name="begin" value="${begin}" min="0" size="7" style="width:60px;"> - End #<input type="number" name="end" value="${end}" min="1" size="7" style="width:60px;">
 	    <select name="data">
 	      <option name="data" value ="nbBlocks">Number of written Blocks
 	      <option name="data" value ="writtenPercent" ${data == 'writtenPercent' ? 'selected' : ''}>Percent of written Blocks
@@ -348,7 +348,7 @@ module.exports = (req, res, next) => co(function *() {
 	      <option name="data" value ="meanNonce" ${data == 'meanNonce' ? 'selected' : ''}>mean nonce
 	    </select>
 	    <input type="checkbox" name="perNode" value="yes" ${perNode == 'yes' ? 'checked' : ''}>detail by node - 
-	    significant limit <input type="number" name="significantPercent" value="${significantPercent}" size="2" style="width:30px;">% of blocks`
+	    significant limit <input type="number" name="significantPercent" value="${significantPercent}" min="0" max="100" size="3" style="width:30px;">% of blocks`
       }
       next()
     }
