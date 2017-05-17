@@ -94,7 +94,7 @@ module.exports = (req, res, next) => co(function *() {
          unit,
          massByMembers,
 	 type,
-         form: `Begin #<input type="number" name="begin" value="${begin}" min="0" max="${end - 1}"> - End #<input type="number" name="end" value="${end}" min="1" max="${end}"> <select name="unit">
+         form: `Begin #<input type="number" name="begin" value="${begin}" min="0"> - End #<input type="number" name="end" value="${end}" min="1"> <select name="unit">
   <option name="unit" value ="quantitative">quantitative
   <option name="unit" value ="relative" ${unit == 'relative' ? 'selected' : ''}>relative
 </select> <select name="massByMembers">
