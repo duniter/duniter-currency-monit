@@ -289,7 +289,7 @@ module.exports = (req, res, next) => co(function *() {
 		    hoverborderColor: 'rgba(255, 128, 0, 0.2)'
 		  });
 	  datasets.push({
-		    label: `${unit == "relative" ? "inputs moves DUğ1" : 'movement of costs ğ1'}`,
+		    label: LANG["LEGEND_INPUTS_MOVES"]+' ('+((unit == "relative") ? LANG["UNIT_R"]:LANG["UNIT_Q"])+')',
 		    data: tabInputsBalance,
 		    fill: false,
 		    lineTension: 0,
@@ -306,7 +306,7 @@ module.exports = (req, res, next) => co(function *() {
 		    borderWidth: 2
 		  });
 	  datasets.push({
-		    label: `${unit == "relative" ? "outputs moves DUğ1" : 'movement of receipts ğ1'}`,
+		    label: LANG["LEGEND_OUTPUTS_MOVES"]+' ('+((unit == "relative") ? LANG["UNIT_R"]:LANG["UNIT_Q"])+')',
 		    data: tabOutputsBalance,
 		    fill: false,
 		    lineTension: 0,

@@ -15,6 +15,8 @@ SUBMIT_BUTTON recharger
 CHART_TITLE1 Solde de la clé
 CHART_TITLE2 sur la période
 LEGEND_TOTAL_BALANCE solde
+LEGEND_INPUTS_MOVES flux dépenses
+LEGEND_OUTPUTS_MOVES flux recettes
 LEGEND_DU_LINE création monétaire
 LEGEND_TX_BALANCE bilan des transactions
 DESCRIPTION /!\ ATTENTION : Ces données sont présentées à titre indicatif et ne font pas foi. Seul le solde affiché par la dernière version stable d'un client Ğ1 officiel fait foi.
