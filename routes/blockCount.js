@@ -309,6 +309,7 @@ module.exports = (req, res, next) => co(function *() {
       }
       
       res.locals = {
+	 host: req.headers.host.toString(),
          tabBlockMembersSort, 
          begin, 
          end,

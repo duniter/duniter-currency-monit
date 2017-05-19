@@ -266,6 +266,7 @@ module.exports = (req, res, next) => co(function *() {
     {
       res.locals = {
         // Les varibles à passer au template
+	host: req.headers.host.toString(),
         days, sort_by, order, sortSig,
         hideIdtyWithZeroCert,
 	

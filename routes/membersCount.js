@@ -81,8 +81,10 @@ module.exports = (req, res, next) => co(function *() {
       var unit = req.query.unit == 'relative' ? 'relative' : 'quantitative';
       var massByMembers = req.query.massByMembers == 'no' ? 'no' : 'yes';
       
+      console.log("req.headers.host = %s", req.headers.host);
       
       res.locals = {
+	host: req.headers.host.toString(),
         tabMembersCount,
         begin: cache.beginBlock[0].number,
         end: cache.endBlock[0].number,
