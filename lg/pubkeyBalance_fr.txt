@@ -17,4 +17,4 @@ CHART_TITLE2 sur la période
 LEGEND_TOTAL_BALANCE solde
 LEGEND_DU_LINE création monétaire
 LEGEND_TX_BALANCE bilan des transactions
-DESCRIPTION /!\ ATTENTION : Ces données sont présentées à titre indicatif et ne font pas foi. Seul le solde affiché par la dernière version stable d'un client Ğ1 officiel fait foi. De plus, le solde indiqué n'est fiable que si la période commence avant le/la 1er(è) DU/transaction du compte. 
+DESCRIPTION /!\ ATTENTION : Ces données sont présentées à titre indicatif et ne font pas foi. Seul le solde affiché par la dernière version stable d'un client Ğ1 officiel fait foi.

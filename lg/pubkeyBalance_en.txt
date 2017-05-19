@@ -17,4 +17,4 @@ CHART_TITLE2 in the range
 LEGEND_TOTAL_BALANCE balance
 LEGEND_DU_LINE monetary creation
 LEGEND_TX_BALANCE transactions balance
-DESCRIPTION /!\ WARNING : These data are presented for information purposes. Only the balance indicate by the last stable version of an official Ğ1 client is safe. Furthermore, the indicated balance is reliable only if the period begins before the 1st DU/transaction of the account.
+DESCRIPTION /!\ WARNING : These data are presented for information purposes. Only the balance indicate by the last stable version of an official Ğ1 client is safe.
