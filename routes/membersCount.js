@@ -4,77 +4,29 @@ const co = require('co')
 const timestampToDatetime = require('../lib/timestampToDatetime')
 const getLang = require('../lib/getLang')
 
-const STEP_COUNT_LIMIT=150;
-
 module.exports = (req, res, next) => co(function *() {
   
   var { duniterServer, sigValidity, msValidity, sigWindow, idtyWindow, sigQty, stepMax, cache } = req.app.locals
   
   try {
     // get GET parameters
-    var begin = req.query.begin || 0;// Default Value
-    var step = req.query.step > 0 && req.query.step || 1;// Default Value is 1
-    var stepUnit = req.query.stepUnit || 'days';
     var format = req.query.format || 'HTML';
     
-    // get medianTime of beginBlock and endBlock
-    if (begin >= 0)
-    {
-        if (begin==1) { begin= 0; } // exclude begin 1 because blocks 1 and 0 are same medianTime
-	var beginBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime` FROM block WHERE `fork`=0 AND `number` = '+begin+' LIMIT 1');
-	if (beginBlock.length <= 0)
-	{
-	  res.status(500).send('<pre>Error : begin parameter is to high !</pre>');
-	}
-    }
-    else
-    {
-	res.status(500).send('<pre>Error : begin parameter must be positive !</pre>');
-    }
-    if (cache.end >= 0)
-    {
-	if (cache.end >= parseInt(begin))
-	{
-	  var endBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime` FROM block WHERE `fork`=0 AND `number` = '+cache.end+' LIMIT 1');
-	}
-	else
-	{
-	  res.status(500).send('<pre>Error : end parameter must be >= begin !</pre>');
-	}
-    }
-    else
-    {
-	var endBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime` FROM block ORDER BY `medianTime` DESC LIMIT 1 ');
-    }
+    // get medianTime of beginBlock
+    var beginBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`hash` FROM block WHERE `fork`=0 AND `number` = '+cache.beginBlock[0].number+' LIMIT 1');
     
     // get blockchain
-    var blockchain = yield duniterServer.dal.peerDAL.query('SELECT `hash`,`membersCount`,`medianTime`,`number`,`certifications`,`issuersCount` FROM block WHERE `fork`=0 AND `medianTime` <= '+endBlock[0].medianTime+' AND `medianTime` >= '+beginBlock[0].medianTime+' ORDER BY `medianTime` ASC');
+    var blockchain = yield duniterServer.dal.peerDAL.query('SELECT `hash`,`membersCount`,`medianTime`,`number`,`certifications`,`issuersCount` FROM block WHERE `fork`=0 AND `medianTime` <= '+cache.endBlock[0].medianTime+' AND `medianTime` >= '+beginBlock[0].medianTime+' ORDER BY `medianTime` ASC');
 
     
     // Get blockchain timestamp
-    const currentBlockNumber = begin+blockchain.length-1;
+    const currentBlockNumber = cache.beginBlock[0].number+blockchain.length-1;
     const currentBlockchainTimestamp = blockchain[blockchain.length-1].medianTime;
     
-    // Apply STEP_COUNT_LIMIT and calculate stepTime
-    var stepTime = 0;
-    if (stepUnit == "blocks")
+    // Traiter le cas stepUnit == "blocks"
+    if (cache.stepUnit == "blocks")
     {
-      if ( Math.ceil((cache.end-begin)/step) > STEP_COUNT_LIMIT  ) { step = Math.ceil((cache.end-begin)/STEP_COUNT_LIMIT); }
-    }
-    else
-    {
-      let unitTime=0;
-      switch (stepUnit)
-      {
-	case "hours": unitTime = 3600; break;
-	case "days": unitTime = 86400; break;
-	case "weeks": unitTime = 604800; break;
-	case "months": unitTime = 18144000; break;
-	case "years": unitTime = 31557600; break;
-      }
-      stepTime += step*unitTime;
-      if ( Math.ceil((endBlock[0].medianTime-beginBlock[0].medianTime)/stepTime) > STEP_COUNT_LIMIT  )
-      { step = Math.ceil((endBlock[0].medianTime-beginBlock[0].medianTime)/(STEP_COUNT_LIMIT*unitTime)); }
+      if ( Math.ceil((cache.endBlock[0].number-cache.beginBlock[0].number)/cache.step) > STEP_COUNT_LIMIT  ) { cache.step = Math.ceil((cache.endBlock[0].number-cache.beginBlock[0].number)/STEP_COUNT_LIMIT); }
     }
     
     // Initialize nextStepTimen, stepIssuerCount and bStep
@@ -90,7 +42,7 @@ module.exports = (req, res, next) => co(function *() {
       bStep++;
 
       // If achieve next step
-      if ( (bStep == step && stepUnit == "blocks") || blockchain[b].medianTime >= nextStepTime)
+      if ( (bStep == cache.step && cache.stepUnit == "blocks") || blockchain[b].medianTime >= nextStepTime)
       {
 	// push tabMembersCount
 	tabMembersCount.push({
@@ -98,11 +50,11 @@ module.exports = (req, res, next) => co(function *() {
 	    timestamp: blockchain[b].medianTime,
 	    dateTime: timestampToDatetime(blockchain[b].medianTime),
 	    membersCount: blockchain[b].membersCount,
-	    sentriesCount: cache.blockchain[parseInt(begin)+b].sentries,
+	    sentriesCount: cache.blockchain[parseInt(cache.beginBlock[0].number)+b].sentries,
 	    issuersCount: parseInt(stepIssuerCount/bStep)
 	});
 	  
-	if (stepUnit != "blocks") { nextStepTime += stepTime; }
+	if (cache.stepUnit != "blocks") { nextStepTime += cache.stepTime; }
 	stepIssuerCount = 0;
 	bStep = 0;
       }
@@ -114,7 +66,7 @@ module.exports = (req, res, next) => co(function *() {
 	    timestamp: blockchain[blockchain.length-1].medianTime,
 	    dateTime: timestampToDatetime(blockchain[blockchain.length-1].medianTime),
 	    membersCount: blockchain[blockchain.length-1].membersCount,
-	    sentriesCount: cache.blockchain[parseInt(begin)+blockchain.length-1].sentries,
+	    sentriesCount: cache.blockchain[parseInt(cache.beginBlock[0].number)+blockchain.length-1].sentries,
 	    issuersCount: blockchain[blockchain.length-1].issuersCount
 	  });
     
@@ -132,16 +84,16 @@ module.exports = (req, res, next) => co(function *() {
       
       res.locals = {
         tabMembersCount,
-        begin, 
-        end: cache.end,
-        form: `${LANG["BEGIN"]} #<input type="number" name="begin" value="${begin}" min="0"> - ${LANG["END"]} #<input type="number" name="end" value="${cache.end}" min="1"> - ${LANG["STEP"]} <input type="number" name="step" value="${step}" min="1">
+        begin: cache.beginBlock[0].number,
+        end: cache.endBlock[0].number,
+        form: `${LANG["BEGIN"]} #<input type="number" name="begin" value="${cache.beginBlock[0].number}" min="0"> - ${LANG["END"]} #<input type="number" name="end" value="${cache.endBlock[0].number}" min="1"> - ${LANG["STEP"]} <input type="number" name="step" value="${cache.step}" min="1">
 	  <select name="stepUnit">
-	      <option name="stepUnit" value ="blocks"${stepUnit == 'blocks' ? 'selected' : ''}>${LANG["BLOCKS"]}
-	      <option name="stepUnit" value ="hours"${stepUnit == 'hours' ? 'selected' : ''}>${LANG["HOURS"]}
-	      <option name="stepUnit" value ="days" ${stepUnit == 'days' ? 'selected' : ''}>${LANG["DAYS"]}
-	      <option name="stepUnit" value ="weeks" ${stepUnit == 'weeks' ? 'selected' : ''}>${LANG["WEEKS"]}
-	      <option name="stepUnit" value ="months" ${stepUnit == 'months' ? 'selected' : ''}>${LANG["MONTHS"]}
-	      <option name="stepUnit" value ="years" ${stepUnit == 'years' ? 'selected' : ''}>${LANG["YEARS"]}
+	      <option name="stepUnit" value ="blocks"${cache.stepUnit == 'blocks' ? 'selected' : ''}>${LANG["BLOCKS"]}
+	      <option name="stepUnit" value ="hours"${cache.stepUnit == 'hours' ? 'selected' : ''}>${LANG["HOURS"]}
+	      <option name="stepUnit" value ="days" ${cache.stepUnit == 'days' ? 'selected' : ''}>${LANG["DAYS"]}
+	      <option name="stepUnit" value ="weeks" ${cache.stepUnit == 'weeks' ? 'selected' : ''}>${LANG["WEEKS"]}
+	      <option name="stepUnit" value ="months" ${cache.stepUnit == 'months' ? 'selected' : ''}>${LANG["MONTHS"]}
+	      <option name="stepUnit" value ="years" ${cache.stepUnit == 'years' ? 'selected' : ''}>${LANG["YEARS"]}
 	    </select>`,
 	description: `${LANG["DESCRIPTION1"]+'<br>'+LANG["DESCRIPTION2"]+'<b>'+cache.Yn+'</b>.'}`,
         chart: {
@@ -183,7 +135,7 @@ module.exports = (req, res, next) => co(function *() {
             // },
             title: {
               display: true,
-              text: `${LANG['CHART_TITLE']+' #'+begin+'-#'+cache.end}`
+              text: `${LANG['CHART_TITLE']+' #'+cache.beginBlock[0].number+'-#'+cache.endBlock[0].number}`
             },
             legend: {
               display: true
