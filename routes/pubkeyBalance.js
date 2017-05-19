@@ -51,8 +51,6 @@ module.exports = (req, res, next) => co(function *() {
       
       // get currentDividend
       var currentDividend = yield duniterServer.dal.peerDAL.query('SELECT `dividend` FROM block WHERE `fork`=0 AND `dividend` > 0 ORDER BY `medianTime` DESC LIMIT 1');
-      
-      
     
       /*// If mode is "balanceWithOthers", initialize tabindexOthersMembers and full tabBalance with zero
       if (mode == "balanceWithOthers")
@@ -85,128 +83,132 @@ module.exports = (req, res, next) => co(function *() {
       if (typeof(cache.pubkeys[cache.pub_index[pubkey1]]) != 'undefined')
       { pubkey1Cache = cache.pubkeys[cache.pub_index[pubkey1]]; }
       
-      // Initialize idInputs and idOutputs
-      var idInputs = 0;
-      var idOutputs = 0;
-      
-      // stepTime loop
-      while (nextStepTime < (parseInt(cache.endBlock[0].medianTime)+cache.stepTime))
+      if (pubkey1Cache != null)
       {
-	// Initialize sumStepDividends, sumStepInputs, sumStepOutputs
-	let sumStepDividends = 0;
-	let sumStepInputs = 0;
-	let sumStepOutputs = 0;
+	// Initialize idInputs and idOutputs
+	var idInputs = 0;
+	var idOutputs = 0;
 	
-        // Calculate sum dividends of current step
-	if (pubkey1WasMember)
+	// stepTime loop
+	while (nextStepTime < (parseInt(cache.endBlock[0].medianTime)+cache.stepTime))
 	{
-	  while (idDividend < pubkey1Dividends.length && pubkey1Dividends[idDividend].medianTime <= nextStepTime)
+	  // Initialize sumStepDividends, sumStepInputs, sumStepOutputs
+	  let sumStepDividends = 0;
+	  let sumStepInputs = 0;
+	  let sumStepOutputs = 0;
+	  
+	  // Calculate sum dividends of current step
+	  if (pubkey1WasMember)
 	  {
-	    sumStepDividends += parseInt(pubkey1Dividends[idDividend].dividend);
-	    idDividend++;
+	    while (idDividend < pubkey1Dividends.length && pubkey1Dividends[idDividend].medianTime <= nextStepTime)
+	    {
+	      sumStepDividends += parseInt(pubkey1Dividends[idDividend].dividend);
+	      idDividend++;
+	    }
 	  }
-	}
-	
-	// Calculate sum inputs of current step
-	while ( parseInt(pubkey1Cache.inputsTime[idInputs]) <= parseInt(nextStepTime) )
-	{
-	  sumStepInputs += pubkey1Cache.inputsAmount[idInputs];
-	  idInputs++;
-	}
-	
-	// Calculate sum outputs of current step
-	while ( parseInt(pubkey1Cache.outputsTime[idOutputs]) <= parseInt(nextStepTime) )
-	{
-	  sumStepOutputs += pubkey1Cache.outputsAmount[idOutputs];
-	  idOutputs++;
-	}
+	  
+	  // Calculate sum inputs of current step
+	  if ( typeof(pubkey1Cache.inputsTime) != 'undefined' && pubkey1Cache.inputsTime.length > 0 )
+	  while ( parseInt(pubkey1Cache.inputsTime[idInputs]) <= parseInt(nextStepTime) )
+	  {
+	    sumStepInputs += pubkey1Cache.inputsAmount[idInputs];
+	    idInputs++;
+	  }
+	  
+	  // Calculate sum outputs of current step
+	  while ( parseInt(pubkey1Cache.outputsTime[idOutputs]) <= parseInt(nextStepTime) )
+	  {
+	    sumStepOutputs += pubkey1Cache.outputsAmount[idOutputs];
+	    idOutputs++;
+	  }
 
-	// If achieve beginTime, push tabTimes, tabBalance, tabInputsBalance, tabOutputsBalance, tabTxBalance, tabDividend, tabMeanCurrencyMass
-	if (nextStepTime >= parseInt(beginBlock[0].medianTime))
-	{
-	  // Get lastDividendBlock
-	  if (nextStepTime > (parseInt(cache.endBlock[0].medianTime))) { tabTimes.push(timestampToDatetime(cache.endBlock[0].medianTime, cache.onlyDate)); }
-	  else { tabTimes.push(timestampToDatetime(nextStepTime, cache.onlyDate)); }
-	   let lastDividendBlock = yield duniterServer.dal.peerDAL.query(
-	     'SELECT `membersCount`,`monetaryMass`,`dividend` FROM block WHERE `fork`=0 AND `dividend` > 0 AND `medianTime` <= \''+nextStepTime+'\' ORDER BY `medianTime` DESC LIMIT 1');
-	 
-	  let previousBalance, previousTabTxBalance, previousTabDividend;
-	  if (tabBalance.length > 0)
+	  // If achieve beginTime, push tabTimes, tabBalance, tabInputsBalance, tabOutputsBalance, tabTxBalance, tabDividend, tabMeanCurrencyMass
+	  if (nextStepTime >= parseInt(beginBlock[0].medianTime))
 	  {
-	    previousBalance = tabBalance[tabBalance.length-1];
+	    // Get lastDividendBlock
+	    if (nextStepTime > (parseInt(cache.endBlock[0].medianTime))) { tabTimes.push(timestampToDatetime(cache.endBlock[0].medianTime, cache.onlyDate)); }
+	    else { tabTimes.push(timestampToDatetime(nextStepTime, cache.onlyDate)); }
+	    let lastDividendBlock = yield duniterServer.dal.peerDAL.query(
+	      'SELECT `membersCount`,`monetaryMass`,`dividend` FROM block WHERE `fork`=0 AND `dividend` > 0 AND `medianTime` <= \''+nextStepTime+'\' ORDER BY `medianTime` DESC LIMIT 1');
+	  
+	    let previousBalance, previousTabTxBalance, previousTabDividend;
+	    if (tabBalance.length > 0)
+	    {
+	      previousBalance = tabBalance[tabBalance.length-1];
+	      if (pubkey1WasMember)
+	      {
+		previousTabTxBalance = tabTxBalance[tabTxBalance.length-1];
+		previousTabDividend = tabDividend[tabDividend.length-1];
+	      }
+	    }
+	    else   
+	    {
+	      previousBalance = 0;
+	      if (pubkey1WasMember)
+	      {
+		previousTabTxBalance = 0;
+		previousTabDividend = 0;
+	      }
+	    }
+	    
+	    tabBalance.push(parseFloat((previousBalance+parseFloat(((sumStepDividends+sumStepOutputs-sumStepInputs)/100).toFixed(2))).toFixed(2)));
+	    tabInputsBalance.push(-parseFloat((sumStepInputs/100).toFixed(2)));
+	    tabOutputsBalance.push(parseFloat((sumStepOutputs/100).toFixed(2)));
+	    tabMeanCurrencyMass.push(parseFloat((lastDividendBlock[0].monetaryMass/(lastDividendBlock[0].membersCount*100)).toFixed(2)));
 	    if (pubkey1WasMember)
 	    {
-	      previousTabTxBalance = tabTxBalance[tabTxBalance.length-1];
-	      previousTabDividend = tabDividend[tabDividend.length-1];
+	      tabTxBalance.push(parseFloat((previousTabTxBalance+parseFloat(((sumStepOutputs-sumStepInputs)/100).toFixed(2))).toFixed(2)));
+	      tabDividend.push(parseFloat((previousTabDividend+parseFloat((sumStepDividends/100).toFixed(2))).toFixed(2)));
 	    }
 	  }
-	  else   
+	  // If no startChart, add step sums to tabs for calculate begin balances  
+	  else
 	  {
-	    previousBalance = 0;
-	    if (pubkey1WasMember)
+	    // If is the first step
+	    if (tabBalance.length == 0 )
 	    {
-	      previousTabTxBalance = 0;
-	      previousTabDividend = 0;
+	      tabBalance.push(0);
+	      tabInputsBalance.push(0);
+	      tabOutputsBalance.push(0);
+	      if (pubkey1WasMember)
+	      {
+		tabTxBalance.push(0);
+		tabDividend.push(0);
+	      }
 	    }
-	  }
-	   
-	  tabBalance.push(parseFloat((previousBalance+parseFloat(((sumStepDividends+sumStepOutputs-sumStepInputs)/100).toFixed(2))).toFixed(2)));
-	  tabInputsBalance.push(-parseFloat((sumStepInputs/100).toFixed(2)));
-	  tabOutputsBalance.push(parseFloat((sumStepOutputs/100).toFixed(2)));
-	  tabMeanCurrencyMass.push(parseFloat((lastDividendBlock[0].monetaryMass/(lastDividendBlock[0].membersCount*100)).toFixed(2)));
-	  if (pubkey1WasMember)
-	  {
-	    tabTxBalance.push(parseFloat((previousTabTxBalance+parseFloat(((sumStepOutputs-sumStepInputs)/100).toFixed(2))).toFixed(2)));
-	    tabDividend.push(parseFloat((previousTabDividend+parseFloat((sumStepDividends/100).toFixed(2))).toFixed(2)));
-	  }
-	}
-	// If no startChart, add step sums to tabs for calculate begin balances  
-	else
-	{
-	  // If is the first step
-	  if (tabBalance.length == 0 )
-	  {
-	    tabBalance.push(0);
-	    tabInputsBalance.push(0);
-	    tabOutputsBalance.push(0);
+	    
+	    tabBalance[0] += parseFloat(((parseInt(sumStepDividends)+sumStepOutputs-sumStepInputs)/100).toFixed(2));
+	    /*tabInputsBalance[0] -= parseFloat((sumStepInputs/100).toFixed(2));
+	    tabOutputsBalance[0] += parseFloat((sumStepOutputs/100).toFixed(2));*/
 	    if (pubkey1WasMember)
 	    {
-	      tabTxBalance.push(0);
-	      tabDividend.push(0);
+	      tabTxBalance[0] += parseFloat(((sumStepOutputs-sumStepInputs)/100).toFixed(2));
+	      tabDividend[0] += parseFloat((parseInt(sumStepDividends)/100).toFixed(2));
 	    }
 	  }
 	  
-	  tabBalance[0] += parseFloat(((parseInt(sumStepDividends)+sumStepOutputs-sumStepInputs)/100).toFixed(2));
-	  /*tabInputsBalance[0] -= parseFloat((sumStepInputs/100).toFixed(2));
-	  tabOutputsBalance[0] += parseFloat((sumStepOutputs/100).toFixed(2));*/
-	  if (pubkey1WasMember)
-	  {
-	    tabTxBalance[0] += parseFloat(((sumStepOutputs-sumStepInputs)/100).toFixed(2));
-	    tabDividend[0] += parseFloat((parseInt(sumStepDividends)/100).toFixed(2));
-	  }
+	  // Increment nextStepTime
+	  nextStepTime += cache.stepTime;
 	}
-	
-	// Increment nextStepTime
-	nextStepTime += cache.stepTime;
-      }
-    
-      // Apply Relative
-      if (unit == 'relative')
-      {
-	for(let i=0;i<tabTimes.length;i++)
+      
+	// Apply Relative
+	if (unit == 'relative')
 	{
-	  // Get lastDividendBlock
-	  let lastDividendBlock = yield duniterServer.dal.peerDAL.query(
-	    'SELECT `dividend` FROM block WHERE `fork`=0 AND `dividend` > 0 AND `medianTime` <= \''+tabTimes[i]+'\' ORDER BY `medianTime` DESC LIMIT 1');
-	  
-	  tabBalance[i] = parseFloat((100 * tabBalance[i] / lastDividendBlock[0].dividend).toFixed(2));
-	  tabInputsBalance[i] = parseFloat((100 * tabInputsBalance[i] / lastDividendBlock[0].dividend).toFixed(2));
-	  tabOutputsBalance[i] = parseFloat((100 * tabOutputsBalance[i] / lastDividendBlock[0].dividend).toFixed(2));
-	  tabMeanCurrencyMass[i] = parseFloat((100 * tabMeanCurrencyMass[i] / lastDividendBlock[0].dividend).toFixed(2));
-	  if (pubkey1WasMember)
+	  for(let i=0;i<tabTimes.length;i++)
 	  {
-	      tabTxBalance[i] = parseFloat((100 * tabTxBalance[i] / lastDividendBlock[0].dividend).toFixed(2));
-	      tabDividend[i] = parseFloat((100 * tabDividend[i] / lastDividendBlock[0].dividend).toFixed(2));
+	    // Get lastDividendBlock
+	    let lastDividendBlock = yield duniterServer.dal.peerDAL.query(
+	      'SELECT `dividend` FROM block WHERE `fork`=0 AND `dividend` > 0 AND `medianTime` <= \''+tabTimes[i]+'\' ORDER BY `medianTime` DESC LIMIT 1');
+	    
+	    tabBalance[i] = parseFloat((100 * tabBalance[i] / lastDividendBlock[0].dividend).toFixed(2));
+	    tabInputsBalance[i] = parseFloat((100 * tabInputsBalance[i] / lastDividendBlock[0].dividend).toFixed(2));
+	    tabOutputsBalance[i] = parseFloat((100 * tabOutputsBalance[i] / lastDividendBlock[0].dividend).toFixed(2));
+	    tabMeanCurrencyMass[i] = parseFloat((100 * tabMeanCurrencyMass[i] / lastDividendBlock[0].dividend).toFixed(2));
+	    if (pubkey1WasMember)
+	    {
+		tabTxBalance[i] = parseFloat((100 * tabTxBalance[i] / lastDividendBlock[0].dividend).toFixed(2));
+		tabDividend[i] = parseFloat((100 * tabDividend[i] / lastDividendBlock[0].dividend).toFixed(2));
+	    }
 	  }
 	}
       }
@@ -262,7 +264,7 @@ module.exports = (req, res, next) => co(function *() {
     {
       const LANG = getLang(`./lg/pubkeyBalance_${req.query.lg||'fr'}.txt`);
       var datasets = new Array();
-      if (pubkey1.length > 0)
+      if (pubkey1.length > 0 && pubkey1Cache != null)
       {
 	if (mode == "selfBalance")
 	{
@@ -287,7 +289,7 @@ module.exports = (req, res, next) => co(function *() {
 		    hoverborderColor: 'rgba(255, 128, 0, 0.2)'
 		  });
 	  datasets.push({
-		    label: `${unit == "relative" ? "inputs moves DUğ1" : 'movement of costs ğ1'}`,
+		    label: LANG["LEGEND_INPUTS_MOVES"]+' ('+((unit == "relative") ? LANG["UNIT_R"]:LANG["UNIT_Q"])+')',
 		    data: tabInputsBalance,
 		    fill: false,
 		    lineTension: 0,
@@ -304,7 +306,7 @@ module.exports = (req, res, next) => co(function *() {
 		    borderWidth: 2
 		  });
 	  datasets.push({
-		    label: `${unit == "relative" ? "outputs moves DUğ1" : 'movement of receipts ğ1'}`,
+		    label: LANG["LEGEND_OUTPUTS_MOVES"]+' ('+((unit == "relative") ? LANG["UNIT_R"]:LANG["UNIT_Q"])+')',
 		    data: tabOutputsBalance,
 		    fill: false,
 		    lineTension: 0,
@@ -358,6 +360,7 @@ module.exports = (req, res, next) => co(function *() {
 	}*/
       }
       res.locals = {
+	 host: req.headers.host.toString(),
          begin: cache.beginBlock[0].number, 
          end: cache.endBlock[0].number,
 	 pubkey1,

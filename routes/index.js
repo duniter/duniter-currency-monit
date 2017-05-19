@@ -26,7 +26,8 @@ Par exemple, home et about n'ont pas besoin de controleur
 * Home Page
 ***************************************/
 app.get('/', (req, res)=> res.render('about.html', {
-            MENU_LANG: getLang(`./lg/menu_${req.query.lg||'fr'}.txt`)
+            host: req.headers.host.toString(),
+	    MENU_LANG: getLang(`./lg/menu_${req.query.lg||'fr'}.txt`)
          })
  )
 
@@ -34,6 +35,7 @@ app.get('/', (req, res)=> res.render('about.html', {
 * About Page
 ***************************************/
 app.get('/about', (req, res)=> res.render('about.html', {
+	    host: req.headers.host.toString(),
             MENU_LANG: getLang(`./lg/menu_${req.query.lg||'fr'}.txt`)
          })
  )

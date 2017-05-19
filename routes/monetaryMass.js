@@ -87,6 +87,7 @@ module.exports = (req, res, next) => co(function *() {
 	  +(3743*currentDividend*tabCurrency[tabCurrency.length-1].membersCount/100)+"</b> Ğ1 (<b>"+(3743*currentDividend/100)+"</b> Ğ1/member)." ;
       
       res.locals = {
+	 host: req.headers.host.toString(),
          tabCurrency,
 	 currentDividend,
          begin, 

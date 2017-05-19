@@ -4,6 +4,8 @@ const co = require('co')
 const timestampToDatetime = require('../lib/timestampToDatetime')
 const getLang = require('../lib/getLang')
 
+const STEP_COUNT_MAX = 150;
+
 module.exports = (req, res, next) => co(function *() {
   
   var { duniterServer, sigValidity, msValidity, sigWindow, idtyWindow, sigQty, stepMax, cache } = req.app.locals
@@ -26,7 +28,7 @@ module.exports = (req, res, next) => co(function *() {
     // Traiter le cas stepUnit == "blocks"
     if (cache.stepUnit == "blocks")
     {
-      if ( Math.ceil((cache.endBlock[0].number-cache.beginBlock[0].number)/cache.step) > STEP_COUNT_LIMIT  ) { cache.step = Math.ceil((cache.endBlock[0].number-cache.beginBlock[0].number)/STEP_COUNT_LIMIT); }
+      if ( Math.ceil((cache.endBlock[0].number-cache.beginBlock[0].number)/cache.step) > STEP_COUNT_MAX  ) { cache.step = Math.ceil((cache.endBlock[0].number-cache.beginBlock[0].number)/STEP_COUNT_MAX); }
     }
     
     // Initialize nextStepTimen, stepIssuerCount and bStep
@@ -42,7 +44,7 @@ module.exports = (req, res, next) => co(function *() {
       bStep++;
 
       // If achieve next step
-      if ( (bStep == cache.step && cache.stepUnit == "blocks") || blockchain[b].medianTime >= nextStepTime)
+      if ( (cache.stepUnit == "blocks" && bStep == cache.step) || (cache.stepUnit != "blocks" && blockchain[b].medianTime >= nextStepTime))
       {
 	// push tabMembersCount
 	tabMembersCount.push({
@@ -81,8 +83,10 @@ module.exports = (req, res, next) => co(function *() {
       var unit = req.query.unit == 'relative' ? 'relative' : 'quantitative';
       var massByMembers = req.query.massByMembers == 'no' ? 'no' : 'yes';
       
+      console.log("req.headers.host = %s", req.headers.host);
       
       res.locals = {
+	host: req.headers.host.toString(),
         tabMembersCount,
         begin: cache.beginBlock[0].number,
         end: cache.endBlock[0].number,
