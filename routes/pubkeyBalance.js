@@ -2,6 +2,7 @@
 
 const co = require('co')
 const timestampToDatetime = require('../lib/timestampToDatetime')
+const colorScale = require('../lib/colorScale')
 const getLang = require('../lib/getLang')
 
 const STEP_COUNT_LIMIT=150;
@@ -14,9 +15,8 @@ module.exports = (req, res, next) => co(function *() {
     // get GET parameters
     var format = req.query.format || 'HTML';
     var pubkey1 = req.query.pubkey1 || '';
-    var mode = /*req.query.mode == 'balanceWithOthers' ? 'balanceWithOthers' :*/ 'selfBalance';
+    var mode = req.query.mode == 'balanceWithOthers' ? 'balanceWithOthers' : 'selfBalance';
     var unit = req.query.unit == 'relative' ? 'relative' : 'quantitative';
-    
     
     // get medianTime of beginBlock
     var beginBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`hash` FROM block WHERE `fork`=0 AND `number` = '+cache.beginBlock[0].number+' LIMIT 1');
@@ -49,42 +49,119 @@ module.exports = (req, res, next) => co(function *() {
 	  +'ORDER BY `medianTime` ASC');
       }
       
-      // get currentDividend
-      var currentDividend = yield duniterServer.dal.peerDAL.query('SELECT `dividend` FROM block WHERE `fork`=0 AND `dividend` > 0 ORDER BY `medianTime` DESC LIMIT 1');
-    
-      /*// If mode is "balanceWithOthers", initialize tabindexOthersMembers and full tabBalance with zero
-      if (mode == "balanceWithOthers")
-      {
-	var tabindexOthersMembers = new Array();
-	for (let i=0;i<tabindexOthersKeys.length;i++)
-	{
-	  tabBalance.push(0);
-	  let member = yield duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `pub`=\''+tabindexOthersKeys[i]+'\' AND `wasMember`=1 LIMIT 1');
-	  if (member.length > 0) { tabindexOthersMembers.push(member[0].uid); }
-	  else { tabindexOthersMembers.push(tabindexOthersKeys[i]); }
-	}
-      }*/
-      
-      // Initialize tabDividend and pubkey1Dividend
-      if (pubkey1WasMember) { var tabDividend = [];  var pubkey1Dividend = 0; }
-      
-      // Initialize tabTimes, tabBalance, tabInputsBalance, tabOutputsBalance, tabTxBalance, tabDividend, tabMeanCurrencyMass, nextStepTime and idDividend
-      var tabTimes = new Array();
-      var tabBalance = new Array();
-      var tabInputsBalance = new Array();
-      var tabOutputsBalance = new Array();
-      if (pubkey1WasMember) { var tabTxBalance = new Array(); var tabDividend= new Array(); }
-      var tabMeanCurrencyMass = [];
-      var nextStepTime = cache.blockchain[1].medianTime; // begin time at first dividend block (#1)
-      var idDividend = 0;
-      
       // Get cache infos for pubkey1
       var pubkey1Cache = null;
       if (typeof(cache.pubkeys[cache.pub_index[pubkey1]]) != 'undefined')
       { pubkey1Cache = cache.pubkeys[cache.pub_index[pubkey1]]; }
       
+      // get currentDividend
+      var currentDividend = yield duniterServer.dal.peerDAL.query('SELECT `dividend` FROM block WHERE `fork`=0 AND `dividend` > 0 ORDER BY `medianTime` DESC LIMIT 1');
+      
       if (pubkey1Cache != null)
       {
+	// If mode is "balanceWithOthers", initialize, full and sort tabBalanceWithOthers
+	if (mode == "balanceWithOthers")
+	{
+	  // initialize
+	  var tabIndexOthers = new Array();
+	  var tabBalanceWithOthers = new Array();
+	  let pubkeyId = cache.pub_index[pubkey1];
+	  
+	  // full
+	  for (let i=0;i<cache.pubkeys.length;i++)
+	  {
+	    if (cache.pubkeys[i].pub == pubkey1)
+	    {
+	      for (let key in cache.pubkeys[i].pubkeyBalanceWithOthers)
+	      {
+		let idKey = cache.pubkeys[i].pubkeyBalanceWithOthers[key];
+		let idBalance = -1;
+		  for (let j=0;j<tabIndexOthers.length;j++)
+		  {
+		    if (tabIndexOthers[j] == cache.pubkeys[i].pub) { idBalance = j; }
+		  }
+		  if (idBalance < 0)
+		  {
+		    let idtyKey = yield duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `pub`=\''+key+'\' AND `wasMember`=1 LIMIT 1');
+		    if (idtyKey.length > 0) { tabIndexOthers.push(idtyKey[0].uid); }
+		    else { tabIndexOthers.push(key.toString().substr(0, 12)); }
+		    tabBalanceWithOthers.push(0);
+		    idBalance = tabBalanceWithOthers.length-1;
+		  }
+		  if (unit == 'quantitative') { tabBalanceWithOthers[idBalance] += (parseFloat((cache.pubkeys[i].balanceWithOthers[idKey]/100).toFixed(2))); }
+		  else if (unit == 'relative') { tabBalanceWithOthers[idBalance] += (parseFloat((cache.pubkeys[i].balanceWithOthers[idKey]/currentDividend[0].dividend).toFixed(2))); }
+	      }
+	    }
+	    else
+	    {
+	      for (let key in cache.pubkeys[i].pubkeyBalanceWithOthers)
+	      {
+		let idPubkey1 = cache.pubkeys[i].pubkeyBalanceWithOthers[pubkey1];
+		if (key == pubkey1)
+		{
+		  let idBalance = -1;
+		  for (let j=0;j<tabIndexOthers.length;j++)
+		  {
+		    if (tabIndexOthers[j] == cache.pubkeys[i].pub) { idBalance = j; }
+		  }
+		  if (idBalance < 0)
+		  {
+		    let idtyKey = yield duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `pub`=\''+cache.pubkeys[i].pub+'\' AND `wasMember`=1 LIMIT 1');
+		    if (idtyKey.length > 0) { tabIndexOthers.push(idtyKey[0].uid); }
+		    else { tabIndexOthers.push(cache.pubkeys[i].pub.toString().substr(0, 12)); }
+		    tabBalanceWithOthers.push(0);
+		    idBalance = tabBalanceWithOthers.length-1;
+		  }
+		  if (unit == 'quantitative') { tabBalanceWithOthers[idBalance] += (parseFloat((-cache.pubkeys[i].balanceWithOthers[idPubkey1]/100).toFixed(2))); }
+		  else if (unit == 'relative') { tabBalanceWithOthers[idBalance] += (parseFloat((-cache.pubkeys[i].balanceWithOthers[idPubkey1]/currentDividend[0].dividend).toFixed(2))); }
+		}
+	      }
+	    }
+	  }
+	  
+	  // sort
+	  var tabBalanceWithOthersOrdered = new Array();
+	  var tabIndexOthersOrdered = new Array();
+	  
+	  while (tabBalanceWithOthers.length > 0)
+	  {
+	    let idMin = 0;
+	    let min = tabBalanceWithOthers[0];
+	    for (let i=0;i<tabBalanceWithOthers.length;i++)
+	    {
+	      if (parseFloat(tabBalanceWithOthers[i]) <= min)
+	      {
+		min = parseFloat(tabBalanceWithOthers[i]);
+		idMin = i;
+	      }
+	    }
+	    
+	    // push tabBalanceWithOthersOrdered and tabIndexOthersOrdered (if value is not null)
+	    if (parseFloat(tabBalanceWithOthers[idMin]) != 0.0)
+	    {
+	      tabBalanceWithOthersOrdered.push(tabBalanceWithOthers[idMin]);
+	      tabIndexOthersOrdered.push(tabIndexOthers[idMin]);
+	    }
+	    
+	    // splice tabBalanceWithOthers and tabIndexOthers
+	    tabBalanceWithOthers.splice(idMin, 1);
+	    tabIndexOthers.splice(idMin, 1);
+	  }
+	}
+	
+	// Initialize tabDividend and pubkey1Dividend
+	if (pubkey1WasMember) { var tabDividend = [];  var pubkey1Dividend = 0; }
+	
+	// Initialize tabTimes, tabBalance, tabInputsBalance, tabOutputsBalance, tabTxBalance, tabDividend, tabMeanCurrencyMass, nextStepTime and idDividend
+	var tabTimes = new Array();
+	var tabBalance = new Array();
+	var tabInputsBalance = new Array();
+	var tabOutputsBalance = new Array();
+	if (pubkey1WasMember) { var tabTxBalance = new Array(); var tabDividend= new Array(); }
+	var tabMeanCurrencyMass = [];
+	var nextStepTime = cache.blockchain[1].medianTime; // begin time at first dividend block (#1)
+	var idDividend = 0;
+	
 	// Initialize idInputs and idOutputs
 	var idInputs = 0;
 	var idOutputs = 0;
@@ -246,16 +323,16 @@ module.exports = (req, res, next) => co(function *() {
 	    }
 	  }
 	}
-	/*else if (mode == 'balanceWithOthers')
+	else if (mode == 'balanceWithOthers')
 	{
-	  for(let i=0;i<tabindexOthersKeys.length;i++)
+	  for(let i=0;i<tabIndexOthersOrdered.length;i++)
 	  {
 	    tabJson.push({
-		    pubkey: tabindexOthersMembers[i],
-		    balance: tabBalance[i]
+		    pubkey: tabIndexOthersOrdered[i],
+		    balance: tabBalanceWithOthersOrdered[i]
 		  });
 	  }
-	}*/
+	}
       }
       else { tabJson.push(0); }
       res.status(200).jsonp( tabJson )
@@ -346,18 +423,18 @@ module.exports = (req, res, next) => co(function *() {
 		  });
 	  }
 	}
-	/*else if (mode == 'balanceWithOthers')
+	else if (mode == 'balanceWithOthers')
 	{
 	  datasets.push({
 		  label: `${unit == "relative" ? "DUğ1" : 'ğ1'}`,
-		  data: tabBalance,
-		  backgroundColor: 'rgba(0, 255, 0, 0.5)',
-		  borderColor: 'rgba(0, 255, 0, 1)',
+		  data: tabBalanceWithOthersOrdered,
+		  backgroundColor: colorScale(tabBalanceWithOthersOrdered.length, 0.5),
+		  borderColor: colorScale(tabBalanceWithOthersOrdered.length, 1),
 		  borderWidth: 1,
-		  hoverBackgroundColor: 'rgba(0, 255, 0, 0.2)',
-		  hoverborderColor: 'rgba(0, 255, 0, 0.2)'
+		  hoverBackgroundColor: colorScale(tabBalanceWithOthersOrdered.length, 0.2),
+		  hoverborderColor: colorScale(tabBalanceWithOthersOrdered.length, 0.2)
 		  });
-	}*/
+	}
       }
       res.locals = {
 	 host: req.headers.host.toString(),
@@ -368,7 +445,7 @@ module.exports = (req, res, next) => co(function *() {
 	 chart: {
 	    type: (mode == "selfBalance") ? 'line':'bar',
 	    data: {
-	      labels: (mode == "selfBalance") ? tabTimes:tabindexOthersMembers,
+	      labels: (mode == "selfBalance") ? tabTimes:tabIndexOthersOrdered,
 	      datasets: datasets
 	    },
 	    options: {
@@ -377,7 +454,7 @@ module.exports = (req, res, next) => co(function *() {
 		text: (pubkey1.length > 0) ? LANG["CHART_TITLE1"]+' '+( (pubkey1WasMember) ? idtyPubkey1[0].uid:pubkey1 )+' '+LANG["CHART_TITLE2"]+' #'+cache.beginBlock[0].number+'-#'+cache.endBlock[0].number:''
 	      },
 	      legend: {
-		display: true
+		display: (mode == "selfBalance") ? true:false,
 	      },
 	      scales: {
 		yAxes: [{
@@ -388,10 +465,10 @@ module.exports = (req, res, next) => co(function *() {
 	      }
 	    }
 	  },
-	  form: `${LANG["BEGIN"]} #<input type="number" name="begin" value="${cache.beginBlock[0].number}" size="7" style="width:60px;" min="0">
-	     - ${LANG["END"]} #<input type="number" name="end" value="${cache.endBlock[0].number}" size="7" style="width:60px;" min="1">
+	  form: `${LANG["BEGIN"]} #<input type="number" name="begin" value="${cache.beginBlock[0].number}" size="7" style="width:60px;" min="0"  ${(mode == "balanceWithOthers") ? 'disabled':''}>
+	     - ${LANG["END"]} #<input type="number" name="end" value="${cache.endBlock[0].number}" size="7" style="width:60px;" min="1"  ${(mode == "balanceWithOthers") ? 'disabled':''}>
 	     - ${LANG["PUBKEY"]} : <input type="text" name="pubkey1" value="${pubkey1}" size="44">
-	    <select name="mode" disabled>
+	    <select name="mode">
 	      <option name="mode" value ="selfBalance">${LANG["SELECT_MODE1"]}
 	      <option name="mode" value ="balanceWithOthers" ${mode == 'balanceWithOthers' ? 'selected' : ''}>${LANG["SELECT_MODE2"]}
 	    </select>
@@ -399,8 +476,8 @@ module.exports = (req, res, next) => co(function *() {
 	      <option name="unit" value ="quantitative">${LANG["UNIT_Q"]}
 	      <option name="unit" value ="relative" ${unit == 'relative' ? 'selected' : ''}>${LANG["UNIT_R"]}
 	    </select>
-	     - step <input type="number" name="step" value="${cache.step}" size="3" style="width:50px;" min="1">
-	     <select name="stepUnit">
+	     - step <input type="number" name="step" value="${cache.step}" size="3" style="width:50px;" min="1"  ${(mode == "balanceWithOthers") ? 'disabled':''}>
+	     <select name="stepUnit" ${(mode == "balanceWithOthers") ? 'disabled':''}>
 	      <option name="stepUnit" value ="hours"${cache.stepUnit == 'hours' ? 'selected' : ''}>${LANG["HOURS"]}
 	      <option name="stepUnit" value ="days" ${cache.stepUnit == 'days' ? 'selected' : ''}>${LANG["DAYS"]}
 	      <option name="stepUnit" value ="weeks" ${cache.stepUnit == 'weeks' ? 'selected' : ''}>${LANG["WEEKS"]}
