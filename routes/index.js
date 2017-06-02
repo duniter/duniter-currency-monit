@@ -75,11 +75,11 @@ app.get('/members', /*require('../lib/updateCache.js'),*/ require('./members.js'
 /***************************************
 * Évolution du nombre de membres
 ***************************************/
-app.get('/membersCount', require('../lib/updateCache.js'), require('./membersCount.js'), (req, res)=> res.render('Chart.html', {
+/*app.get('/membersCount', require('../lib/updateCache.js'), require('./membersCount.js'), (req, res)=> res.render('Chart.html', {
             MENU_LANG: getLang(`./lg/menu_${req.query.lg||'fr'}.txt`),
             LANG: getLang(`./lg/membersCount_${req.query.lg||'fr'}.txt`)
          })
- )
+ )*/
 
 /***************************************
 * Lister les block en graph
@@ -103,10 +103,10 @@ app.get('/monetaryMass', require('./monetaryMass.js'), (req, res)=> res.render('
 /***************************************
 * Évolution de la masse monétaire totale
 ***************************************/
-app.get('/pubkeyBalance', require('../lib/updateCache.js'), require('./pubkeyBalance.js'), (req, res)=> res.render('Chart.html', {
+/*app.get('/pubkeyBalance', require('../lib/updateCache.js'), require('./pubkeyBalance.js'), (req, res)=> res.render('Chart.html', {
             MENU_LANG: getLang(`./lg/menu_${req.query.lg||'fr'}.txt`),
             LANG: getLang(`./lg/pubkeyBalance_${req.query.lg||'fr'}.txt`)
          })
- )
+ )*/
 
 module.exports = app
