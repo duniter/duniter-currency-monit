@@ -1,0 +1,1 @@
+require('duniter').statics.quickRun('./index.js')

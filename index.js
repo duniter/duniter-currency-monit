@@ -9,7 +9,7 @@ const duniter = require('duniter');
  ***************************************/
 
 // Default Duniter node's database
-const DEFAULT_DUNITER_DATA_FOLDER = 'currency-monit-dev';
+//const DEFAULT_DUNITER_DATA_FOLDER = 'currency-monit-dev';
 
 // host on which UI is available
 const DEFAULT_HOST = 'localhost';
@@ -21,10 +21,10 @@ const DEFAULT_PORT = 10500;
  * SPECIALIZATION
  ***************************************/
 
-const stack = duniter.statics.autoStack([{
+/*const stack = duniter.statics.autoStack([{
   name: 'currency-monit',
-  required: {
-
+  required: {*/
+module.exports = {
     duniter: {
 
       cli: [{
@@ -52,9 +52,9 @@ const stack = duniter.statics.autoStack([{
       }]
     }
   }
-}]);
+//}]);
 
-co(function*() {
+/*co(function*() {
   if (!process.argv.includes('--mdb')) {
     // We use the default database
     process.argv.push('--mdb');
@@ -64,4 +64,4 @@ co(function*() {
   yield stack.executeStack(process.argv);
   // End
   process.exit();
-});
+});*/
