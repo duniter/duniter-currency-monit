@@ -1,7 +1,7 @@
 "use strict";
 
 const co = require('co');
-const main = require('./lib/main.js');
+const main = require(__dirname + '/lib/main.js');
 //const duniter = require('duniter');
 
 /****************************************
@@ -50,6 +50,25 @@ module.exports = {
           yield new Promise(() => null);
         })
       }]
+    },
+    duniterUI: {
+      inject: {
+	menu: fs.readFileSync(path.join(__dirname, 'injection/menu.js'), 'utf8')
+      },
+      route: (app, server, conf, program, params) => {
+	// currency-monit parameters
+        const SERVER_HOST = params[0] || DEFAULT_HOST;
+        const SERVER_PORT = parseInt(params[1]) || DEFAULT_PORT;
+
+        // IMPORTANT: release Duniter services from "sleep" mode
+        yield startServices();
+
+        // Main Loop
+        yield main(server, SERVER_HOST, SERVER_PORT);
+
+        // Wait forever, this is a permanent program
+        yield new Promise(() => null);
+      }
     }
   }
 //}]);
