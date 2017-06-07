@@ -3,13 +3,13 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 <!-- Afficher le menu -->
 <table align="center" width="100%">
   <tr>
-    <td><a href="/currency-monit/willMembers?lg=${MENU_LANG['LG']}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
-    <td><a href="/currency-monit/members?lg=${MENU_LANG['LG']}">${MENU_LANG["MEMBERS"]}</a></td>
-    <!-- <td><a href="/currency-monit/membersCount?lg=${MENU_LANG['LG']}">${MENU_LANG["MEMBERS_COUNT"]}</a></td> -->
-    <td><a href="/currency-monit/blockCount?lg=${MENU_LANG['LG']}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
-    <td><a href="/currency-monit/monetaryMass?lg=${MENU_LANG['LG']}">${MENU_LANG["MONETARY_MASS"]}</a></td>
-    <!-- <td><a href="/currency-monit/pubkeyBalance?lg=${MENU_LANG['LG']}">${MENU_LANG["PUBKEY_BALANCE"]}</a></td> -->
-    <td><a href="/currency-monit/about?lg=${MENU_LANG['LG']}">${MENU_LANG["ABOUT"]}</a></td>
+    <td><a href="/currency-monit/willMembers?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
+    <td><a href="/currency-monit/members?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS"]}</a></td>
+    <!-- <td><a href="/currency-monit/membersCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS_COUNT"]}</a></td> -->
+    <td><a href="/currency-monit/blockCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
+    <td><a href="/currency-monit/monetaryMass?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MONETARY_MASS"]}</a></td>
+    <!-- <td><a href="/currency-monit/pubkeyBalance?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["PUBKEY_BALANCE"]}</a></td> -->
+    <td><a href="/currency-monit/about?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["ABOUT"]}</a></td>
     <td>
       <form action="" method="GET">
 	<select name="lg" onchange="this.form.submit()">
@@ -32,11 +32,12 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 </select> dans l\'ordre <select name="order">
 <option name="order" value ="asc">croissant
 <option name="order" value ="desc" ${order == 'desc' ? 'selected' : ''}>décroissant</select>
-
 <input type="submit" value="envoyer"><br>
-<br>
-${pendingSigs == 'yes' ? ` [inscriptible : date à partir de laquelle cette certification pourra être écrite compte tenu de sigPeriod]<br>` : ''}
 <input type="checkbox" name="pendingSigs" value="yes" ${pendingSigs == 'yes' ? 'checked' : ''}>Inclure les certifications en piscine.</form><br>
+
+<!-- Afficher la légende -->
+<br>
+${(pendingSigs == 'yes' && help != 'no') ? ` [inscriptible : date à partir de laquelle cette certification pourra être écrite compte tenu de sigPeriod]<br>` : ''}
 
 <!-- Afficher le currentBlockchainTimestamp -->
 <i>Temps Blockchain actuel : ${timestampToDatetime(currentBlockchainTimestamp)}.</i><br>

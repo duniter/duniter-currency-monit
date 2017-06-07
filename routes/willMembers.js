@@ -30,7 +30,7 @@ module.exports = (req, res, next) => co(function *() {
     var sort_by = req.query.sort_by || "registrationPackage"; // Valeur par défaut
     var hideIdtyWithZeroCert = req.query.hideIdtyWithZeroCert || "no"; // Valeur par défaut
     var sortSig = req.query.sortSig || "Availability"; // Valeur par défaut
-    var format = req.query.format || 'HTML'
+    var format = req.query.format || 'HTML';
     
     // Récupérer la liste des identités en piscine
     const resultQueryIdtys = yield duniterServer.dal.peerDAL.query('SELECT `buid`,`pubkey`,`uid`,`hash`,`expires_on` FROM identities_pending WHERE `member`=0');

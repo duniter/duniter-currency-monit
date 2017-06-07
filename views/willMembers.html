@@ -3,13 +3,13 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 <!-- Afficher le menu -->
 <table align="center" width="100%">
   <tr>
-    <td><a href="/currency-monit/willMembers?lg=${MENU_LANG['LG']}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
-    <td><a href="/currency-monit/members?lg=${MENU_LANG['LG']}">${MENU_LANG["MEMBERS"]}</a></td>
-    <!-- <td><a href="/currency-monit/membersCount?lg=${MENU_LANG['LG']}">${MENU_LANG["MEMBERS_COUNT"]}</a></td> -->
-    <td><a href="/currency-monit/blockCount?lg=${MENU_LANG['LG']}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
-    <td><a href="/currency-monit/monetaryMass?lg=${MENU_LANG['LG']}">${MENU_LANG["MONETARY_MASS"]}</a></td>
-    <!-- <td><a href="/currency-monit/pubkeyBalance?lg=${MENU_LANG['LG']}">${MENU_LANG["PUBKEY_BALANCE"]}</a></td> -->
-    <td><a href="/currency-monit/about?lg=${MENU_LANG['LG']}">${MENU_LANG["ABOUT"]}</a></td>
+    <td><a href="/currency-monit/willMembers?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
+    <td><a href="/currency-monit/members?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS"]}</a></td>
+    <!-- <td><a href="/currency-monit/membersCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS_COUNT"]}</a></td> -->
+    <td><a href="/currency-monit/blockCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
+    <td><a href="/currency-monit/monetaryMass?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MONETARY_MASS"]}</a></td>
+    <!-- <td><a href="/currency-monit/pubkeyBalance?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["PUBKEY_BALANCE"]}</a></td> -->
+    <td><a href="/currency-monit/about?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["ABOUT"]}</a></td>
     <td>
       <form action="" method="GET">
 	<select name="lg" onchange="this.form.submit()">
@@ -39,17 +39,19 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 <br>
 
 <!-- Afficher le currentBlockchainTimestamp et la légende -->
-<i><font color='DarkRed'>${LANG["SIG_PERIOD_LEGEND"]}</font><br>
-<font color='green'>${LANG["SIG_PERIOD_LEGEND2"]}</font></i><br>
-<br>
-<b>${LANG["HOW_TO_BECOME_MEMBER_TITLE"]}</b><br>
-${LANG["HOW_TO_BECOME_MEMBER_TEXT"]}<br>
-<br>
-<b>${LANG["DISTANCE_RULE_TITLE"]}</b><br>
-${LANG["DISTANCE_RULE_TXT"]}<br>
-<br>
-${LANG["BLOCKCHAIN_TIME"]} : <b>${timestampToDatetime(currentBlockchainTimestamp)}</b> (#<b>${currentBlockNumber}</b>).<br>
-${LANG["COUNT_READY_MEMBERS"]} : <b>${countMembersWithSigQtyValidCert}</b>.<br>
+${(help != 'no') ? `
+  <i><font color='DarkRed'>${LANG["SIG_PERIOD_LEGEND"]}</font><br>
+  <font color='green'>${LANG["SIG_PERIOD_LEGEND2"]}</font></i><br>
+  <br>
+  <b>${LANG["HOW_TO_BECOME_MEMBER_TITLE"]}</b><br>
+  ${LANG["HOW_TO_BECOME_MEMBER_TEXT"]}<br>
+  <br>
+  <b>${LANG["DISTANCE_RULE_TITLE"]}</b><br>
+  ${LANG["DISTANCE_RULE_TXT"]}<br>
+  <br>
+  ${LANG["BLOCKCHAIN_TIME"]} : <b>${timestampToDatetime(currentBlockchainTimestamp)}</b> (#<b>${currentBlockNumber}</b>).<br>
+  ${LANG["COUNT_READY_MEMBERS"]} : <b>${countMembersWithSigQtyValidCert}</b>.<br>
+`:''}
 <br>
 
 <!--On parcour toutes les identités-->

@@ -3,13 +3,13 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 <!-- Afficher le menu -->
 <table align="center" width="100%">
   <tr>
-    <td><a href="/currency-monit/willMembers?lg=${MENU_LANG['LG']}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
-    <td><a href="/currency-monit/members?lg=${MENU_LANG['LG']}">${MENU_LANG["MEMBERS"]}</a></td>
-    <!-- <td><a href="/currency-monit/membersCount?lg=${MENU_LANG['LG']}">${MENU_LANG["MEMBERS_COUNT"]}</a></td> -->
-    <td><a href="/currency-monit/blockCount?lg=${MENU_LANG['LG']}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
-    <td><a href="/currency-monit/monetaryMass?lg=${MENU_LANG['LG']}">${MENU_LANG["MONETARY_MASS"]}</a></td>
-    <!-- <td><a href="/currency-monit/pubkeyBalance?lg=${MENU_LANG['LG']}">${MENU_LANG["PUBKEY_BALANCE"]}</a></td> -->
-    <td><a href="/currency-monit/about?lg=${MENU_LANG['LG']}">${MENU_LANG["ABOUT"]}</a></td>
+    <td><a href="/currency-monit/willMembers?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
+    <td><a href="/currency-monit/members?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS"]}</a></td>
+    <!-- <td><a href="/currency-monit/membersCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS_COUNT"]}</a></td> -->
+    <td><a href="/currency-monit/blockCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
+    <td><a href="/currency-monit/monetaryMass?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MONETARY_MASS"]}</a></td>
+    <!-- <td><a href="/currency-monit/pubkeyBalance?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["PUBKEY_BALANCE"]}</a></td> -->
+    <td><a href="/currency-monit/about?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["ABOUT"]}</a></td>
     <td>
       <form action="" method="GET">
 	<select name="lg" onchange="this.form.submit()">
@@ -32,3 +32,5 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 <div align="left">Version : <a href="https://github.com/duniter/duniter-currency-monit/releases/tag/0.3.2">0.3.2</a></div><br>
 <div align="left">Author : <a href="https://github.com/librelois">Éloïs Librelois</a></div><br>
 <div align="left">Contributors : <a href="https://github.com/jytou">jytou</a> (translator), <a href="https://github.com/devingfx">devingfx</a> (frontend), <a href="https://github.com/M5oul">M5oul</a> (adjustments)</div><br>
+<br>
+<div align="left">If you want you can <a href="/currency-monit/?lg=${MENU_LANG['LG']}&help=no">disable help</a>.</div><br>

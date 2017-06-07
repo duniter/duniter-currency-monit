@@ -29,7 +29,7 @@ module.exports = (req, res, next) => co(function *() {
     var order = req.query.d && req.query.order || 'desc' // Valeur par défaut
     var sort_by = req.query.sort_by || "idtyWritten" // Valeur par défaut
     var pendingSigs = req.query.pendingSigs || "no";
-    var format = req.query.format || 'HTML'
+    var format = req.query.format || 'HTML';
     
     // Récupérer la liste des identités ayant actuellement le statut de membre
     const membersList = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`pub`,`member`,`written_on` FROM i_index WHERE `member`=1');
