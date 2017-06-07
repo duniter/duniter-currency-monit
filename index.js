@@ -46,7 +46,7 @@ module.exports = {
           yield startServices();
 
           // Main Loop
-          yield main(server, SERVER_HOST, SERVER_PORT);
+          yield main(server, SERVER_HOST, SERVER_PORT, null);
 
           // Wait forever, this is a permanent program
           yield new Promise(() => null);
@@ -59,12 +59,9 @@ module.exports = {
       },
       
       route: (app, server, conf, program, params) => {
-	// currency-monit parameters
-        const SERVER_HOST = params[0] || DEFAULT_HOST;
-        const SERVER_PORT = parseInt(params[1]) || DEFAULT_PORT;
-
         // Main Loop
-        main(server, SERVER_HOST, SERVER_PORT);
+        //main(server, SERVER_HOST, SERVER_PORT);
+	main(server, null, null, app);  // `app` est un serveur HTTP Express
 
         // Wait forever, this is a permanent program
         new Promise(() => null);

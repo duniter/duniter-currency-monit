@@ -16,8 +16,7 @@
     var currencyMonitModuleHeight = parseInt(localStorage.getItem('currency_monit_module_height')) || 1000;
     var currencyMonitModuleWidth = parseInt(localStorage.getItem('currency_monit_module_width')) || 1400;
 
-    //openNewTab (window.location.origin + '/rml9-web-module/index.html', {
-    openNewTab (('localhost:10500/currency-monit/', {
+    openNewTab (window.location.origin + '/currency-monit/', {
       position: 'center',
       height: currencyMonitModuleHeight,
       width: currencyMonitModuleWidth,
