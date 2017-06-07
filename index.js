@@ -2,7 +2,7 @@
 
 const co = require('co');
 const main = require('./lib/main.js');
-const duniter = require('duniter');
+//const duniter = require('duniter');
 
 /****************************************
  * TECHNICAL CONFIGURATION
