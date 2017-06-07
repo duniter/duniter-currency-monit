@@ -1,7 +1,7 @@
 "use strict";
 
 const co = require('co')
-const timestampToDatetime = require('../lib/timestampToDatetime')
+const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 
 module.exports = (req, res, next) => co(function *() {
   

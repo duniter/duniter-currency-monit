@@ -1,8 +1,8 @@
 "use strict";
 
 const co = require('co')
-const timestampToDatetime = require('../lib/timestampToDatetime')
-const colorScale = require('../lib/colorScale')
+const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
+const colorScale = require(__dirname + '/../lib/colorScale')
 
 // Garder l'index des blocs en mémoire vive
 var blockchain = [];

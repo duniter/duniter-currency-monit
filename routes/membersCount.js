@@ -1,8 +1,8 @@
 "use strict";
 
 const co = require('co')
-const timestampToDatetime = require('../lib/timestampToDatetime')
-const getLang = require('../lib/getLang')
+const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
+const getLang = require(__dirname + '/../lib/getLang')
 
 const STEP_COUNT_MAX = 150;
 

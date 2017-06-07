@@ -28,7 +28,7 @@ module.exports = {
     duniter: {
 
       cli: [{
-        name: 'currency-monit [host] [port] [data-folder]',
+        name: 'currency-monit [host] [port]',
         desc: 'Starts specialized node currency-monit',
 
         // Disables Duniter node's logs

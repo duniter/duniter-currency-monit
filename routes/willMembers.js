@@ -2,7 +2,7 @@
 
 const co = require('co')
 const crypto = require('crypto');
-const timestampToDatetime = require('../lib/timestampToDatetime')
+const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 
 // Préserver les résultats en cache
 
