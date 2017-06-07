@@ -4,13 +4,13 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 <script src=${(host.substr(host.length-6,6) == '.onion') ? "http://722iprlhm7pw4mx7.onion/js/Chart.min.js":"https://librelois.fr/js/Chart.min.js"}></script>
 <table align="center" width="100%">
   <tr>
-    <td><a href="willMembers?lg=${MENU_LANG['LG']}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
-    <td><a href="members?lg=${MENU_LANG['LG']}">${MENU_LANG["MEMBERS"]}</a></td>
-    <!-- <td><a href="membersCount?lg=${MENU_LANG['LG']}">${MENU_LANG["MEMBERS_COUNT"]}</a></td> -->
-    <td><a href="blockCount?lg=${MENU_LANG['LG']}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
-    <td><a href="monetaryMass?lg=${MENU_LANG['LG']}">${MENU_LANG["MONETARY_MASS"]}</a></td>
-    <!-- <td><a href="pubkeyBalance?lg=${MENU_LANG['LG']}">${MENU_LANG["PUBKEY_BALANCE"]}</a></td> -->
-    <td><a href="about?lg=${MENU_LANG['LG']}">${MENU_LANG["ABOUT"]}</a></td>
+    <td><a href="/currency-monit/willMembers?lg=${MENU_LANG['LG']}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
+    <td><a href="/currency-monit/members?lg=${MENU_LANG['LG']}">${MENU_LANG["MEMBERS"]}</a></td>
+    <!-- <td><a href="/currency-monit/membersCount?lg=${MENU_LANG['LG']}">${MENU_LANG["MEMBERS_COUNT"]}</a></td> -->
+    <td><a href="/currency-monit/blockCount?lg=${MENU_LANG['LG']}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
+    <td><a href="/currency-monit/monetaryMass?lg=${MENU_LANG['LG']}">${MENU_LANG["MONETARY_MASS"]}</a></td>
+    <!-- <td><a href="/currency-monit/pubkeyBalance?lg=${MENU_LANG['LG']}">${MENU_LANG["PUBKEY_BALANCE"]}</a></td> -->
+    <td><a href="/currency-monit/about?lg=${MENU_LANG['LG']}">${MENU_LANG["ABOUT"]}</a></td>
     <td>
       <form action="" method="GET">
 	<select name="lg" onchange="this.form.submit()">

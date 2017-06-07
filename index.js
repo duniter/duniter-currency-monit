@@ -1,6 +1,8 @@
 "use strict";
 
 const co = require('co');
+const fs = require('fs')
+const path = require('path')
 const main = require(__dirname + '/lib/main.js');
 //const duniter = require('duniter');
 
@@ -60,14 +62,11 @@ module.exports = {
         const SERVER_HOST = params[0] || DEFAULT_HOST;
         const SERVER_PORT = parseInt(params[1]) || DEFAULT_PORT;
 
-        // IMPORTANT: release Duniter services from "sleep" mode
-        yield startServices();
-
         // Main Loop
-        yield main(server, SERVER_HOST, SERVER_PORT);
+        main(server, SERVER_HOST, SERVER_PORT);
 
         // Wait forever, this is a permanent program
-        yield new Promise(() => null);
+        new Promise(() => null);
       }
     }
   }
