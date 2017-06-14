@@ -46,7 +46,7 @@ module.exports = {
           yield startServices();
 
           // Main Loop
-          yield main(server, SERVER_HOST, SERVER_PORT, null);
+          yield main(server, SERVER_HOST, SERVER_PORT, null, program);
 
           // Wait forever, this is a permanent program
           yield new Promise(() => null);

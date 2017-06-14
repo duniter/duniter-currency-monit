@@ -74,7 +74,7 @@ ${(help != 'no') ? `
       <tr>
         <td align="center" style="background:${idty.colorPending=color(idty.expires_on,idtyWindow,250)}">
         <!--<td align="center" style="background:\${colorPendingIdty}">-->
-          <a href="http://wotex.cgeek.fr/?to=${idty['uid']}&pending=on&mode=undefined">${idty['uid'].substring(0, 20)}</a><br>
+          <a href="https://wotex.cgeek.fr/?to=${idty['uid']}&pending=on&mode=undefined">${idty['uid'].substring(0, 20)}</a><br>
           ${idty['pubkey'].substring(0, 8)}
           <br>->${idty.pendingCertifications.length}
         </td>

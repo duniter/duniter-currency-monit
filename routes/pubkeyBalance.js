@@ -45,7 +45,7 @@ module.exports = (req, res, next) => co(function *() {
 	
 	// get all dividend created by pubkey1
 	var pubkey1Dividends = yield duniterServer.dal.peerDAL.query('SELECT `dividend`,`medianTime`,`number` FROM block WHERE `fork`=0 AND `dividend` > 0 '
-	  +'AND `medianTime` >=\''+joinersTimePubkey1[0].medianTime+'\' AND `medianTime` <=\''+cache.endBlock[0].medianTime+'\' '
+	  +'AND `medianTime` >\''+joinersTimePubkey1[0].medianTime+'\' AND `medianTime` <=\''+cache.endBlock[0].medianTime+'\' '
 	  +'ORDER BY `medianTime` ASC');
       }
       
