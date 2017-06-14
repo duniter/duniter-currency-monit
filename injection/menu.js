@@ -2,7 +2,6 @@
 
   "use strict";
 
-  var openNewTab = window.openNewTab
   var mainWindow = window.mainWindow
 
   window.uiModules['duniter-currency-monit'] = {
@@ -16,7 +15,7 @@
     var currencyMonitModuleHeight = parseInt(localStorage.getItem('currency_monit_module_height')) || 1000;
     var currencyMonitModuleWidth = parseInt(localStorage.getItem('currency_monit_module_width')) || 1400;
 
-    openNewTab (window.location.origin + '/currency-monit/', {
+    window.openModule ('/currency-monit/', {
       position: 'center',
       height: currencyMonitModuleHeight,
       width: currencyMonitModuleWidth,
