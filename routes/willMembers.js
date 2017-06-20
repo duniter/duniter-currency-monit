@@ -16,6 +16,9 @@ module.exports = (req, res, next) => co(function *() {
     const currentBlockchainTimestamp = resultQueryCurrentBlock[0].medianTime;
     const currentBlockNumber = resultQueryCurrentBlock[0].number;
     const currentBlockHash = resultQueryCurrentBlock[0].hash;
+
+    // Dictionnaire pubkey => wid (wotb ID)
+    const widsCache = {}
     
     // Initaliser les variables
     var errors = "";
@@ -62,7 +65,7 @@ module.exports = (req, res, next) => co(function *() {
       // récupérer l'ensemble des certifications en attente destinées à l'identité courante
       let tmpQueryPendingCertifsList = yield duniterServer.dal.peerDAL.query(
 	'SELECT `from`,`block_number`,`block_hash`,`expires_on` FROM certifications_pending WHERE `to`=\''+resultQueryIdtys[i].pubkey+'\' AND `target`=\''+resultQueryIdtys[i].hash+'\' ORDER BY `expires_on` DESC');
-	  
+
       // Récupérer les uid des émetteurs des certifications reçus par l'utilisateur
       // Et stocker les uid et dates d'expiration dans un tableau
       for (let j=0;j<tmpQueryPendingCertifsList.length;j++)
@@ -74,6 +77,13 @@ module.exports = (req, res, next) => co(function *() {
 	  let tmpQueryGetUidIssuerPendingCert = yield duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `pub`=\''+tmpQueryPendingCertifsList[j].from+'\' LIMIT 1');
 	  if ( tmpQueryGetUidIssuerPendingCert.length > 0 )
 	  {
+	    // Mémoriser le wid
+      const pubkeyFrom = tmpQueryPendingCertifsList[j].from
+      if (!widsCache[pubkeyFrom]) {
+        // Récupère le wotb_id depuis la table d'index globale
+        widsCache[pubkeyFrom] = (yield duniterServer.dal.iindexDAL.query('SELECT wotb_id FROM i_index WHERE pub = ? AND wotb_id IS NOT NULL', [pubkeyFrom]))[0].wotb_id
+      }
+
 	    // Vérifier si le blockstamp est correct
 	    var validBlockStamp = false;
 	    if (emittedBlock[0].hash == tmpQueryPendingCertifsList[j].block_hash)
@@ -101,6 +111,7 @@ module.exports = (req, res, next) => co(function *() {
 	      if (tmpQueryPendingCertifsList[j].expires_on > currentBlockchainTimestamp)
 	      {
 		idtysPendingCertifsList[i].push({
+      wid: widsCache[pubkeyFrom],
 		  from: tmpQueryGetUidIssuerPendingCert[0].uid,
 		  pubkey: tmpQueryPendingCertifsList[j].from,
 		  blockNumber: tmpQueryPendingCertifsList[j].block_number,
@@ -121,7 +132,7 @@ module.exports = (req, res, next) => co(function *() {
       // calculate countMembersWithSigQtyValidCert
       if ( identitiesList[i].nbValidPendingCert >= sigQty) { countMembersWithSigQtyValidCert++; }
     }
-      
+
     // Si demandé, retrier les, certifications par date de disponibilité
     if (sortSig == "Availability")
     {
@@ -149,6 +160,7 @@ module.exports = (req, res, next) => co(function *() {
         
           // Push min value on sort table
           idtysPendingCertifsListSort[i].push({
+            wid: idtysPendingCertifsList[i][idMin].wid,
             from: idtysPendingCertifsList[i][idMin].from,
             blockNumber: idtysPendingCertifsList[i][idMin].blockNumber,
             timestampExpire: idtysPendingCertifsList[i][idMin].timestampExpire,
@@ -199,7 +211,19 @@ module.exports = (req, res, next) => co(function *() {
         }
     }
     else { errors += "<p>ERREUR : param <i>sort_by</i> invalid !</p>"; }
-    
+
+    // Tester la distance à l'aide des certifications disponibles
+    const wotb = duniterServer.dal.wotb.memCopy();
+    const conf = duniterServer.conf
+    const dSen = Math.ceil(Math.pow(resultQueryCurrentBlock[0].membersCount, 1 / conf.stepMax));
+    const pendingIdtyWID = wotb.addNode()
+    for (const cert of idtysPendingCertifsList) {
+      wotb.addLink(cert.wid, pendingIdtyWID)
+    }
+    const isOutdistanced = wotb.isOutdistanced(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent)
+    // Nettoie la wot temporaire
+    wotb.clear();
+
     // Trier les identités par ordre decroissant du critère sort_by
     for (var i=0;i<identitiesList.length;i++)
     {
@@ -235,6 +259,7 @@ module.exports = (req, res, next) => co(function *() {
           BlockNumber: identitiesList[idMax].BlockNumber,
           expires_on: identitiesList[idMax].expires_on,
           nbValidPendingCert: identitiesList[idMax].nbValidPendingCert,
+          isOutdistanced,
           pendingCertifications: idtysPendingCertifsList[idMax]
           });
         }
