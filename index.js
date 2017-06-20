@@ -29,6 +29,26 @@ const DEFAULT_PORT = 10500;
 module.exports = {
     duniter: {
 
+      config: {
+        onLoading: (conf, program) => co(function*() {
+
+          // Define duniter-currency-monit parameters namespace
+          const obj = conf['duniter-currency-monit'] = conf['duniter-currency-monit'] || {}
+
+          // We override the wotexURL parameter by the one given
+          obj.wotexURL = program.wotexURL || obj.wotexURL
+
+          // Default value
+          if (!obj.wotexURL) {
+            obj.wotexURL = '#!'
+          }
+        })
+      },
+
+      cliOptions: [
+        { value: '--wotexURL <url>', desc: 'URL of Wotex service for UID links on willMembers page'}
+      ],
+
       cli: [{
         name: 'currency-monit [host] [port]',
         desc: 'Start duniter with module currency-monit',

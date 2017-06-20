@@ -61,7 +61,7 @@ ${(help != 'no') ? `
   <!-- Printer les nom des colonnes-->
   <tr>
     <td align='center'>${LANG['COL_1']}</td><td align='center'>${LANG['COL_2']}</td>
-    <td align='center'>${LANG['COL_3']}</td><td style="background:#000000">-</td>
+    <td align='center'>${LANG['COL_3']}</td><td align='center'>${LANG['COL_DISTANCE']}</td><td style="background:#000000">-</td>
     <td align='center' colspan="${nbMaxCertifs}">${sortSig == "Availability" 
                                                   ? LANG['COL_4_WITH_AVAIlABILITY_SORT']
                                                   : LANG['COL_4']}</td>
@@ -74,7 +74,7 @@ ${(help != 'no') ? `
       <tr>
         <td align="center" style="background:${idty.colorPending=color(idty.expires_on,idtyWindow,250)}">
         <!--<td align="center" style="background:\${colorPendingIdty}">-->
-          <a href="https://wotex.cgeek.fr/?to=${idty['uid']}&pending=on&mode=undefined">${idty['uid'].substring(0, 20)}</a><br>
+          <a href="${wotexURL}?to=${idty['uid']}&pending=on&mode=undefined">${idty['uid'].substring(0, 20)}</a><br>
           ${idty['pubkey'].substring(0, 8)}
           <br>->${idty.pendingCertifications.length}
         </td>
@@ -83,6 +83,9 @@ ${(help != 'no') ? `
         </td>
         <td align='center' style="background:${idty.colorPending}">
         ${timestampToDatetime(idty.expires_on)}</td>
+        <td align='center' style="background:${idty.colorPending}">
+          <span style="color: ${idty.isOutdistanced ? 'red' : 'green' }">${idty.isOutdistanced ? LANG['COL_DISTANCE_isOutdistanced'] : LANG['COL_DISTANCE_isNotOutdistanced'] }</span>
+        </td>
         <td style="background:#000000">-</td>
         
         <!--printer les certifications-->
@@ -90,7 +93,7 @@ ${(help != 'no') ? `
           ${ (j<nbMaxCertifs) ? `
             <td align="center" style="background:${(cert.validBlockStamp) ? color(cert.timestampExpire,sigWindow,250) : '#FF8000'}">
             ${j==4?'<b>':''}
-	    ${cert['from']}
+        <a href="${wotexURL}?to=${cert['from']}&pending=on&mode=undefined">${cert['from']}</a>
 	    <br>${timestampToDatetime(cert.timestampExpire)}
 	    <br>#${cert['blockNumber']}
 	    ${ ( !cert.validBlockStamp || cert['timestampWritable'] > currentBlockchainTimestamp ) ? `

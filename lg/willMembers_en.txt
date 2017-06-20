@@ -24,6 +24,9 @@ COL_2 Identity created
 COL_3 Identity expires
 COL_4 List of received certifications (recent -> old)
 COL_4_WITH_AVAIlABILITY_SORT List of received certifications (by availability time)
+COL_DISTANCE distance
+COL_DISTANCE_isOutdistanced KO
+COL_DISTANCE_isNotOutdistanced OK
 SIG_PERIOD_OK available
 INVALID_BLOCKSTAMP invalid blockstamp
 LAST_TR1  total
