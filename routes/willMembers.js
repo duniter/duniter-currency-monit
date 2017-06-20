@@ -20,6 +20,10 @@ module.exports = (req, res, next) => co(function *() {
     // Dictionnaire pubkey => wid (wotb ID)
     const widsCache = {}
     
+    // Initaliser les constantes
+    const conf = duniterServer.conf;
+    const dSen = Math.ceil(Math.pow(resultQueryCurrentBlock[0].membersCount, 1 / conf.stepMax));
+    
     // Initaliser les variables
     var errors = "";
     var identitiesList = [];
@@ -241,15 +245,14 @@ module.exports = (req, res, next) => co(function *() {
         if (!doubloon)
         {
 	  // Tester la distance à l'aide des certifications disponibles
-	  const wotb = duniterServer.dal.wotb.memCopy();
-	  const conf = duniterServer.conf
-	  const dSen = Math.ceil(Math.pow(resultQueryCurrentBlock[0].membersCount, 1 / conf.stepMax));
-	  const pendingIdtyWID = wotb.addNode()
+	  let wotb = duniterServer.dal.wotb.memCopy();
+	  
+	  let pendingIdtyWID = wotb.addNode()
 	  for (const cert of idtysPendingCertifsList[idMax])
 	  {
 	    wotb.addLink(cert.wid, pendingIdtyWID)
 	  }
-	  const isOutdistanced = wotb.isOutdistanced(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent)
+	  let isOutdistanced = wotb.isOutdistanced(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent)
 	  // Nettoie la wot temporaire
 	  wotb.clear();
 	  
