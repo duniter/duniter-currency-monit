@@ -302,6 +302,8 @@ module.exports = (req, res, next) => co(function *() {
         idtyWindow,
         nbMaxCertifs,
 	countMembersWithSigQtyValidCert,
+
+        wotexURL: duniterServer.conf['duniter-currency-monit'].wotexURL,
         
         idtysListFiltered: idtysListOrdered.filter( idty=> 
               idty.expires_on < limitTimestamp
