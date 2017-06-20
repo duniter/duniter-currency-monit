@@ -12,7 +12,7 @@ module.exports = (req, res, next) => co(function *() {
   
   try {
     // get blockchain timestamp
-    let resultQueryCurrentBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`number`,`hash` FROM block ORDER BY `medianTime` DESC LIMIT 1 ');
+    let resultQueryCurrentBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`number`,`hash`,`membersCount` FROM block ORDER BY `medianTime` DESC LIMIT 1 ');
     const currentBlockchainTimestamp = resultQueryCurrentBlock[0].medianTime;
     const currentBlockNumber = resultQueryCurrentBlock[0].number;
     const currentBlockHash = resultQueryCurrentBlock[0].hash;
