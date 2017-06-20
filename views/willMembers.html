@@ -93,7 +93,7 @@ ${(help != 'no') ? `
           ${ (j<nbMaxCertifs) ? `
             <td align="center" style="background:${(cert.validBlockStamp) ? color(cert.timestampExpire,sigWindow,250) : '#FF8000'}">
             ${j==4?'<b>':''}
-	    ${cert['from']}
+        <a href="${wotexURL}?to=${cert['from']}&pending=on&mode=undefined">${cert['from']}</a>
 	    <br>${timestampToDatetime(cert.timestampExpire)}
 	    <br>#${cert['blockNumber']}
 	    ${ ( !cert.validBlockStamp || cert['timestampWritable'] > currentBlockchainTimestamp ) ? `
