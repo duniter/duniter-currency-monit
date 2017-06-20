@@ -77,7 +77,7 @@ module.exports = (req, res, next) => co(function *() {
     else
     {
       // get lg file
-      const LANG = getLang(`./lg/membersCount_${req.query.lg||'fr'}.txt`);
+      const LANG = getLang(`${__dirname}/../lg/membersCount_${req.query.lg||'fr'}.txt`);
       
       // GET parameters
       var unit = req.query.unit == 'relative' ? 'relative' : 'quantitative';
