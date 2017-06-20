@@ -193,13 +193,14 @@ module.exports = (req, res, next) => co(function *() {
     else if (sort_by == "sigCount" || sort_by == "registrationPackage")
     {
         // idtys loop
-	for (const idty of identitiesList)
+	for (let i = 0; i < identitiesList.length; i++)
         {
+          const idty = identitiesList[i]
 	  // Calculate registrationAvailabilityDelay
 	  let registrationAvailabilityDelay = (idty.registrationAvailability > currentBlockchainTimestamp) ? (idty.registrationAvailability-currentBlockchainTimestamp):0;
-	  
+
 	  // Trier les identités au dossier complet par durée entre date de disponibilité et date d'expiration maximale théorique (=sigWindow-registrationAvailabilityDelay)
-	  // Attribuer un malus de sigValidity secondes par certification valide (plafonner à sigQty dans le cas de 'registrationPackage') 
+	  // Attribuer un malus de sigValidity secondes par certification valide (plafonner à sigQty dans le cas de 'registrationPackage')
 	  if (sort_by == "registrationPackage" && idty.nbValidPendingCert > sigQty)
 	  {
 	    tabSort.push(sigWindow-registrationAvailabilityDelay + (sigValidity*sigQty));
@@ -208,21 +209,21 @@ module.exports = (req, res, next) => co(function *() {
 	  {
 	    tabSort.push(sigWindow-registrationAvailabilityDelay + (sigValidity*idty.nbValidPendingCert));
 	  }
+
+          // Tester la distance à l'aide des certifications disponibles
+          const wotb = duniterServer.dal.wotb.memCopy();
+          const conf = duniterServer.conf
+          const dSen = Math.ceil(Math.pow(resultQueryCurrentBlock[0].membersCount, 1 / conf.stepMax));
+          const pendingIdtyWID = wotb.addNode()
+          for (const cert of idtysPendingCertifsList[i]) {
+            wotb.addLink(cert.wid, pendingIdtyWID)
+          }
+          idty.isOutdistanced = wotb.isOutdistanced(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent)
+          // Nettoie la wot temporaire
+          wotb.clear();
         }
     }
     else { errors += "<p>ERREUR : param <i>sort_by</i> invalid !</p>"; }
-
-    // Tester la distance à l'aide des certifications disponibles
-    const wotb = duniterServer.dal.wotb.memCopy();
-    const conf = duniterServer.conf
-    const dSen = Math.ceil(Math.pow(resultQueryCurrentBlock[0].membersCount, 1 / conf.stepMax));
-    const pendingIdtyWID = wotb.addNode()
-    for (const cert of idtysPendingCertifsList) {
-      wotb.addLink(cert.wid, pendingIdtyWID)
-    }
-    const isOutdistanced = wotb.isOutdistanced(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent)
-    // Nettoie la wot temporaire
-    wotb.clear();
 
     // Trier les identités par ordre decroissant du critère sort_by
     for (var i=0;i<identitiesList.length;i++)
@@ -259,7 +260,7 @@ module.exports = (req, res, next) => co(function *() {
           BlockNumber: identitiesList[idMax].BlockNumber,
           expires_on: identitiesList[idMax].expires_on,
           nbValidPendingCert: identitiesList[idMax].nbValidPendingCert,
-          isOutdistanced,
+          isOutdistanced: identitiesList[idMax].isOutdistanced,
           pendingCertifications: idtysPendingCertifsList[idMax]
           });
         }
