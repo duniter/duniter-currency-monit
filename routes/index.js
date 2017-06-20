@@ -80,12 +80,12 @@ app.get('/members', /*require('../lib/updateCache.js'),*/ require(__dirname + '/
 /***************************************
 * Évolution du nombre de membres
 ***************************************/
-/*app.get('/membersCount', require('${__dirname}/../lib/updateCache.js'), require(__dirname + '/membersCount.js'), (req, res)=> res.render('Chart.html', {
+app.get('/membersCount', require(__dirname + '/../lib/updateCache.js'), require(__dirname + '/membersCount.js'), (req, res)=> res.render('Chart.html', {
 	    help: req.query.help,
             MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
             LANG: getLang(`${__dirname}/../lg/membersCount_${req.query.lg||'fr'}.txt`)
          })
- )*/
+ )
 
 /***************************************
 * Lister les block en graph
