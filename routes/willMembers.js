@@ -212,18 +212,6 @@ module.exports = (req, res, next) => co(function *() {
     }
     else { errors += "<p>ERREUR : param <i>sort_by</i> invalid !</p>"; }
 
-    // Tester la distance à l'aide des certifications disponibles
-    const wotb = duniterServer.dal.wotb.memCopy();
-    const conf = duniterServer.conf
-    const dSen = Math.ceil(Math.pow(resultQueryCurrentBlock[0].membersCount, 1 / conf.stepMax));
-    const pendingIdtyWID = wotb.addNode()
-    for (const cert of idtysPendingCertifsList) {
-      wotb.addLink(cert.wid, pendingIdtyWID)
-    }
-    const isOutdistanced = wotb.isOutdistanced(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent)
-    // Nettoie la wot temporaire
-    wotb.clear();
-
     // Trier les identités par ordre decroissant du critère sort_by
     for (var i=0;i<identitiesList.length;i++)
     {
@@ -249,9 +237,22 @@ module.exports = (req, res, next) => co(function *() {
           { doubloon = true; }
         }
         
-        // Push max value on sort table
+        // Push max value on sort table (and test distance rule)
         if (!doubloon)
         {
+	  // Tester la distance à l'aide des certifications disponibles
+	  const wotb = duniterServer.dal.wotb.memCopy();
+	  const conf = duniterServer.conf
+	  const dSen = Math.ceil(Math.pow(resultQueryCurrentBlock[0].membersCount, 1 / conf.stepMax));
+	  const pendingIdtyWID = wotb.addNode()
+	  for (const cert of idtysPendingCertifsList[idMax])
+	  {
+	    wotb.addLink(cert.wid, pendingIdtyWID)
+	  }
+	  const isOutdistanced = wotb.isOutdistanced(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent)
+	  // Nettoie la wot temporaire
+	  wotb.clear();
+	  
           idtysListOrdered.push({
           uid: identitiesList[idMax].uid,
           creationTimestamp: identitiesList[idMax].creationTimestamp,
