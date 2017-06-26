@@ -31,17 +31,20 @@ module.exports = (req, res, next) => co(function *() {
       if ( Math.ceil((cache.endBlock[0].number-cache.beginBlock[0].number)/cache.step) > STEP_COUNT_MAX  ) { cache.step = Math.ceil((cache.endBlock[0].number-cache.beginBlock[0].number)/STEP_COUNT_MAX); }
     }
     
-    // Initialize nextStepTimen, stepIssuerCount and bStep
+    // Initialize nextStepTime, stepIssuerCount and bStep
     var nextStepTime = blockchain[0].medianTime;
     let stepIssuerCount = 0;
     let bStep = 0;
 
     // fill tabMembersCount
     var tabMembersCount = [];
+    let cacheIndex = 0;
     for (let b=0;b<blockchain.length;b++)
     {
       stepIssuerCount += blockchain[b].issuersCount;
       bStep++;
+      
+      while (cacheIndex < (cache.blockchain.length-1) && cache.blockchain[cacheIndex+1].number <= b) { cacheIndex++; }
 
       // If achieve next step
       if ( (cache.stepUnit == "blocks" && bStep == cache.step) || (cache.stepUnit != "blocks" && blockchain[b].medianTime >= nextStepTime))
@@ -52,7 +55,7 @@ module.exports = (req, res, next) => co(function *() {
 	    timestamp: blockchain[b].medianTime,
 	    dateTime: timestampToDatetime(blockchain[b].medianTime),
 	    membersCount: blockchain[b].membersCount,
-	    sentriesCount: cache.blockchain[parseInt(cache.beginBlock[0].number)+b].sentries,
+	    sentriesCount: cache.blockchain[cacheIndex].sentries,
 	    issuersCount: parseInt(stepIssuerCount/bStep)
 	});
 	  
@@ -68,7 +71,7 @@ module.exports = (req, res, next) => co(function *() {
 	    timestamp: blockchain[blockchain.length-1].medianTime,
 	    dateTime: timestampToDatetime(blockchain[blockchain.length-1].medianTime),
 	    membersCount: blockchain[blockchain.length-1].membersCount,
-	    sentriesCount: cache.blockchain[parseInt(cache.beginBlock[0].number)+blockchain.length-1].sentries,
+	    sentriesCount: cache.blockchain[cache.blockchain.length-1].sentries,
 	    issuersCount: blockchain[blockchain.length-1].issuersCount
 	  });
     

@@ -1,4 +1,7 @@
 ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
+  <title>${currencyName}-monit</title>
+</head>
+<body>
 
 <!-- Afficher le menu -->
 <script src=${(host.substr(host.length-6,6) == '.onion') ? "http://722iprlhm7pw4mx7.onion/js/Chart.min.js":"https://librelois.fr/js/Chart.min.js"}></script>

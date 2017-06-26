@@ -82,11 +82,11 @@ module.exports = (req, res, next) => co(function *() {
 	  if ( tmpQueryGetUidIssuerPendingCert.length > 0 )
 	  {
 	    // Mémoriser le wid
-      const pubkeyFrom = tmpQueryPendingCertifsList[j].from
-      if (!widsCache[pubkeyFrom]) {
-        // Récupère le wotb_id depuis la table d'index globale
-        widsCache[pubkeyFrom] = (yield duniterServer.dal.iindexDAL.query('SELECT wotb_id FROM i_index WHERE pub = ? AND wotb_id IS NOT NULL', [pubkeyFrom]))[0].wotb_id
-      }
+	    const pubkeyFrom = tmpQueryPendingCertifsList[j].from
+	    if (!widsCache[pubkeyFrom]) {
+	      // Récupère le wotb_id depuis la table d'index globale
+	      widsCache[pubkeyFrom] = (yield duniterServer.dal.iindexDAL.query('SELECT wotb_id FROM i_index WHERE pub = ? AND wotb_id IS NOT NULL', [pubkeyFrom]))[0].wotb_id
+	    }
 
 	    // Vérifier si le blockstamp est correct
 	    var validBlockStamp = false;
@@ -115,7 +115,7 @@ module.exports = (req, res, next) => co(function *() {
 	      if (tmpQueryPendingCertifsList[j].expires_on > currentBlockchainTimestamp)
 	      {
 		idtysPendingCertifsList[i].push({
-      wid: widsCache[pubkeyFrom],
+		  wid: widsCache[pubkeyFrom],
 		  from: tmpQueryGetUidIssuerPendingCert[0].uid,
 		  pubkey: tmpQueryPendingCertifsList[j].from,
 		  blockNumber: tmpQueryPendingCertifsList[j].block_number,
@@ -246,7 +246,7 @@ module.exports = (req, res, next) => co(function *() {
         {
 	  // Tester la distance à l'aide des certifications disponibles
 	  let wotb = duniterServer.dal.wotb.memCopy();
-	  
+
 	  let pendingIdtyWID = wotb.addNode()
 	  for (const cert of idtysPendingCertifsList[idMax])
 	  {
