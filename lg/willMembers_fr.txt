@@ -27,6 +27,9 @@ COL_4_WITH_AVAIlABILITY_SORT liste des certifications reçues (par date de dispo
 COL_DISTANCE distance
 COL_DISTANCE_isOutdistanced KO
 COL_DISTANCE_isNotOutdistanced OK
+COL_MEMBERSHIP adhésion
+COL_MEMBERSHIP_KO KO
+COL_MEMBERSHIP_OK OK
 SIG_PERIOD_OK disponible
 INVALID_BLOCKSTAMP blockstamp incorrect
 LAST_TR1  total

@@ -253,6 +253,16 @@ module.exports = (req, res, next) => co(function *() {
 	    wotb.addLink(cert.wid, pendingIdtyWID)
 	  }
 	  let isOutdistanced = wotb.isOutdistanced(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent)
+
+    // Tester la présence de l'adhésion
+    let membership = null
+    const pendingMembershipsOfIdty = yield duniterServer.dal.msDAL.getPendingINOfTarget(identitiesList[idMax].hash)
+    for (const ms of pendingMembershipsOfIdty) {
+      if (!membership && ms.expires_on > currentBlockchainTimestamp) {
+        membership = ms
+      }
+    }
+
 	  // Nettoie la wot temporaire
 	  wotb.clear();
 	  
@@ -264,6 +274,7 @@ module.exports = (req, res, next) => co(function *() {
           expires_on: identitiesList[idMax].expires_on,
           nbValidPendingCert: identitiesList[idMax].nbValidPendingCert,
           isOutdistanced,
+          membership: membership,
           pendingCertifications: idtysPendingCertifsList[idMax]
           });
         }
