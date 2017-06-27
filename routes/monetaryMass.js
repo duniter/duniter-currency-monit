@@ -15,7 +15,20 @@ module.exports = (req, res, next) => co(function *() {
     
     // get beginBlock and endBlock
     var beginBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime` FROM block WHERE `number` = '+begin+' LIMIT 1');
-    var endBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime` FROM block WHERE `number` = '+end+' LIMIT 1');
+    var endBlock = null;
+    if (end > 0)
+    {
+      endBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`membersCount` FROM block WHERE `number` = '+end+' LIMIT 1');
+      if ( typeof(endBlock[0]) == 'undefined')
+      {
+	endBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`membersCount`,`number` FROM block ORDER BY `medianTime` DESC LIMIT 1');
+	end = endBlock[0].number;
+      }
+    }
+    else
+    {
+      endBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`membersCount` FROM block ORDER BY `medianTime` DESC LIMIT 1');
+    }
     
     // get blockchain
     if (end >= begin && begin >= 1)
@@ -83,14 +96,14 @@ module.exports = (req, res, next) => co(function *() {
       var fullCurrency = "The currency will be full when the money supply by member will be worth <b>"+meanMonetaryMassAtFullCurrency
 	  +" DU</b> (because 1/c * dtReeval/dt = <b>"+meanMonetaryMassAtFullCurrency+" DU</b>)<br>"
 	  +"Currently, 1 DU<sub>"+duniterServer.conf.currency+"</sub> = <b>"+(currentDividend/100)+"</b> "+duniterServer.conf.currency+" and we have <b>"
-	  +tabCurrency[tabCurrency.length-1].membersCount+"</b> members. Thus in full currency we would have a total money supply of <b>"
-	  +(meanMonetaryMassAtFullCurrency*currentDividend*tabCurrency[tabCurrency.length-1].membersCount/100)+"</b> "+duniterServer.conf.currency
+	  +endBlock[0].membersCount+"</b> members. Thus in full currency we would have a total money supply of <b>"
+	  +(meanMonetaryMassAtFullCurrency*currentDividend*endBlock[0].membersCount/100)+"</b> "+duniterServer.conf.currency
 	  +" (<b>"+(meanMonetaryMassAtFullCurrency*currentDividend/100)+"</b> "+duniterServer.conf.currency+"/member)." ;
 	  
       // Define max yAxes
       var maxYAxes = meanMonetaryMassAtFullCurrency;
       if (unit == "quantitative") { maxYAxes = maxYAxes*currentDividend/100; }
-      if (massByMembers == "no") { maxYAxes = maxYAxes*tabCurrency[tabCurrency.length-1].membersCount; }
+      if (massByMembers == "no") { maxYAxes = maxYAxes*endBlock[0].membersCount; }
       
       res.locals = {
 	 host: req.headers.host.toString(),
