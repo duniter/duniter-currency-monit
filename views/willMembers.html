@@ -64,7 +64,8 @@ ${(help != 'no') ? `
   <!-- Printer les nom des colonnes-->
   <tr>
     <td align='center'>${LANG['COL_1']}</td><td align='center'>${LANG['COL_2']}</td>
-    <td align='center'>${LANG['COL_3']}</td><td align='center'>${LANG['COL_DISTANCE']}</td><td style="background:#000000">-</td>
+    <td align='center'>${LANG['COL_3']}</td><td align='center'>${LANG['COL_DISTANCE']}</td>
+    <td align='center'>${LANG['COL_MEMBERSHIP']}</td><td style="background:#000000">-</td>
     <td align='center' colspan="${nbMaxCertifs}">${sortSig == "Availability" 
                                                   ? LANG['COL_4_WITH_AVAIlABILITY_SORT']
                                                   : LANG['COL_4']}</td>
@@ -88,6 +89,9 @@ ${(help != 'no') ? `
         ${timestampToDatetime(idty.expires_on)}</td>
         <td align='center' style="background:${idty.colorPending}">
           <span style="color: ${idty.isOutdistanced ? 'red' : 'green' }">${idty.isOutdistanced ? LANG['COL_DISTANCE_isOutdistanced'] : LANG['COL_DISTANCE_isNotOutdistanced'] }</span>
+        </td>
+        <td align='center' style="background:${idty.colorPending}">
+          <span style="color: ${idty.membership ? 'green' : 'red' }">${idty.membersip? LANG['COL_MEMBERSHIP_OK'] : LANG['COL_MEMBERSHIP_KO'] }</span>
         </td>
         <td style="background:#000000">-</td>
         
