@@ -66,6 +66,22 @@ module.exports = (req, res, next) => co(function *() {
 	
 	// récupérer le medianTime du bloc d'émission de l'identité
 	let resultQueryTimeCreateIdty = yield duniterServer.dal.peerDAL.query('SELECT `medianTime` FROM block WHERE `number`=\''+idtyBlockNumber+'\' LIMIT 1');
+	
+	// Récupérer l'identifiant wotex de l'identité (en cas d'identité multiple)
+	let idties = yield duniterServer.dal.idtyDAL.query('' +
+          'SELECT hash, uid, pub, wotb_id FROM i_index WHERE (uid = ? or pub = ?) ' +
+          'UNION ALL ' +
+          'SELECT hash, uid, pubkey as pub, (SELECT NULL) AS wotb_id FROM idty WHERE (uid = ? or pubkey = ?)', [resultQueryIdtys[i].uid, resultQueryIdtys[i].uid, resultQueryIdtys[i].uid, resultQueryIdtys[i].uid]);
+	let wotexId = '';
+	if (idties.length > 1)
+	{
+	  let pos = 0;
+	  for (const idty of idties)
+	  {
+	    if (idty.hash == resultQueryIdtys[i].hash) { wotexId = '['+pos+']'; }
+	    pos++;
+	  }
+	}
 
 	  // Stocker les informations de l'identité
 	  identitiesList.push({
@@ -74,6 +90,7 @@ module.exports = (req, res, next) => co(function *() {
 	      pubkey: resultQueryIdtys[i].pubkey,
 	      uid: resultQueryIdtys[i].uid,
 	      hash: resultQueryIdtys[i].hash,
+	      wotexId: wotexId,
 	      expires_on: resultQueryIdtys[i].expires_on,
 	      nbCert: 0,
 	      nbValidPendingCert: 0,
@@ -277,6 +294,7 @@ module.exports = (req, res, next) => co(function *() {
 	    
 	    idtysListOrdered.push({
 	    uid: identitiesList[idMax].uid,
+	    wotexId: identitiesList[idMax].wotexId,
 	    creationTimestamp: identitiesList[idMax].creationTimestamp,
 	    pubkey: identitiesList[idMax].pubkey,
 	    BlockNumber: identitiesList[idMax].BlockNumber,

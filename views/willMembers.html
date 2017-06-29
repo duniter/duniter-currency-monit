@@ -77,7 +77,7 @@ ${(help != 'no') ? `
       <!--Printer la ligne-->
       <tr>
         <td align="center" style="background:${idty.colorPending=color(idty.expires_on,idtyWindow,250)}">
-          <a href="wotex?lg=${MENU_LANG['LG']}&to=${idty['uid']}&pending=on&mode=undefined">${idty['uid'].substring(0, 20)}</a><br>
+          <a href="wotex?lg=${MENU_LANG['LG']}&to=${idty['uid']}${idty['wotexId']}&pending=on&mode=undefined">${idty['uid'].substring(0, 20)}</a><br>
           ${idty['pubkey'].substring(0, 8)}
           <br>->${idty.pendingCertifications.length}
         </td>
