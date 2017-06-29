@@ -12,7 +12,7 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
     <td><a href="membersCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS_COUNT"]}</a></td>
     <td><a href="blockCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
     <td><a href="monetaryMass?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MONETARY_MASS"]}</a></td>
-    <!-- <td><a href="pubkeyBalance?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["PUBKEY_BALANCE"]}</a></td> -->
+    <td><a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WOTEX"]}</a></td>
     <td><a href="about?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["ABOUT"]}</a></td>
     <td>
       <form action="" method="GET">
@@ -37,3 +37,4 @@ ${(typeof(description) != 'undefined' && help != 'no') ? description:''}<br>
   var ctx = document.getElementById("myChart").getContext("2d");
   var myNewChart = new Chart(ctx, ${JSON.stringify(chart)} );
 </script>
+</body></html>

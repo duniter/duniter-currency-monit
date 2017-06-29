@@ -11,7 +11,7 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
     <td><a href="membersCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS_COUNT"]}</a></td>
     <td><a href="blockCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
     <td><a href="monetaryMass?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MONETARY_MASS"]}</a></td>
-    <!-- <td><a href="pubkeyBalance?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["PUBKEY_BALANCE"]}</a></td> -->
+    <td><a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WOTEX"]}</a></td>
     <td><a href="about?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["ABOUT"]}</a></td>
     <td>
       <form action="" method="GET">
@@ -60,7 +60,7 @@ ${(help != 'no') ? `
 <!--On parcour toutes les identités-->
 
 <table border="1">
-  <tr><td colspan="${nbMaxCertifs+4}" align='center'>${LANG["TABLE_TITLE1"]} <b>${days}</b> ${LANG["TABLE_TITLE2"]}</td></tr>
+  <tr><td colspan="${nbMaxCertifs+6}" align='center'>${LANG["TABLE_TITLE1"]} <b>${days}</b> ${LANG["TABLE_TITLE2"]}</td></tr>
   <!-- Printer les nom des colonnes-->
   <tr>
     <td align='center'>${LANG['COL_1']}</td><td align='center'>${LANG['COL_2']}</td>
@@ -77,8 +77,7 @@ ${(help != 'no') ? `
       <!--Printer la ligne-->
       <tr>
         <td align="center" style="background:${idty.colorPending=color(idty.expires_on,idtyWindow,250)}">
-        <!--<td align="center" style="background:\${colorPendingIdty}">-->
-          <a href="${wotexURL}?to=${idty['uid']}&pending=on&mode=undefined">${idty['uid'].substring(0, 20)}</a><br>
+          <a href="wotex?lg=${MENU_LANG['LG']}&to=${idty['uid']}&pending=on&mode=undefined">${idty['uid'].substring(0, 20)}</a><br>
           ${idty['pubkey'].substring(0, 8)}
           <br>->${idty.pendingCertifications.length}
         </td>
@@ -100,7 +99,7 @@ ${(help != 'no') ? `
           ${ (j<nbMaxCertifs) ? `
             <td align="center" style="background:${(cert.validBlockStamp) ? color(cert.timestampExpire,sigWindow,250) : '#FF8000'}">
             ${j==4?'<b>':''}
-        <a href="${wotexURL}?to=${cert['from']}&pending=on&mode=undefined">${cert['from']}</a>
+        <a href="wotex?lg=${MENU_LANG['LG']}&to=${cert['from']}&pending=on&mode=undefined">${cert['from']}</a>
 	    <br>${timestampToDatetime(cert.timestampExpire)}
 	    <br>#${cert['blockNumber']}
 	    ${ ( !cert.validBlockStamp || cert['timestampWritable'] > currentBlockchainTimestamp ) ? `
@@ -118,7 +117,7 @@ ${(help != 'no') ? `
   `).join('')}
   
   <tr>
-    <td colspan="${4+nbMaxCertifs}" align="center">
+    <td colspan="${nbMaxCertifs+6}" align="center">
       ${LANG['LAST_TR1']} : <b>${idtysListFiltered.length}</b> ${LANG['LAST_TR2']}.
     </td>
   </tr>

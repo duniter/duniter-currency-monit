@@ -1,0 +1,173 @@
+<!-- Inclure l'en-tête commun -->
+${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
+  <title>${currencyName}-monit</title>
+		<!-- Style css spécifique de wotex -->
+                <style>
+                .sentry {
+                  float: left;
+                  width: 200px;
+                  height: 21px;
+                  overflow: hidden;
+                }
+                .arrow {
+                  width: 50px;
+                }
+                .isMax {
+                  border-right: 1px dashed gray;
+                }
+                .isSentry, .isSentry a {
+                  text-decoration: none;
+                  color: blue;
+                }
+                .isSentry, .isSentry a:visited {
+                  text-decoration: none;
+                  color: blue;
+                }
+                .isPending, .isPending a {
+                  text-decoration: none;
+                  color: orange !important;
+                  font-weight: bold;
+                }
+                .isMember, .isMember a {
+                  text-decoration: none;
+                  color: black !important;
+                }
+                .isNonMember, .isNonMember a {
+                  text-decoration: none;
+                  color: red !important;
+                }
+                .isPendingCert, .isPendingCert a {
+                  text-decoration: none;
+                  color: orange;
+                  font-weight: bold;
+                }
+                .isPending, .isPending a:visited {
+                  text-decoration: none;
+                  color: orange !important;
+                  font-weight: bold;
+                }
+                .isMember, .isMember a:visited {
+                  text-decoration: none;
+                  color: black !important;
+                }
+                .isNonMember, .isNonMember a:visited {
+                  text-decoration: none;
+                  color: red !important;
+                }
+                .isPendingCert, .isPendingCert a:visited {
+                  text-decoration: none;
+                  color: orange;
+                  font-weight: bold;
+                }
+                td {
+                  text-align: center;
+                }
+              </style>
+              <script type="text/javascript">
+              
+                function onLoadedPage() {
+                  var to = decodeURIComponent(querySt("to") || '');
+                  var pending = querySt("pending") == 'on' ? 'checked' : '';
+                  var mode = querySt("mode");
+                  
+                  document.getElementById('to').value = to || '';
+                  if (window.location.search) {
+                    document.getElementById('pending').checked = pending;
+                  } else {
+                    // Default checked
+                    document.getElementById('pending').checked = 'checked';
+                  }
+                  
+                  if (mode == "u2w") {
+                    document.getElementById('modeu2w').checked = 'checked';
+                  } else {
+                    document.getElementById('modew2u').checked = 'checked';
+                  }
+                  
+                  var params = [
+                    "pending=" + (pending == 'checked' ? 'on' : (!window.location.search ? 'on' : '')),
+                    "mode=" + mode
+                  ];
+                  
+                  var links = document.getElementsByTagName('a');
+                  for (var i = 0; i < links.length; i++) {
+                    links[i].href += '&' + params.join('&');                    
+                  }
+                }
+                
+                function querySt(ji) {
+  
+                    var hu = window.location.search.substring(1);
+                    var gy = hu.split("&");
+                
+                    for (i=0;i<gy.length;i++) {
+                        ft = gy[i].split("=");
+                        if (ft[0] == ji) {
+                            return ft[1];
+                        }
+                    }
+                }
+                
+                function resetAll() {
+                  window.location = '/';
+                  return false;
+                }
+              </script>
+</head>
+  <body onload="onLoadedPage()">
+
+    <!-- Afficher le menu -->
+    <table align="center" width="100%">
+      <tr>
+	<td><a href="willMembers?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
+	<td><a href="members?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS"]}</a></td>
+	<td><a href="membersCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS_COUNT"]}</a></td>
+	<td><a href="blockCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
+	<td><a href="monetaryMass?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MONETARY_MASS"]}</a></td>
+	<td><a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WOTEX"]}</a></td>
+	<td><a href="about?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["ABOUT"]}</a></td>
+	<td>
+	  <form action="" method="GET">
+	    <select name="lg" onchange="this.form.submit()">
+	      <option name="lg" value="fr" ${MENU_LANG['LG'] == 'fr' ? 'selected' : ''}>FR
+	      <option name="lg" value="en" ${MENU_LANG['LG'] == 'en' ? 'selected' : ''}>EN
+	    </select>
+	</td>
+    </tr>
+    </table>
+    <hr/>
+
+    <!-- Afficher le titre et le formulaire -->
+    <h1>${LANG['TITLE']}</h1>
+              <form method="GET" action="" onreset="resetAll()">
+                <div>
+                  <label for="to">${LANG['TEST_UID']} :</label>
+                  <input type="text" name="to" id="to">
+                  <br>
+                  <input type="checkbox" name="pending" id="pending" checked="checked">
+                  <label for="pending">${LANG['CHECKBOX_PENDING_DATA']}</label>
+                  <br>
+                  <input type="radio" name="mode" id="modew2u" value="w2u" checked="checked">${LANG['MODE_W2U']}</div>
+                  <input type="radio" name="mode" id="modeu2w" value="u2w">${LANG['MODE_U2W']}</div>
+                  <br>
+                  <input type="submit"/>
+                  <input type="reset" value="Reset"/>
+                </div>
+              </form>
+      <hr/>
+      <!-- Afficher la légende -->
+      <p>${LANG['LEGEND_TITLE']} :</p>
+      <ul>
+	<li><span class="isMember">${LANG['LEGEND_BLACK']}</span></li>
+	<li><span class="isSentry">${LANG['LEGEND_BLUE']}</span></li>
+	<li><span class="isPending">${LANG['LEGEND_ORANGE']}</span></li>
+	<li><span class="isNonMember">${LANG['LEGEND_RED']}</span></li>
+      </ul>
+    <hr/>
+    <!-- Afficher tout les plus courts chemins -->
+    ${searchResult}
+    <!-- Afficher les membres référents -->
+    <h2>${LANG['CURRENT_SENTRIES']} :</h2>
+    ${sentriesHTML}
+  </body>
+</html>

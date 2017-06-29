@@ -31,6 +31,6 @@
     "duniter-prover": "1.3.x"
   },
   "peerDependencies": {
-    "duniter": "1.3.9"
+    "duniter": "1.3.13"
   }
 }

@@ -107,6 +107,16 @@ app.get('/monetaryMass', require(__dirname + '/monetaryMass.js'), (req, res)=> r
          })
  )
 
+/***************************************
+* Wotex
+***************************************/
+app.get('/wotex', require(__dirname + '/wotex.js'), (req, res)=> res.render('wotex.html', {
+	    help: req.query.help,
+            MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
+            LANG: getLang(`${__dirname}/../lg/wotex_${req.query.lg||'fr'}.txt`)
+         })
+ )
+
 
 /***************************************
 * Solde d'une clé

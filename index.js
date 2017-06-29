@@ -34,19 +34,11 @@ module.exports = {
 
           // Define duniter-currency-monit parameters namespace
           const obj = conf['duniter-currency-monit'] = conf['duniter-currency-monit'] || {}
-
-          // We override the wotexURL parameter by the one given
-          obj.wotexURL = program.wotexURL || obj.wotexURL
-
-          // Default value
-          if (!obj.wotexURL) {
-            obj.wotexURL = '#!'
-          }
         })
       },
 
       cliOptions: [
-        { value: '--wotexURL <url>', desc: 'URL of Wotex service for UID links on willMembers page'}
+        //{ value: '--wotexURL <url>', desc: 'URL of Wotex service for UID links on willMembers page'}
       ],
 
       cli: [{
