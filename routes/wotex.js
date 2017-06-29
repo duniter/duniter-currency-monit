@@ -13,6 +13,7 @@ module.exports = (req, res, next) => co(function *() {
     try {
       // get GET parameters
       var format = req.query.format || 'HTML';
+      var help = req.query.help || 'yes';
       
       // get lg file
       const LANG = getLang(`${__dirname}/../lg/wotex_${req.query.lg||'fr'}.txt`);
@@ -71,7 +72,7 @@ module.exports = (req, res, next) => co(function *() {
               alimenteLignes(wotb, membre, idty, lignes, dicoIdentites, mapPendingCerts);
             }
           }
-          searchResult = genereHTMLdeRecherche(lignes, LANG);
+          searchResult = genereHTMLdeRecherche(lignes, LANG, help);
         }
       }
 
@@ -227,7 +228,7 @@ function alimenteLignes(wotb, source, cible, lignes, dicoIdentites, mapPendingCe
   }
 }
 
-function genereHTMLdeRecherche(lignes, LANG) {
+function genereHTMLdeRecherche(lignes, LANG, help) {
   lignes.sort((ligneA, ligneB) => {
     if (ligneA.length > ligneB.length) return -1;
     if (ligneB.length > ligneA.length) return 1;
@@ -243,23 +244,23 @@ function genereHTMLdeRecherche(lignes, LANG) {
   const chemins = lignes.map((colonnes) => {
     return `
     <tr>
-      <td class="${ colonnes[0] && colonnes[0].statusClass }"><a href="wotex?lg=${LANG['LG']}&to=${ (colonnes[0] && colonnes[0].uid) || ''}">${ (colonnes[0] && colonnes[0].uid) || ''}</td>
+      <td class="${ colonnes[0] && colonnes[0].statusClass }"><a href="wotex?lg=${LANG['LG']}&help=${help}&to=${ (colonnes[0] && colonnes[0].uid) || ''}">${ (colonnes[0] && colonnes[0].uid) || ''}</td>
       <td class="${ colonnes[1] && colonnes[1].pendingCert ? 'isPendingCert' : '' }">${ (colonnes[1] && colonnes[1].uid) ? '->' : ''}</td>
-      <td class="${ colonnes[1] && colonnes[1].statusClass }"><a href="wotex?lg=${LANG['LG']}&to=${ (colonnes[1] && colonnes[1].uid) || ''}">${ (colonnes[1] && colonnes[1].uid) || ''}</td>
+      <td class="${ colonnes[1] && colonnes[1].statusClass }"><a href="wotex?lg=${LANG['LG']}&help=${help}&to=${ (colonnes[1] && colonnes[1].uid) || ''}">${ (colonnes[1] && colonnes[1].uid) || ''}</td>
       <td class="${ colonnes[2] && colonnes[2].pendingCert ? 'isPendingCert' : '' }">${ (colonnes[2] && colonnes[2].uid) ? '->' : ''}</td>
-      <td class="${ colonnes[2] && colonnes[2].statusClass }"><a href="wotex?lg=${LANG['LG']}&to=${ (colonnes[2] && colonnes[2].uid) || ''}">${ (colonnes[2] && colonnes[2].uid) || ''}</td>
+      <td class="${ colonnes[2] && colonnes[2].statusClass }"><a href="wotex?lg=${LANG['LG']}&help=${help}&to=${ (colonnes[2] && colonnes[2].uid) || ''}">${ (colonnes[2] && colonnes[2].uid) || ''}</td>
       <td class="${ colonnes[3] && colonnes[3].pendingCert ? 'isPendingCert' : '' }">${ (colonnes[3] && colonnes[3].uid) ? '->' : ''}</td>
-      <td class="${ colonnes[3] && colonnes[3].statusClass }"><a href="wotex?lg=${LANG['LG']}&to=${ (colonnes[3] && colonnes[3].uid) || ''}">${ (colonnes[3] && colonnes[3].uid) || ''}</td>
+      <td class="${ colonnes[3] && colonnes[3].statusClass }"><a href="wotex?lg=$&help=${help}&to=${ (colonnes[3] && colonnes[3].uid) || ''}">${ (colonnes[3] && colonnes[3].uid) || ''}</td>
       <td class="${ colonnes[4] && colonnes[4].pendingCert ? 'isPendingCert' : '' }">${ (colonnes[4] && colonnes[4].uid) ? '->' : ''}</td>
-      <td class="${ colonnes[4] && colonnes[4].statusClass }"><a href="wotex?lg=${LANG['LG']}&to=${ (colonnes[4] && colonnes[4].uid) || ''}">${ (colonnes[4] && colonnes[4].uid) || ''}</td>
+      <td class="${ colonnes[4] && colonnes[4].statusClass }"><a href="wotex?lg=${LANG['LG']}&help=${help}&to=${ (colonnes[4] && colonnes[4].uid) || ''}">${ (colonnes[4] && colonnes[4].uid) || ''}</td>
       <td class="${ colonnes[5] && colonnes[5].pendingCert ? 'isPendingCert' : '' }">${ (colonnes[5] && colonnes[5].uid) ? '->' : ''}</td>
-      <td class="isMax ${ colonnes[5] && colonnes[5].statusClass }"><a href="wotex?lg=${LANG['LG']}&to=${ (colonnes[5] && colonnes[5].uid) || ''}">${ (colonnes[5] && colonnes[5].uid) || ''}</td>
+      <td class="isMax ${ colonnes[5] && colonnes[5].statusClass }"><a href="wotex?lg=${LANG['LG']}&help=${help}&to=${ (colonnes[5] && colonnes[5].uid) || ''}">${ (colonnes[5] && colonnes[5].uid) || ''}</td>
       <td class="${ colonnes[6] && colonnes[6].pendingCert ? 'isPendingCert' : '' }">${ (colonnes[6] && colonnes[6].uid) ? '->' : ''}</td>
-      <td class="${ colonnes[6] && colonnes[6].statusClass }"><a href="wotex?lg=${LANG['LG']}&to=${ (colonnes[6] && colonnes[6].uid) || ''}">${ (colonnes[6] && colonnes[6].uid) || ''}</td>
+      <td class="${ colonnes[6] && colonnes[6].statusClass }"><a href="wotex?lg=${LANG['LG']}&help=${help}&to=${ (colonnes[6] && colonnes[6].uid) || ''}">${ (colonnes[6] && colonnes[6].uid) || ''}</td>
       <td class="${ colonnes[7] && colonnes[7].pendingCert ? 'isPendingCert' : '' }">${ (colonnes[7] && colonnes[7].uid) ? '->' : ''}</td>
-      <td class="${ colonnes[7] && colonnes[7].statusClass }"><a href="wotex?lg=${LANG['LG']}&to=${ (colonnes[7] && colonnes[7].uid) || ''}">${ (colonnes[7] && colonnes[7].uid) || ''}</td>
+      <td class="${ colonnes[7] && colonnes[7].statusClass }"><a href="wotex?lg=${LANG['LG']}&help=${help}&to=${ (colonnes[7] && colonnes[7].uid) || ''}">${ (colonnes[7] && colonnes[7].uid) || ''}</td>
       <td class="${ colonnes[8] && colonnes[8].pendingCert ? 'isPendingCert' : '' }">${ (colonnes[8] && colonnes[8].uid) ? '->' : ''}</td>
-      <td class="${ colonnes[8] && colonnes[8].statusClass }"><a href="wotex?lg=${LANG['LG']}&to=${ (colonnes[8] && colonnes[8].uid) || ''}">${ (colonnes[8] && colonnes[8].uid) || ''}</td>
+      <td class="${ colonnes[8] && colonnes[8].statusClass }"><a href="wotex?lg=${LANG['LG']}&help=${help}&to=${ (colonnes[8] && colonnes[8].uid) || ''}">${ (colonnes[8] && colonnes[8].uid) || ''}</td>
     </tr>
   `;
   }).join('');

@@ -117,15 +117,4 @@ app.get('/wotex', require(__dirname + '/wotex.js'), (req, res)=> res.render('wot
          })
  )
 
-
-/***************************************
-* Solde d'une clé
-***************************************/
-/*app.get('/pubkeyBalance', require('${__dirname}/../lib/updateCache.js'), require(__dirname + '/pubkeyBalance.js'), (req, res)=> res.render('Chart.html', {
-	    help: req.query.help,
-            MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
-            LANG: getLang(`${__dirname}/../lg/pubkeyBalance_${req.query.lg||'fr'}.txt`)
-         })
- )*/
-
 module.exports = app

@@ -156,6 +156,7 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
               </form>
       <hr/>
       <!-- Afficher la légende -->
+      ${(typeof(help) == 'undefined' || help != 'no') ? `
       <p>${LANG['LEGEND_TITLE']} :</p>
       <ul>
 	<li><span class="isMember">${LANG['LEGEND_BLACK']}</span></li>
@@ -163,7 +164,8 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 	<li><span class="isPending">${LANG['LEGEND_ORANGE']}</span></li>
 	<li><span class="isNonMember">${LANG['LEGEND_RED']}</span></li>
       </ul>
-    <hr/>
+      <hr/>
+      `:``}
     <!-- Afficher tout les plus courts chemins -->
     ${searchResult}
     <!-- Afficher les membres référents -->

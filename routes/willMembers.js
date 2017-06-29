@@ -64,8 +64,8 @@ module.exports = (req, res, next) => co(function *() {
 	let idtyBlockStamp = resultQueryIdtys[i].buid.split("-");
 	let idtyBlockNumber = idtyBlockStamp[0];
 	
-	// récupérer le medianTime du bloc d'émission de l'identité
-	let resultQueryTimeCreateIdty = yield duniterServer.dal.peerDAL.query('SELECT `medianTime` FROM block WHERE `number`=\''+idtyBlockNumber+'\' LIMIT 1');
+	// récupérer le medianTime et le hash du bloc d'émission de l'identité
+	let idtyEmittedBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`hash` FROM block WHERE `number`=\''+idtyBlockNumber+'\' LIMIT 1');
 	
 	// Récupérer l'identifiant wotex de l'identité (en cas d'identité multiple)
 	let idties = yield duniterServer.dal.idtyDAL.query('' +
@@ -82,11 +82,16 @@ module.exports = (req, res, next) => co(function *() {
 	    pos++;
 	  }
 	}
+	
+	// vérifier la validité du blockstamp de l'identité
+	let validIdtyBlockStamp = false;
+	if (idtyEmittedBlock[0].hash == idtyBlockStamp[1])
+	{ validIdtyBlockStamp = true; }
 
 	  // Stocker les informations de l'identité
 	  identitiesList.push({
 	      BlockNumber: idtyBlockNumber,
-	      creationTimestamp: resultQueryTimeCreateIdty[0].medianTime,
+	      creationTimestamp: idtyEmittedBlock[0].medianTime,
 	      pubkey: resultQueryIdtys[i].pubkey,
 	      uid: resultQueryIdtys[i].uid,
 	      hash: resultQueryIdtys[i].hash,
@@ -94,7 +99,8 @@ module.exports = (req, res, next) => co(function *() {
 	      expires_on: resultQueryIdtys[i].expires_on,
 	      nbCert: 0,
 	      nbValidPendingCert: 0,
-	      registrationAvailability: 0
+	      registrationAvailability: 0,
+	      validBlockStamp: validIdtyBlockStamp
 	  });
 	  idtysPendingCertifsList.push(new Array());
 	
@@ -293,16 +299,17 @@ module.exports = (req, res, next) => co(function *() {
 	    wotb.clear();
 	    
 	    idtysListOrdered.push({
-	    uid: identitiesList[idMax].uid,
-	    wotexId: identitiesList[idMax].wotexId,
-	    creationTimestamp: identitiesList[idMax].creationTimestamp,
-	    pubkey: identitiesList[idMax].pubkey,
-	    BlockNumber: identitiesList[idMax].BlockNumber,
-	    expires_on: identitiesList[idMax].expires_on,
-	    nbValidPendingCert: identitiesList[idMax].nbValidPendingCert,
-	    isOutdistanced,
-	    membership: membership,
-	    pendingCertifications: idtysPendingCertifsList[idMax]
+	      uid: identitiesList[idMax].uid,
+	      wotexId: identitiesList[idMax].wotexId,
+	      creationTimestamp: identitiesList[idMax].creationTimestamp,
+	      pubkey: identitiesList[idMax].pubkey,
+	      BlockNumber: identitiesList[idMax].BlockNumber,
+	      expires_on: identitiesList[idMax].expires_on,
+	      nbValidPendingCert: identitiesList[idMax].nbValidPendingCert,
+	      isOutdistanced,
+	      membership: membership,
+	      pendingCertifications: idtysPendingCertifsList[idMax],
+	      validBlockStamp: identitiesList[idMax].validBlockStamp
 	    });
 	  }
 	}

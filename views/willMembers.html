@@ -76,13 +76,16 @@ ${(help != 'no') ? `
       
       <!--Printer la ligne-->
       <tr>
-        <td align="center" style="background:${idty.colorPending=color(idty.expires_on,idtyWindow,250)}">
-          <a href="wotex?lg=${MENU_LANG['LG']}&to=${idty['uid']}${idty['wotexId']}&pending=on&mode=undefined">${idty['uid'].substring(0, 20)}</a><br>
+        <td align="center" style="background:${(idty.validBlockStamp) ? idty.colorPending=color(idty.expires_on,idtyWindow,250) : idty.colorPending='#FF8000'}">
+          <a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${idty['uid']}${idty['wotexId']}&pending=on&mode=undefined">${idty['uid'].substring(0, 20)}</a><br>
           ${idty['pubkey'].substring(0, 8)}
           <br>->${idty.pendingCertifications.length}
         </td>
         <td align='center' style="background:${idty.colorPending}">${timestampToDatetime(idty['creationTimestamp'])}<br>
         #${idty['BlockNumber']}
+        ${(!idty.validBlockStamp) ? `
+          <br><font color="DarkRed">[${LANG['INVALID_BLOCKSTAMP']}]</font>
+        `:``}
         </td>
         <td align='center' style="background:${idty.colorPending}">
         ${timestampToDatetime(idty.expires_on)}</td>
@@ -99,7 +102,7 @@ ${(help != 'no') ? `
           ${ (j<nbMaxCertifs) ? `
             <td align="center" style="background:${(cert.validBlockStamp) ? color(cert.timestampExpire,sigWindow,250) : '#FF8000'}">
             ${j==4?'<b>':''}
-        <a href="wotex?lg=${MENU_LANG['LG']}&to=${cert['from']}&pending=on&mode=undefined">${cert['from']}</a>
+        <a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${cert['from']}&pending=on&mode=undefined">${cert['from']}</a>
 	    <br>${timestampToDatetime(cert.timestampExpire)}
 	    <br>#${cert['blockNumber']}
 	    ${ ( !cert.validBlockStamp || cert['timestampWritable'] > currentBlockchainTimestamp ) ? `
