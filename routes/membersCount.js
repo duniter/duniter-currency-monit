@@ -14,6 +14,9 @@ module.exports = (req, res, next) => co(function *() {
     // get GET parameters
     var format = req.query.format || 'HTML';
     
+    // get lg file
+    const LANG = getLang(`${__dirname}/../lg/membersCount_${req.query.lg||'fr'}.txt`);
+    
     // get medianTime of beginBlock
     var beginBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`hash` FROM block WHERE `fork`=0 AND `number` = '+cache.beginBlock[0].number+' LIMIT 1');
     
@@ -32,7 +35,7 @@ module.exports = (req, res, next) => co(function *() {
     }
     
     // Initialize nextStepTime, stepIssuerCount and bStep
-    var nextStepTime = blockchain[0].medianTime;
+    var nextStepTime = blockchain[0].medianTime - (blockchain[0].medianTime % 86400);
     let stepIssuerCount = 0;
     let bStep = 0;
 
@@ -53,7 +56,7 @@ module.exports = (req, res, next) => co(function *() {
 	tabMembersCount.push({
 	    blockNumber: blockchain[b].number,
 	    timestamp: blockchain[b].medianTime,
-	    dateTime: timestampToDatetime(blockchain[b].medianTime),
+	    dateTime: timestampToDatetime(blockchain[b].medianTime, cache.onlyDate),
 	    membersCount: blockchain[b].membersCount,
 	    sentriesCount: cache.blockchain[cacheIndex].sentries,
 	    issuersCount: parseInt(stepIssuerCount/bStep)
@@ -69,7 +72,7 @@ module.exports = (req, res, next) => co(function *() {
     tabMembersCount.push({
 	    blockNumber: blockchain[blockchain.length-1].number,
 	    timestamp: blockchain[blockchain.length-1].medianTime,
-	    dateTime: timestampToDatetime(blockchain[blockchain.length-1].medianTime),
+	    dateTime: LANG['LAST_BLOCK'],
 	    membersCount: blockchain[blockchain.length-1].membersCount,
 	    sentriesCount: cache.blockchain[cache.blockchain.length-1].sentries,
 	    issuersCount: blockchain[blockchain.length-1].issuersCount
@@ -79,9 +82,6 @@ module.exports = (req, res, next) => co(function *() {
       res.status(200).jsonp( tabMembersCount )
     else
     {
-      // get lg file
-      const LANG = getLang(`${__dirname}/../lg/membersCount_${req.query.lg||'fr'}.txt`);
-      
       // GET parameters
       var unit = req.query.unit == 'relative' ? 'relative' : 'quantitative';
       var massByMembers = req.query.massByMembers == 'no' ? 'no' : 'yes';
