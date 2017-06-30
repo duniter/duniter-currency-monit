@@ -2,7 +2,7 @@
 
 const co = require('co')
 const crypto = require('crypto')
-//const wotb = require('wotb')
+const wotb = require('wotb')
 
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 
@@ -56,8 +56,8 @@ module.exports = (req, res, next) => co(function *() {
       countMembersWithSigQtyValidCert = 0;
       lastUpgradeTime = Math.floor(Date.now() / 1000);
       
-      // Alimenter wotb avec la toile Ğ1
-      //const wotbInstance = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
+      // Alimenter wotb avec la toile actuelle
+      const wotbInstance = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
       
       // Récupérer la liste des identités en piscine
       const resultQueryIdtys = yield duniterServer.dal.peerDAL.query('SELECT `buid`,`pubkey`,`uid`,`hash`,`expires_on` FROM identities_pending WHERE `member`=0');
@@ -282,20 +282,21 @@ module.exports = (req, res, next) => co(function *() {
 	  if (!doubloon)
 	  {
 	    // Tester la distance à l'aide des certifications disponibles
-	    //let wotb = wotbInstance.memCopy();
-	    let wotb = duniterServer.dal.wotb.memCopy();
+	    let tmpWot = wotbInstance.memCopy();
+	    //let tmpWot = duniterServer.dal.wotb.memCopy();
 
-	    let pendingIdtyWID = wotb.addNode()
+	    let pendingIdtyWID = tmpWot.addNode();
 	    for (const cert of idtysPendingCertifsList[idMax])
 	    {
-	      wotb.addLink(cert.wid, pendingIdtyWID)
+	      tmpWot.addLink(cert.wid, pendingIdtyWID);
 	    }
-	    let detailedDistance = wotb.detailedDistance(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent)
+	    let detailedDistance = tmpWot.detailedDistance(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent);
 	    let isOutdistanced = detailedDistance.isOutdistanced;
-
+	    //let isOutdistanced = tmpWot.isOutdistanced(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent);
+	    
 	    // Tester la présence de l'adhésion
 	    let membership = null
-	    const pendingMembershipsOfIdty = yield duniterServer.dal.msDAL.getPendingINOfTarget(identitiesList[idMax].hash)
+	    const pendingMembershipsOfIdty = yield duniterServer.dal.msDAL.getPendingINOfTarget(identitiesList[idMax].hash);
 	    for (const ms of pendingMembershipsOfIdty) {
 	      if (!membership && ms.expires_on > currentBlockchainTimestamp) {
 		membership = ms
@@ -303,7 +304,7 @@ module.exports = (req, res, next) => co(function *() {
 	    }
 
 	    // Nettoie la wot temporaire
-	    wotb.clear();
+	    tmpWot.clear();
 	    
 	    idtysListOrdered.push({
 	      uid: identitiesList[idMax].uid,

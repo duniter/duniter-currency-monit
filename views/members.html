@@ -27,16 +27,17 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 <!-- Afficher le formulaire -->
 <input type="number" name="d" value="${days}"/>${LANG["FORM1"]} <select name="sort_by">
 <option name="sort_by" value ="idtyWritten">${LANG["SORT_BY_IDTY_WRITTEN"]}
-<option name="sort_by" value ="expireMembership" ${sort_by == 'expireMembership' ? 'selected' : ''}>${LANG["SORT_BY_EXPIRE_MEMBERSHIP"]} date d\'expiration du membership
-<option name="sort_by" value ="lastRenewal" ${sort_by == 'lastRenewal' ? 'selected' : ''}>${LANG["SORT_LAST_RENEWAL"]} date de dernier renouvellement
-<option name="sort_by" value ="oldestSig" ${sort_by == 'oldestSig' ? 'selected' : ''}>${LANG["SORT_BY_OLDEST_SIG"]} date de plus vielle certification
-<option name="sort_by" value ="lastSig" ${sort_by == 'lastSig' ? 'selected' : ''}>${LANG["SORT_BY_LAST_SIG"]} date de plus récente certification
-<option name="sort_by" value ="sigCount" ${sort_by == 'sigCount' ? 'selected' : ''}>${LANG["SORT_BY_SIG_COUNT"]} nombre de certifications reçues
+<option name="sort_by" value ="expireMembership" ${sort_by == 'expireMembership' ? 'selected' : ''}>${LANG["SORT_BY_EXPIRE_MEMBERSHIP"]}
+<option name="sort_by" value ="lastRenewal" ${sort_by == 'lastRenewal' ? 'selected' : ''}>${LANG["SORT_LAST_RENEWAL"]}
+<option name="sort_by" value ="oldestSig" ${sort_by == 'oldestSig' ? 'selected' : ''}>${LANG["SORT_BY_OLDEST_SIG"]}
+<option name="sort_by" value ="lastSig" ${sort_by == 'lastSig' ? 'selected' : ''}>${LANG["SORT_BY_LAST_SIG"]}
+<option name="sort_by" value ="sigCount" ${sort_by == 'sigCount' ? 'selected' : ''}>${LANG["SORT_BY_SIG_COUNT"]}
 </select> ${LANG["ORDER_BY"]} <select name="order">
 <option name="order" value ="asc"> ${LANG["ASC"]}
 <option name="order" value ="desc" ${order == 'desc' ? 'selected' : ''}> ${LANG["DESC"]}</select>
 <input type="submit" value="envoyer"><br>
-<input type="checkbox" name="pendingSigs" value="yes" ${pendingSigs == 'yes' ? 'checked' : ''}>${LANG["CHECKBOX_PENDING_SIGS"]}</form><br>
+<input type="checkbox" name="pendingSigs" value="yes" ${pendingSigs == 'yes' ? 'checked' : ''}>${LANG["CHECKBOX_PENDING_SIGS"]}.<br>
+<input type="checkbox" name="mode" value="emitted" ${mode == 'emitted' ? 'checked' : ''}>${LANG["CHECKBOX_MODE_SIG"]}.</form><br>
 
 <!-- Afficher la légende -->
 <br>
@@ -55,8 +56,9 @@ ${(pendingSigs == 'yes' && help != 'no') ? ` ${LANG["LEGEND_AVAILABILITY"]}<br>`
     <td align="center">${LANG["COL_IDTY_WRITTEN_TIME"]}</td>
     <td align="center">${LANG["COL_LAST_RENEWAL"]}</td>
     <td align="center">${LANG["COL_EXPIRE_MEMBERSHIP"]}</td>
+    <td align='center'>${LANG['COL_DISTANCE']}</td>
     <td style="background:#000000">-</td>
-    <td align="left" colspan="${nbMaxCertifs}">liste des certifications reçues (${sort_by == 'lastSig' ? LANG["LAST2OLDEST"] : LANG["OLDEST2LAST"]})</td>
+    <td align="left" colspan="${nbMaxCertifs}">${(mode=='emitted') ? LANG['COL_LIST_EMITTED_CERT']:LANG['COL_LIST_RECEIVED_CERT']} (${sort_by == 'lastSig' ? LANG["LAST2OLDEST"] : LANG["OLDEST2LAST"]})</td>
   </tr>
   
   ${membersListFiltered
@@ -65,27 +67,25 @@ ${(pendingSigs == 'yes' && help != 'no') ? ` ${LANG["LEGEND_AVAILABILITY"]}<br>`
       <tr>
         ${(member.proportion = proportion(member.expireMembershipTimestamp,msValidity,0,120),'')}
         <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)">
-        <!--<td align="center" style="background:#${color}">-->
           <h3>${member.uid}</h3>
           ->${member.certifications.length}
           ${pendingSigs == "yes" && member.pendingCertifications.length > 0 
             ? `(${member.pendingCertifications.length})` 
             : ''}
         </td>
-        <!--<td align="center" style="background:hsla(0, 0%, ${member.proportion}%, 1)">-->
         <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)">
-        <!--<td align="center" style="background:#${color}">-->
           ${timestampToDatetime(member.idtyWrittenTimestamp)}<br>
           #${member.idtyWrittenBloc}
         </td>
         <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)">
-        <!--<td align="center" style="background:#${color}">-->
           ${timestampToDatetime(member.lastRenewalTimestamp)}<br>
           #${member.lastRenewalWrittenBloc}
         </td>
         <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)">
-        <!--<td align="center" style="background:#${color}">-->
           ${timestampToDatetime(member.expireMembershipTimestamp)}</td>
+        <td align='center' style="background:hsla(${member.proportion}, 100%, 50%, 1)">
+          <span style="color: ${member.isOutdistanced ? 'red' : 'blue' }">${member.isOutdistanced ? LANG['COL_DISTANCE_isOutdistanced'] : LANG['COL_DISTANCE_isNotOutdistanced'] }</span>
+        </td>
         <td style="background:#000000">-</td>
   
         <!-- Printer les certifications en piscine -->
@@ -93,10 +93,13 @@ ${(pendingSigs == 'yes' && help != 'no') ? ` ${LANG["LEGEND_AVAILABILITY"]}<br>`
             member.pendingCertifications.map( certification=> `
               <!-- Printer la certification -->
               <td align="center" style="background:${color(certification.timestampExpire,sigWindow,200)})">
-                ${certification.from}<br>
+                ${certification.protagonist}<br>
                 ${timestampToDatetime(certification.timestampExpire)}<br>
                 ${LANG["EMITTED"]} #${certification.blockNumber}<br>
-                [inscriptible ${timestampToDatetime(certification.timestampWritable)}]
+                ${(certification.timestampWritable > currentBlockchainTimestamp) ? `<font color="DarkRed">[${timestampToDatetime(certification.timestampWritable)}
+		  `:`<font color="green">[${LANG["CERT_AVAILABLE"]}`
+                }]
+                </font>
               </td>
             `).join('') 
         :''}
@@ -105,7 +108,7 @@ ${(pendingSigs == 'yes' && help != 'no') ? ` ${LANG["LEGEND_AVAILABILITY"]}<br>`
         ${member.certifications.map( certification=> `
           <!-- Printer la certification -->
           <td align="center" style="background:hsla(${proportion(certification.timestampExpire,sigValidity,0,120)}, 100%, 50%, 1 )">
-            ${certification.issuer}<br>
+            ${(mode=='emitted') ? certification.receiver:certification.issuer}<br>
             ${timestampToDatetime(certification.timestampExpire)}<br>
             ${LANG["WRITTEN"]} #${certification.writtenBloc}
           </td>

@@ -1,6 +1,8 @@
 "use strict";
 
 const co = require('co')
+const wotb = require('wotb')
+
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 
 module.exports = (req, res, next) => co(function *() {
@@ -8,16 +10,17 @@ module.exports = (req, res, next) => co(function *() {
   var { duniterServer, sigValidity, msValidity, sigWindow, idtyWindow, cache  } = req.app.locals
   
   try {
-    
-    // get blockchain timestamp
-    let resultQueryCurrentBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime` FROM block ORDER BY `medianTime` DESC LIMIT 1 ');
-    const currentBlockchainTimestamp = resultQueryCurrentBlock[0].medianTime;
+    // Initaliser les constantes
+    const conf = duniterServer.conf;
+    const head = yield duniterServer.dal.getCurrentBlockOrNull();
+    const currentBlockchainTimestamp =  head ? head.medianTime : 0;
+    const membersCount = head ? head.membersCount : 0;
+    const dSen = Math.ceil(Math.pow(membersCount, 1 / conf.stepMax));
     
     // Initaliser les variables
     var contenu = "";
     var membersIdentity = [];
     var membersFirstCertifExpire = [];
-    var membersIssuerFirstCertif = [];
     var membersCertifsList = [];
     var membersPendingCertifsList = [];
     var membershipsTimeList = [];
@@ -25,14 +28,18 @@ module.exports = (req, res, next) => co(function *() {
     var membershipsExpireTimeList = [];
     
     // Récupéré les paramètres
-    var days = req.query.d || 400// Valeur par défaut
+    var days = req.query.d || 400 // Valeur par défaut
+    var mode = req.query.mode || 'received' // Valeur par défaut
     var order = req.query.d && req.query.order || 'desc' // Valeur par défaut
     var sort_by = req.query.sort_by || "idtyWritten" // Valeur par défaut
     var pendingSigs = req.query.pendingSigs || "no";
     var format = req.query.format || 'HTML';
     
+    // Alimenter wotb avec la toile actuelle
+    const wotbInstance = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
+    
     // Récupérer la liste des identités ayant actuellement le statut de membre
-    const membersList = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`pub`,`member`,`written_on` FROM i_index WHERE `member`=1');
+    const membersList = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`pub`,`member`,`written_on`,`wotb_id` FROM i_index WHERE `member`=1');
     
     // Récupérer pour chaque identité, le numéro du block d'écriture du dernier membership
     // Ainsi que la première ou dernière certification
@@ -55,34 +62,52 @@ module.exports = (req, res, next) => co(function *() {
       let resultQueryTimeWrittenIdty = yield duniterServer.dal.peerDAL.query(
           'SELECT `medianTime` FROM block WHERE `number`=\''+blockstampIdtyWritten[0]+'\' LIMIT 1')
       
+      // Tester la distance
+      let tmpWot = wotbInstance.memCopy();
+      //let tmpWot = duniterServer.dal.wotb.memCopy();
+
+      //let detailedDistance = tmpWot.detailedDistance(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent);
+      //let isOutdistanced = detailedDistance.isOutdistanced;
+      let isOutdistanced = tmpWot.isOutdistanced(membersList[m].wotb_id, dSen, conf.stepMax, conf.xpercent);
+      
       // Stocker les informations de l'identité
       membersIdentity.push({
         writtenBloc: blockstampIdtyWritten[0],
-        writtenTimestamp: resultQueryTimeWrittenIdty[0].medianTime
+        writtenTimestamp: resultQueryTimeWrittenIdty[0].medianTime,
+        isOutdistanced: isOutdistanced
         });
       
-      // récupérer toutes les certification  reçus par l'utilisateur
+      // récupérer toutes les certification  reçus/émises par l'utilisateur
       let tmpQueryCertifsList = [];
-      if (sort_by == "lastSig")
+      let tmpOrder = (sort_by == "lastSig") ? 'DESC' : 'ASC';
+      if (mode == 'emitted')
       {
         tmpQueryCertifsList = yield duniterServer.dal.peerDAL.query(
-          'SELECT `issuer`,`written_on`,`expires_on` FROM c_index WHERE `receiver`=\''+membersList[m].pub+'\' ORDER BY `expires_on` DESC');
+          'SELECT `receiver`,`written_on`,`expires_on` FROM c_index WHERE `issuer`=\''+membersList[m].pub+'\' ORDER BY `expires_on` '+tmpOrder);
       }
       else
       {
-        tmpQueryCertifsList = yield duniterServer.dal.peerDAL.query(
-          'SELECT `issuer`,`written_on`,`expires_on` FROM c_index WHERE `receiver`=\''+membersList[m].pub+'\' ORDER BY `expires_on` ASC');
+	tmpQueryCertifsList = yield duniterServer.dal.peerDAL.query(
+          'SELECT `issuer`,`written_on`,`expires_on` FROM c_index WHERE `receiver`=\''+membersList[m].pub+'\' ORDER BY `expires_on` '+tmpOrder);
       }
 
-      // Calculer le nombre de certifications reçus par le membre courant
+      // Calculer le nombre de certifications reçus/émises par le membre courant
       let nbWrittenCertifs = tmpQueryCertifsList.length;
       
-      // Récupérer les uid des émetteurs des certifications reçus par l'utilisateur
+      // Récupérer les uid des émetteurs/receveurs des certifications reçus/émises par l'utilisateur
       // Et stocker les uid et dates d'expiration dans un tableau
       membersCertifsList[m] = new Array();
       for (var i=0;i<nbWrittenCertifs;i++)
       {
-        let tmpQueryGetUidIssuerCert = yield duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `pub`=\''+tmpQueryCertifsList[i].issuer+'\' LIMIT 1');
+	let tmpQueryGetUidProtagonistCert
+	if (mode == 'emitted')
+	{
+          tmpQueryGetUidProtagonistCert = yield duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `pub`=\''+tmpQueryCertifsList[i].receiver+'\' LIMIT 1');
+	}
+	else
+	{
+          tmpQueryGetUidProtagonistCert = yield duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `pub`=\''+tmpQueryCertifsList[i].issuer+'\' LIMIT 1');
+	}
         let tmpBlockWrittenOn = tmpQueryCertifsList[i].written_on.split("-");
         
         // Stoker la liste des certifications qui n'ont pas encore expirées
@@ -90,11 +115,11 @@ module.exports = (req, res, next) => co(function *() {
         {
           if (i == 0)
           {
-        membersIssuerFirstCertif.push(tmpQueryGetUidIssuerCert[0].uid);
-        membersFirstCertifExpire.push(tmpQueryCertifsList[0].expires_on);
+	    membersFirstCertifExpire.push(tmpQueryCertifsList[0].expires_on);
           }
           membersCertifsList[m].push({
-          issuer: tmpQueryGetUidIssuerCert[0].uid,
+          issuer: (mode=='emitted') ? membersList[m].uid:tmpQueryGetUidProtagonistCert[0].uid,
+	  receiver: (mode!='emitted') ? membersList[m].uid:tmpQueryGetUidProtagonistCert[0].uid,
           writtenBloc: tmpBlockWrittenOn[0],
           timestampExpire: tmpQueryCertifsList[i].expires_on
           });
@@ -103,19 +128,20 @@ module.exports = (req, res, next) => co(function *() {
       
       // SI LES CERTIFICATIONS EN PISCINE SONT DEMANDÉES
       let nbValidPendingCertifs = 0;
+      
       if (pendingSigs == "yes")
       {
-        // récupérer toutes les certification en piscine destinées à l'utilisateur
+        // récupérer toutes les certification en piscine
         let tmpQueryPendingCertifsList = [];
-        if (sort_by == "lastSig")
+        if (mode == 'emitted')
         {
           tmpQueryPendingCertifsList = yield duniterServer.dal.peerDAL.query(
-        'SELECT `from`,`block_number`,`expires_on` FROM certifications_pending WHERE `to`=\''+membersList[m].pub+'\' ORDER BY `expires_on` DESC');
+	    'SELECT `from`,`to`,`block_number`,`expires_on` FROM certifications_pending WHERE `from`=\''+membersList[m].pub+'\' ORDER BY `expires_on` '+tmpOrder);
         }
         else
         {
           tmpQueryPendingCertifsList = yield duniterServer.dal.peerDAL.query(
-        'SELECT `from`,`block_number`,`expires_on` FROM certifications_pending WHERE `to`=\''+membersList[m].pub+'\' ORDER BY `expires_on` ASC');
+	    'SELECT `from`,`block_number`,`expires_on` FROM certifications_pending WHERE `to`=\''+membersList[m].pub+'\' ORDER BY `expires_on` '+tmpOrder);
         }
         
         // Calculer le nombre de certifications en attentes destinées au membre courant
@@ -126,24 +152,26 @@ module.exports = (req, res, next) => co(function *() {
         membersPendingCertifsList[m] = new Array();
         for (var i=0;i<nbPendingCertifs;i++)
         {
-          let tmpQueryGetUidIssuerPendingCert = yield duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `pub`=\''+tmpQueryPendingCertifsList[i].from+'\' LIMIT 1');
+	  let tmpPub = (mode=='emitted') ? tmpQueryPendingCertifsList[i].to:tmpQueryPendingCertifsList[i].from;
+          let tmpQueryGetUidProtagonistPendingCert = yield duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `pub`=\''+tmpPub+'\' LIMIT 1');
+	  
           // Vérifier que l'émetteur de la certification correspond à une identié connue
-          if ( tmpQueryGetUidIssuerPendingCert.length > 0 )
+          if ( tmpQueryGetUidProtagonistPendingCert.length > 0 )
           {
-        // récupérer le timestamp d'écriture de la dernière certification écrite par l'émetteur
-        let tmpQueryLastIssuerCert = yield duniterServer.dal.peerDAL.query('SELECT `chainable_on` FROM c_index WHERE `issuer`=\''+tmpQueryPendingCertifsList[i].from+'\' ORDER BY `expires_on` DESC LIMIT 1');
-        
-        // Stoker la liste des certifications en piscine qui n'ont pas encore expirées
-        if (tmpQueryPendingCertifsList[i].expires_on > currentBlockchainTimestamp)
-        {
-          membersPendingCertifsList[m].push({
-              from: tmpQueryGetUidIssuerPendingCert[0].uid,
-              blockNumber: tmpQueryPendingCertifsList[i].block_number,
-              timestampExpire: tmpQueryPendingCertifsList[i].expires_on,
-              timestampWritable: (tmpQueryLastIssuerCert[0].chainable_on)
-          });
-          nbValidPendingCertifs++;
-        }
+	    // récupérer le timestamp d'écriture de la dernière certification écrite par l'émetteur
+	    let tmpQueryLastIssuerCert = yield duniterServer.dal.peerDAL.query('SELECT `chainable_on` FROM c_index WHERE `issuer`=\''+tmpQueryPendingCertifsList[i].from+'\' ORDER BY `expires_on` DESC LIMIT 1');
+	    
+	    // Stoker la liste des certifications en piscine qui n'ont pas encore expirées
+	    if (tmpQueryPendingCertifsList[i].expires_on > currentBlockchainTimestamp)
+	    {
+	      membersPendingCertifsList[m].push({
+		  protagonist: tmpQueryGetUidProtagonistPendingCert[0].uid,
+		  blockNumber: tmpQueryPendingCertifsList[i].block_number,
+		  timestampExpire: tmpQueryPendingCertifsList[i].expires_on,
+		  timestampWritable: (typeof(tmpQueryLastIssuerCert[0]) == 'undefined') ? 0:tmpQueryLastIssuerCert[0].chainable_on
+	      });
+	      nbValidPendingCertifs++;
+	    }
           }
         }
       }
@@ -168,8 +196,8 @@ module.exports = (req, res, next) => co(function *() {
     }
         
     // Initialiser le tableau membersListOrdered
-    var membersListOrdered = [ [] ];
-    var membersCertifsListSorted = [ [] ];
+    var membersListOrdered = [];
+    var membersCertifsListSorted = [];
 
     // Calculer le timestamp limite à prendre en compte
     var limitTimestamp = currentBlockchainTimestamp + (days*86400);
@@ -231,11 +259,13 @@ module.exports = (req, res, next) => co(function *() {
           lastRenewalWrittenBloc: membershipsBlockNumberList[idMaxTime],
           expireMembershipTimestamp: membershipsExpireTimeList[idMaxTime],
           certifications: membersCertifsList[idMaxTime],
-          pendingCertifications: membersPendingCertifsList[idMaxTime]
+          pendingCertifications: membersPendingCertifsList[idMaxTime],
+	  isOutdistanced: membersIdentity[idMaxTime].isOutdistanced
         });
         
         membersCertifsListSorted.push({
         issuer: membersCertifsList[idMaxTime].issuer,
+	receiver: membersCertifsList[idMaxTime].receiver,
         writtenBloc: membersCertifsList[idMaxTime].writtenBloc,
         timestampExpire: membersCertifsList[idMaxTime].timestampExpire
         });
@@ -257,7 +287,7 @@ module.exports = (req, res, next) => co(function *() {
       res.locals = {
 	host: req.headers.host.toString(),
         
-        days, sort_by, order,
+        days, mode, sort_by, order,
         pendingSigs,
         
         currentBlockchainTimestamp,
