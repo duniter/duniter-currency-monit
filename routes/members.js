@@ -1,7 +1,7 @@
 "use strict";
 
 const co = require('co')
-const wotb = require('wotb')
+//const wotb = require('wotb')
 
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 
@@ -36,7 +36,7 @@ module.exports = (req, res, next) => co(function *() {
     var format = req.query.format || 'HTML';
     
     // Alimenter wotb avec la toile actuelle
-    const wotbInstance = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
+    //const wotbInstance = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
     
     // Récupérer la liste des identités ayant actuellement le statut de membre
     const membersList = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`pub`,`member`,`written_on`,`wotb_id` FROM i_index WHERE `member`=1');
@@ -63,8 +63,8 @@ module.exports = (req, res, next) => co(function *() {
           'SELECT `medianTime` FROM block WHERE `number`=\''+blockstampIdtyWritten[0]+'\' LIMIT 1')
       
       // Tester la distance
-      let tmpWot = wotbInstance.memCopy();
-      //let tmpWot = duniterServer.dal.wotb.memCopy();
+      //let tmpWot = wotbInstance.memCopy();
+      let tmpWot = duniterServer.dal.wotb.memCopy();
 
       //let detailedDistance = tmpWot.detailedDistance(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent);
       //let isOutdistanced = detailedDistance.isOutdistanced;
