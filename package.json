@@ -20,6 +20,7 @@
     "rimraf": "^2.6.1",
     "tmp": "^0.0.31",
     "underscore": "1.8.3",
+    "wotb": "^0.6.2",
     "ws": "1.1.1"
   },
   "devDependencies": {
