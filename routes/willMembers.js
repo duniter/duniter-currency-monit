@@ -1,7 +1,9 @@
 "use strict";
 
 const co = require('co')
-const crypto = require('crypto');
+const crypto = require('crypto')
+//const wotb = require('wotb')
+
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 
 const MIN_WILLMEMBERS_UPDATE_FREQ = 150;
@@ -53,6 +55,9 @@ module.exports = (req, res, next) => co(function *() {
       nbMaxCertifs = 0;
       countMembersWithSigQtyValidCert = 0;
       lastUpgradeTime = Math.floor(Date.now() / 1000);
+      
+      // Alimenter wotb avec la toile Ğ1
+      //const wotbInstance = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
       
       // Récupérer la liste des identités en piscine
       const resultQueryIdtys = yield duniterServer.dal.peerDAL.query('SELECT `buid`,`pubkey`,`uid`,`hash`,`expires_on` FROM identities_pending WHERE `member`=0');
@@ -277,6 +282,7 @@ module.exports = (req, res, next) => co(function *() {
 	  if (!doubloon)
 	  {
 	    // Tester la distance à l'aide des certifications disponibles
+	    //let wotb = wotbInstance.memCopy();
 	    let wotb = duniterServer.dal.wotb.memCopy();
 
 	    let pendingIdtyWID = wotb.addNode()
@@ -284,7 +290,8 @@ module.exports = (req, res, next) => co(function *() {
 	    {
 	      wotb.addLink(cert.wid, pendingIdtyWID)
 	    }
-	    let isOutdistanced = wotb.isOutdistanced(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent)
+	    let detailedDistance = wotb.detailedDistance(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent)
+	    let isOutdistanced = detailedDistance.isOutdistanced;
 
 	    // Tester la présence de l'adhésion
 	    let membership = null

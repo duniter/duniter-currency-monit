@@ -35,9 +35,17 @@ module.exports = (req, res, next) => co(function *() {
     }
     
     // Initialize nextStepTime, stepIssuerCount and bStep
-    var nextStepTime = blockchain[0].medianTime - (blockchain[0].medianTime % 86400);
+    var nextStepTime = blockchain[0].medianTime;
     let stepIssuerCount = 0;
     let bStep = 0;
+    
+    // Adapt nextStepTime initial value
+    switch (cache.stepUnit)
+    {
+	  case "hours": nextStepTime -= (blockchain[0].medianTime % 3600); break;
+	  case "days":case "weeks":case "months":case "years": nextStepTime -= (blockchain[0].medianTime % 86400); break;
+	  default: break;
+    }
 
     // fill tabMembersCount
     var tabMembersCount = [];

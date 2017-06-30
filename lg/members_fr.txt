@@ -1,1 +1,28 @@
+FORM1 jours - tri par
+SORT_BY_IDTY_WRITTEN date d'obtention du statut de membre
+SORT_BY_EXPIRE_MEMBERSHIP date d\'expiration du membership
+SORT_LAST_RENEWAL date de dernier renouvellement
+SORT_BY_OLDEST_SIG date de plus vielle certification
+SORT_BY_LAST_SIG date de plus récente certification
+SORT_BY_SIG_COUNT nombre de certifications reçues
+ORDER_BY dans l'ordre
+ASC croissant
+DESC décroissant
 SUBMIT_BUTTON recharger
+CHECKBOX_PENDING_SIGS Inclure les certifications en piscine.
+LEGEND_AVAILABILITY [disponibilité : date à partir de laquelle cette certification pourra être écrite compte tenu de sigPeriod]
+CURRENT_BLOCKCHAIN_TIME Temps Blockchain actuel
+TABLE_TITLE Membres dont le statut de membre va expirer dans moins de
+DAYS jours
+COL_UID uid
+COL_IDTY_WRITTEN_TIME obtention statut membre
+COL_LAST_RENEWAL dernier renouvellement
+COL_EXPIRE_MEMBERSHIP date d'expiration du membre
+COL_LIST_RECEIVED_CERT liste des certifications reçues
+COL_LIST_EMMITED_CERT liste des certifications émises
+LAST2OLDEST récentes -> anciennes
+OLDEST2LAST anciennes -> récentes
+EMITTED émise
+WRITTEN écrite
+OVERALL Total
+MEMBERS membres
