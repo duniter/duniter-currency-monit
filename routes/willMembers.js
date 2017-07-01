@@ -6,31 +6,34 @@ const wotb = require('wotb')
 
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 
-const MIN_WILLMEMBERS_UPDATE_FREQ = 150;
+const MIN_WILLMEMBERS_UPDATE_FREQ = 180;
 
 // Préserver les résultats en cache
 var idtysListOrdered  = [];
 var nbMaxCertifs = 0;
 var countMembersWithSigQtyValidCert = 0;
+var sumPercentSentriesReached = 0;
+var sumPercentMembersReached = 0;
+var sentries = [];
+var sentriesIndex = [];
+var wotbIdIndex = [];
 var lastUpgradeTime = 0;
 
 module.exports = (req, res, next) => co(function *() {
   
-  var { duniterServer, sigValidity, msValidity, sigWindow, idtyWindow, sigQty, stepMax, cache } = req.app.locals
+  var { duniterServer, cache } = req.app.locals
   
   try {
     // get blockchain timestamp
     let resultQueryCurrentBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`number`,`hash`,`membersCount` FROM block ORDER BY `medianTime` DESC LIMIT 1 ');
     const currentBlockchainTimestamp = resultQueryCurrentBlock[0].medianTime;
+    const currentMembersCount = resultQueryCurrentBlock[0].membersCount;
     const currentBlockNumber = resultQueryCurrentBlock[0].number;
     const currentBlockHash = resultQueryCurrentBlock[0].hash;
 
-    // Dictionnaire pubkey => wid (wotb ID)
-    const widsCache = {}
-    
     // Initaliser les constantes
     const conf = duniterServer.conf;
-    const dSen = Math.ceil(Math.pow(resultQueryCurrentBlock[0].membersCount, 1 / conf.stepMax));
+    const dSen = Math.ceil(Math.pow(currentMembersCount, 1 / conf.stepMax));
     
     // Initaliser les variables
     var errors = "";
@@ -41,7 +44,7 @@ module.exports = (req, res, next) => co(function *() {
     var days = req.query.d || 65 // Valeur par défaut
     var order = req.query.d && req.query.order || 'desc' // Valeur par défaut
     var sort_by = req.query.sort_by || "registrationPackage"; // Valeur par défaut
-    var hideIdtyWithZeroCert = req.query.hideIdtyWithZeroCert || "no"; // Valeur par défaut
+    var showIdtyWithZeroCert = req.query.showIdtyWithZeroCert || "no"; // Valeur par défaut
     var sortSig = req.query.sortSig || "Availability"; // Valeur par défaut
     var format = req.query.format || 'HTML';
     
@@ -54,10 +57,16 @@ module.exports = (req, res, next) => co(function *() {
       idtysListOrdered  = [];
       nbMaxCertifs = 0;
       countMembersWithSigQtyValidCert = 0;
+      sumPercentSentriesReached = 0;
+      sumPercentMembersReached = 0;
+      sentries = [];
+      sentriesIndex = [];
+      wotbIdIndex = [];
       lastUpgradeTime = Math.floor(Date.now() / 1000);
       
       // Alimenter wotb avec la toile actuelle
       const wotbInstance = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
+      sentries = wotbInstance.getSentries(dSen);
       
       // Récupérer la liste des identités en piscine
       const resultQueryIdtys = yield duniterServer.dal.peerDAL.query('SELECT `buid`,`pubkey`,`uid`,`hash`,`expires_on` FROM identities_pending WHERE `member`=0');
@@ -124,12 +133,34 @@ module.exports = (req, res, next) => co(function *() {
 	    let tmpQueryGetUidIssuerPendingCert = yield duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `pub`=\''+tmpQueryPendingCertifsList[j].from+'\' LIMIT 1');
 	    if ( tmpQueryGetUidIssuerPendingCert.length > 0 )
 	    {
-	      // Mémoriser le wid
-	      const pubkeyFrom = tmpQueryPendingCertifsList[j].from
-	      if (!widsCache[pubkeyFrom]) {
-		// Récupère le wotb_id depuis la table d'index globale
-		widsCache[pubkeyFrom] = (yield duniterServer.dal.iindexDAL.query('SELECT wotb_id FROM i_index WHERE pub = ? AND wotb_id IS NOT NULL', [pubkeyFrom]))[0].wotb_id
+	      // Récupérer la pubkey de l'émetteur
+	      let issuerPubkey = tmpQueryPendingCertifsList[j].from;
+	      
+	      // Récupérer le wotb_id
+	      let wotb_id = 0;
+	      if (typeof(wotbIdIndex[issuerPubkey]) == 'undefined')
+	      {
+		wotb_id = (yield duniterServer.dal.iindexDAL.query('SELECT wotb_id FROM i_index WHERE pub = ? AND wotb_id IS NOT NULL', [issuerPubkey]))[0].wotb_id;
+		wotbIdIndex[issuerPubkey] = wotb_id;
 	      }
+	      else { wotb_id = wotbIdIndex[issuerPubkey]; }
+	      
+	      // Vérifier si l'émetteur de la certification est référent
+	      let issuerIsSentry = false;
+	      if (typeof(sentriesIndex[issuerPubkey]) == 'undefined')
+	      {
+		sentriesIndex[issuerPubkey] = false;
+	        for (let s=0;s<sentries.length;s++)
+		{
+		  if (sentries[s] == wotb_id)
+		  {
+		    issuerIsSentry=true;
+		    sentriesIndex[issuerPubkey] = true;
+		    sentries.splice(s, 1);
+		  }
+		}
+	      }
+	      else { issuerIsSentry = sentriesIndex[issuerPubkey]; }
 
 	      // Vérifier si le blockstamp est correct
 	      var validBlockStamp = false;
@@ -137,11 +168,11 @@ module.exports = (req, res, next) => co(function *() {
 	      { validBlockStamp = true; }
 	      
 	      // récupérer le timestamp d'enchainement de la dernière certification écrite par l'émetteur
-	      let tmpQueryLastIssuerCert = yield duniterServer.dal.peerDAL.query('SELECT `chainable_on` FROM c_index WHERE `issuer`=\''+tmpQueryPendingCertifsList[j].from+'\' ORDER BY `chainable_on` DESC LIMIT 1');
+	      let tmpQueryLastIssuerCert = yield duniterServer.dal.peerDAL.query('SELECT `chainable_on` FROM c_index WHERE `issuer`=\''+issuerPubkey+'\' ORDER BY `chainable_on` DESC LIMIT 1');
 	      let certTimestampWritable = 0;
 	      if ( typeof(tmpQueryLastIssuerCert[0]) != 'undefined' && typeof(tmpQueryLastIssuerCert[0].chainable_on) != 'undefined' )
 	      { certTimestampWritable = tmpQueryLastIssuerCert[0].chainable_on; }
-	      identitiesList[i].registrationAvailability = (certTimestampWritable > identitiesList[i].registrationAvailability) ? certTimestampWritable : identitiesList[i].registrationAvailability;
+	      //identitiesList[i].registrationAvailability = (certTimestampWritable > identitiesList[i].registrationAvailability) ? certTimestampWritable : identitiesList[i].registrationAvailability;
 	      
 	      // Vérifier que l'identité courant n'a pas déjà reçu d'autre(s) certification(s) de la part du même membre ET dans le même état de validité du blockstamp
 	      let doubloonPendingCertif = false;
@@ -158,9 +189,10 @@ module.exports = (req, res, next) => co(function *() {
 		if (tmpQueryPendingCertifsList[j].expires_on > currentBlockchainTimestamp)
 		{
 		  idtysPendingCertifsList[i].push({
-		    wid: widsCache[pubkeyFrom],
 		    from: tmpQueryGetUidIssuerPendingCert[0].uid,
-		    pubkey: tmpQueryPendingCertifsList[j].from,
+		    pubkey: issuerPubkey,
+		    wotb_id: wotb_id,
+		    issuerIsSentry: issuerIsSentry,
 		    blockNumber: tmpQueryPendingCertifsList[j].block_number,
 		    timestampExpire: tmpQueryPendingCertifsList[j].expires_on,
 		    timestampWritable: certTimestampWritable,
@@ -177,7 +209,7 @@ module.exports = (req, res, next) => co(function *() {
 	if ( identitiesList[i].nbCert > nbMaxCertifs) { nbMaxCertifs = identitiesList[i].nbCert; }
 	
 	// calculate countMembersWithSigQtyValidCert
-	if ( identitiesList[i].nbValidPendingCert >= sigQty) { countMembersWithSigQtyValidCert++; }
+	if ( identitiesList[i].nbValidPendingCert >= conf.sigQty) { countMembersWithSigQtyValidCert++; }
       }
 
       // Si demandé, retrier les, certifications par date de disponibilité
@@ -193,7 +225,7 @@ module.exports = (req, res, next) => co(function *() {
 	  for (let j=0;j<idtysPendingCertifsList[i].length;j++) { tmpExcluded[j] = false; }
 	  for (let j=0;j<idtysPendingCertifsList[i].length;j++)
 	  {
-	    min = currentBlockchainTimestamp+sigValidity; // begin to min = max
+	    min = currentBlockchainTimestamp+conf.sigValidity; // begin to min = max
 	    
 	    // search idMin (id of certif with min timestampWritable)
 	    for (let k=0;k<idtysPendingCertifsList[i].length;k++)
@@ -207,17 +239,27 @@ module.exports = (req, res, next) => co(function *() {
 	  
 	    // Push min value on sort table
 	    idtysPendingCertifsListSort[i].push({
-	      wid: idtysPendingCertifsList[i][idMin].wid,
 	      from: idtysPendingCertifsList[i][idMin].from,
+	      wotb_id: idtysPendingCertifsList[i][idMin].wotb_id,
+	      issuerIsSentry: idtysPendingCertifsList[i][idMin].issuerIsSentry,
 	      blockNumber: idtysPendingCertifsList[i][idMin].blockNumber,
 	      timestampExpire: idtysPendingCertifsList[i][idMin].timestampExpire,
 	      timestampWritable: idtysPendingCertifsList[i][idMin].timestampWritable,
 	      validBlockStamp: idtysPendingCertifsList[i][idMin].validBlockStamp
 	    });
+	    
+	    // Calculer la date de disponibilité du dossier d'inscription de l'identité correspondante
+	    // := date de disponibilité maximale parmi les sigQty certifications aux dates de disponibilités les plus faibles
+	    if (j<conf.sigQty)
+	    {
+	      let timestampWritable = idtysPendingCertifsList[i][idMin].timestampWritable;
+	      identitiesList[i].registrationAvailability = (timestampWritable > identitiesList[i].registrationAvailability) ? timestampWritable : identitiesList[i].registrationAvailability;
+	    }
 	
 	    // Exclure la valeur min avant de poursuivre le tri
 	    tmpExcluded[idMin] = true;
 	  }
+	  
 	}
 	idtysPendingCertifsList = idtysPendingCertifsListSort;
       }
@@ -239,15 +281,16 @@ module.exports = (req, res, next) => co(function *() {
 	    // Calculate registrationAvailabilityDelay
 	    let registrationAvailabilityDelay = (idty.registrationAvailability > currentBlockchainTimestamp) ? (idty.registrationAvailability-currentBlockchainTimestamp):0;
 	    
-	    // Trier les identités au dossier complet par durée entre date de disponibilité et date d'expiration maximale théorique (=sigWindow-registrationAvailabilityDelay)
-	    // Attribuer un malus de sigValidity secondes par certification valide (plafonner à sigQty dans le cas de 'registrationPackage') 
-	    if (sort_by == "registrationPackage" && idty.nbValidPendingCert > sigQty)
+	    // Trier les identités par date de disponibilité de leur dossier d'inscription (le signe moins est nécessaire car plus un dossier est disponible tôt
+	    //  plus la valeur de registrationAvailabilityDelay sera petite, hors le nombre obtenu est classé de façon décroissante)
+	    // Attribuer un malus de 2*sigValidity secondes par certification valide (plafonner à sigQty dans le cas de 'registrationPackage') 
+	    if (sort_by == "registrationPackage" && idty.nbValidPendingCert > conf.sigQty)
 	    {
-	      tabSort.push(sigWindow-registrationAvailabilityDelay + (sigValidity*sigQty));
+	      tabSort.push(-registrationAvailabilityDelay + (2*conf.sigValidity*conf.sigQty));
 	    }
 	    else
 	    {
-	      tabSort.push(sigWindow-registrationAvailabilityDelay + (sigValidity*idty.nbValidPendingCert));
+	      tabSort.push(-registrationAvailabilityDelay + (2*conf.sigValidity*idty.nbValidPendingCert));
 	    }
 	  }
       }
@@ -281,19 +324,6 @@ module.exports = (req, res, next) => co(function *() {
 	  // Push max value on sort table (and test distance rule)
 	  if (!doubloon)
 	  {
-	    // Tester la distance à l'aide des certifications disponibles
-	    let tmpWot = wotbInstance.memCopy();
-	    //let tmpWot = duniterServer.dal.wotb.memCopy();
-
-	    let pendingIdtyWID = tmpWot.addNode();
-	    for (const cert of idtysPendingCertifsList[idMax])
-	    {
-	      tmpWot.addLink(cert.wid, pendingIdtyWID);
-	    }
-	    let detailedDistance = tmpWot.detailedDistance(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent);
-	    let isOutdistanced = detailedDistance.isOutdistanced;
-	    //let isOutdistanced = tmpWot.isOutdistanced(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent);
-	    
 	    // Tester la présence de l'adhésion
 	    let membership = null
 	    const pendingMembershipsOfIdty = yield duniterServer.dal.msDAL.getPendingINOfTarget(identitiesList[idMax].hash);
@@ -302,10 +332,24 @@ module.exports = (req, res, next) => co(function *() {
 		membership = ms
 	      }
 	    }
+	    
+	    // Tester la distance à l'aide des certifications disponibles
+	    let tmpWot = wotbInstance.memCopy();
+	    let pendingIdtyWID = tmpWot.addNode();
+	    for (const cert of idtysPendingCertifsList[idMax])
+	    {
+	      tmpWot.addLink(cert.wotb_id, pendingIdtyWID);
+	    }
+	    let detailedDistance = tmpWot.detailedDistance(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent);
 
-	    // Nettoie la wot temporaire
+	    // Nettoyer la wot temporaire
 	    tmpWot.clear();
 	    
+	    // Calculer percentSentriesReached et percentMembersReached
+	    let percentSentriesReached = parseFloat(((detailedDistance.nbSuccess/detailedDistance.nbSentries)*100).toFixed(2));
+	    let percentMembersReached = parseFloat(((detailedDistance.nbReached/currentMembersCount)*100).toFixed(2));
+	    
+	    // Pousser l'identité dans le tableau idtysListOrdered
 	    idtysListOrdered.push({
 	      uid: identitiesList[idMax].uid,
 	      wotexId: identitiesList[idMax].wotexId,
@@ -314,11 +358,20 @@ module.exports = (req, res, next) => co(function *() {
 	      BlockNumber: identitiesList[idMax].BlockNumber,
 	      expires_on: identitiesList[idMax].expires_on,
 	      nbValidPendingCert: identitiesList[idMax].nbValidPendingCert,
-	      isOutdistanced,
+	      detailedDistance: detailedDistance,
+	      percentSentriesReached: percentSentriesReached,
+	      percentMembersReached: percentMembersReached,
 	      membership: membership,
 	      pendingCertifications: idtysPendingCertifsList[idMax],
 	      validBlockStamp: identitiesList[idMax].validBlockStamp
 	    });
+	    
+	    // Si l'identité à obtenu au moins sigQty certifications valides, incrémenter les sommes sumPercentSentriesReached et sumPercentMembersReached
+	    if ( identitiesList[idMax].nbValidPendingCert >= conf.sigQty)
+	    {
+	      sumPercentSentriesReached += percentSentriesReached;
+	      sumPercentMembersReached += percentMembersReached;
+	    }
 	  }
 	}
 	// Exclure la valeur max avant de poursuivre le tri
@@ -351,22 +404,23 @@ module.exports = (req, res, next) => co(function *() {
         // Les varibles à passer au template
 	host: req.headers.host.toString(),
         days, sort_by, order, sortSig,
-        hideIdtyWithZeroCert,
+        showIdtyWithZeroCert,
 	
         currentBlockNumber,
         currentBlockchainTimestamp,
+	currentMembersCount,
         limitTimestamp,
-        sigWindow,
-        idtyWindow,
+        sigWindow: conf.sigWindow,
+        idtyWindow: conf.idtyWindow,
         nbMaxCertifs,
 	countMembersWithSigQtyValidCert,
-
-        wotexURL: duniterServer.conf['duniter-currency-monit'].wotexURL,
+	sumPercentSentriesReached,
+	sumPercentMembersReached,
         
         idtysListFiltered: idtysListOrdered.filter( idty=> 
               idty.expires_on < limitTimestamp
               && idty.expires_on > currentBlockchainTimestamp
-              && (hideIdtyWithZeroCert != "yes" || idty.pendingCertifications.length > 0)
+              && (showIdtyWithZeroCert == "yes" || idty.pendingCertifications.length > 0)
             ),
         
         // Template helpers

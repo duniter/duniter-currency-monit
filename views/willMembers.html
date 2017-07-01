@@ -35,7 +35,7 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 		<option name="order" value ="desc" ${order == 'desc' ? 'selected' : ''}>${LANG["ORDER_DESC"]}
 	</select> <input type="submit" value="${LANG["SUBMIT_TXT"]}"><br>
 	
-	<input type="checkbox" name="hideIdtyWithZeroCert" value="yes" ${hideIdtyWithZeroCert == 'yes' ? 'checked' : ''}>${LANG["CHECKBOX_HIDE_IDTY_WITH_ZERO_CERT"]}<br>
+	<input type="checkbox" name="showIdtyWithZeroCert" value="yes" ${showIdtyWithZeroCert == 'yes' ? 'checked' : ''}>${LANG["CHECKBOX_SHOW_IDTY_WITH_ZERO_CERT"]}<br>
 	
 	<input type="checkbox" name="sortSig" value="Availability" ${sortSig == 'Availability' ? 'checked' : ''}>${LANG["CHECKBOX_SORT_SIG"]}
 </form>
@@ -55,13 +55,16 @@ ${(help != 'no') ? `
   ${LANG["BLOCKCHAIN_TIME"]} : <b>${timestampToDatetime(currentBlockchainTimestamp)}</b> (#<b>${currentBlockNumber}</b>).<br>
   ${LANG["COUNT_READY_MEMBERS"]} : <b>${countMembersWithSigQtyValidCert}</b>.<br>
 `:''}
+
+<!-- Afficher les moyennes SentriesReached et MembersReached -->
+${LANG["MEAN_SENTRIES_REACHED"]} = <b>${(sumPercentSentriesReached/countMembersWithSigQtyValidCert).toFixed(2)}%</b><br>
+${LANG["MEAN_MEMBERS_REACHED"]} = <b>${(sumPercentMembersReached/countMembersWithSigQtyValidCert).toFixed(2)}%</b><br>
 <br>
 
-<!--On parcour toutes les identités-->
-
+<!-- Tableau de toutes les identités en piscine -->
 <table border="1">
   <tr><td colspan="${nbMaxCertifs+6}" align='center'>${LANG["TABLE_TITLE1"]} <b>${days}</b> ${LANG["TABLE_TITLE2"]}</td></tr>
-  <!-- Printer les nom des colonnes-->
+  <!-- Printer les nom des colonnes -->
   <tr>
     <td align='center'>${LANG['COL_1']}</td><td align='center'>${LANG['COL_2']}</td>
     <td align='center'>${LANG['COL_3']}</td><td align='center'>${LANG['COL_DISTANCE']}</td>
@@ -90,10 +93,12 @@ ${(help != 'no') ? `
         <td align='center' style="background:${idty.colorPending}">
         ${timestampToDatetime(idty.expires_on)}</td>
         <td align='center' style="background:${idty.colorPending}">
-          <span style="color: ${idty.isOutdistanced ? 'red' : 'green' }">${idty.isOutdistanced ? LANG['COL_DISTANCE_isOutdistanced'] : LANG['COL_DISTANCE_isNotOutdistanced'] }</span>
+          <font color="${idty.detailedDistance.isOutdistanced ? 'DarkRed' : 'green' }">${idty.detailedDistance.isOutdistanced ? LANG['COL_DISTANCE_isOutdistanced'] : LANG['COL_DISTANCE_isNotOutdistanced'] }</font>
+          <br><font color="${idty.detailedDistance.isOutdistanced ? 'DarkRed' : 'blue' }">${idty.percentSentriesReached}% (${idty.detailedDistance.nbSuccess}/${idty.detailedDistance.nbSentries})</font>
+          <br><font color="black">${idty.percentMembersReached}% (${idty.detailedDistance.nbReached}/${currentMembersCount})</font>
         </td>
         <td align='center' style="background:${idty.colorPending}">
-          <span style="color: ${idty.membership ? 'green' : 'red' }">${idty.membership? LANG['COL_MEMBERSHIP_OK'] : LANG['COL_MEMBERSHIP_KO'] }</span>
+          <span style="color: ${idty.membership ? 'green' : 'DarkRed' }">${idty.membership? LANG['COL_MEMBERSHIP_OK'] : LANG['COL_MEMBERSHIP_KO'] }</span>
         </td>
         <td style="background:#000000">-</td>
         
@@ -101,16 +106,18 @@ ${(help != 'no') ? `
         ${idty.pendingCertifications.map( (cert,j)=> `
           ${ (j<nbMaxCertifs) ? `
             <td align="center" style="background:${(cert.validBlockStamp) ? color(cert.timestampExpire,sigWindow,250) : '#FF8000'}">
-            ${j==4?'<b>':''}
-        <a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${cert['from']}&pending=on&mode=undefined">${cert['from']}</a>
+            ${cert.issuerIsSentry ? '<b>':''}
+	      <a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${cert['from']}&pending=on&mode=undefined">${cert['from']}</a>
+	    ${cert.issuerIsSentry ? '</b>':''}
 	    <br>${timestampToDatetime(cert.timestampExpire)}
 	    <br>#${cert['blockNumber']}
+	    ${j==(4+idty.pendingCertifications.length-idty.nbValidPendingCert)?'<b>':''}
 	    ${ ( !cert.validBlockStamp || cert['timestampWritable'] > currentBlockchainTimestamp ) ? `
 	      <br><font color="DarkRed">[${ (cert.validBlockStamp) ? timestampToDatetime(cert['timestampWritable']):LANG['INVALID_BLOCKSTAMP']}]</font>
 	    ` : `
-	    <br><font color='green'>[${LANG['SIG_PERIOD_OK']}]</font>
+	      <br><font color='green'>[${LANG['SIG_PERIOD_OK']}]</font>
 	    `}
-	    ${j==4?'</b>':''}
+	    ${j==(4+idty.pendingCertifications.length-idty.nbValidPendingCert)?'</b>':''}
 	    </td>
           `:''}
         `).join('')}

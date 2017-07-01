@@ -7,18 +7,20 @@ ORDER in the following order
 ORDER_ASC ascending
 ORDER_DESC descending
 SUBMIT_TXT Submit
-CHECKBOX_HIDE_IDTY_WITH_ZERO_CERT Hide identities that didn't receive any certification.
+CHECKBOX_SHOW_IDTY_WITH_ZERO_CERT Show identities that didn't receive any certification.
 CHECKBOX_SORT_SIG sort certifications by availability time.
 SIG_PERIOD_LEGEND darkred : [date from which this certification can be written according to sigPeriod].
 SIG_PERIOD_LEGEND2 green : [available] : means this certification may already be written in the next block.
 HOW_TO_BECOME_MEMBER_TITLE When does an identity become a member ?
 HOW_TO_BECOME_MEMBER_TEXT An identity becomes a member as soon as it has at least <b>5</b> certifications in the <font color='green'>[available]</font> state <b>at the same time <u>and</u></b> it respects the Distance Rule.<br>You can click directly on an identity to reach the according wotex page to verify if it respects the Distance Rule.
 DISTANCE_RULE_TITLE What is the Distance Rule ?
-DISTANCE_RULE_TXT It is required that for more than 80% of the referring members, a path of at most 5 steps should exist between each of them and the identity about to be certified.<br>Every member automatically becomes a referring member as soon as he has emitted <b><u>and</u></b> received Y[n] certifications. (Y[n] = CEILING(N(t)^(1/5))).
+DISTANCE_RULE_TXT It is required that for more than <font color='blue'><b>80% of the referring members</b></font>, a path of at most 5 steps should exist between each of them and the identity about to be certified.<br>Every member automatically becomes a referring member as soon as he has emitted <b><u>and</u></b> received Y[n] certifications. (Y[n] = CEILING(N(t)^(1/5))).
 BLOCKCHAIN_TIME Current Blockchain Time
 TABLE_TITLE1 Identities that will expire in less than
 TABLE_TITLE2 days
 COUNT_READY_MEMBERS Identities having received 5 valid certifications or more
+MEAN_SENTRIES_REACHED mean sentries reached
+MEAN_MEMBERS_REACHED mean members reached
 COL_1 uid
 COL_2 Identity created
 COL_3 Identity expires

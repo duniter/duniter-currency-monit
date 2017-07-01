@@ -7,18 +7,20 @@ ORDER dans l'ordre
 ORDER_ASC croissant
 ORDER_DESC décroissant
 SUBMIT_TXT envoyer
-CHECKBOX_HIDE_IDTY_WITH_ZERO_CERT Masquer les identités n'ayant reçu aucune certification.
+CHECKBOX_SHOW_IDTY_WITH_ZERO_CERT Afficher les identités n'ayant reçu aucune certification.
 CHECKBOX_SORT_SIG trier les certifications par date de disponibilité.
 SIG_PERIOD_LEGEND darkred : [date à partir de laquelle cette certification pourra être écrite compte tenu de sigPeriod].
 SIG_PERIOD_LEGEND2 green : [disponible] : signifie que cette certification pourrait être écrite dès le prochain block.
 HOW_TO_BECOME_MEMBER_TITLE À quel moment une identité devient membre ?
 HOW_TO_BECOME_MEMBER_TEXT Une identité devient membre dès qu'elle bénéficie d'au moins <b>5</b> certifications à l'état <font color='green'>[disponible]</font> <b>au même moment <u>et</u></b> qu'elle respecte la règle de distance.<br>Vous pouvez cliquer directement sur une identité pour arriver sur la page wotex correspondante afin de vérifier si elle respecte la règle de distance.
 DISTANCE_RULE_TITLE C'est quoi la règle de distance ?
-DISTANCE_RULE_TXT Il faut que pour plus de 80% des membres référents, il existe au moins un chemin de 5 pas ou moins entre eux et l'identité considérée.<br>Tout membre devient automatiquement référent dès lors qu'il a émis <b><u>et</u></b> reçu Y[n] certifications. (Y[n] = CEILING(N(t)^(1/5))).
+DISTANCE_RULE_TXT Il faut qu'il existe un chemin de 5 pas maximum d'au moins <font color='blue'><b>80% des membres référents</b></font> vers l'identité qui souhaite devenir membre.<br>Tout membre devient automatiquement référent dès lors qu'il a émis <b><u>et</u></b> reçu Y[n] certifications. (Y[n] = CEILING(N(t)^(1/5))).
 BLOCKCHAIN_TIME Temps Blockchain actuel
 TABLE_TITLE1 Identités qui vont expirer dans moins de
 TABLE_TITLE2 jours
 COUNT_READY_MEMBERS Identités avec au moins 5 certifications valides reçues
+MEAN_SENTRIES_REACHED moyenne référents atteints
+MEAN_MEMBERS_REACHED moyenne membres atteints
 COL_1 uid
 COL_2 création identité
 COL_3 expiration identité

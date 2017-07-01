@@ -38,7 +38,7 @@ module.exports = {
       },
 
       cliOptions: [
-        //{ value: '--wotexURL <url>', desc: 'URL of Wotex service for UID links on willMembers page'}
+        //{ value: '--option-name <value_type>', desc: 'description for help command'}
       ],
 
       cli: [{
