@@ -1,15 +1,17 @@
 "use strict";
 
 const co = require('co');
-const main = require('./lib/main.js');
-const duniter = require('duniter');
+const fs = require('fs');
+const path = require('path');
+const main = require(__dirname + '/lib/main.js');
+//const duniter = require('duniter');
 
 /****************************************
  * TECHNICAL CONFIGURATION
  ***************************************/
 
 // Default Duniter node's database
-const DEFAULT_DUNITER_DATA_FOLDER = 'currency-monit-dev';
+//const DEFAULT_DUNITER_DATA_FOLDER = 'currency-monit-dev';
 
 // host on which UI is available
 const DEFAULT_HOST = 'localhost';
@@ -21,15 +23,27 @@ const DEFAULT_PORT = 10500;
  * SPECIALIZATION
  ***************************************/
 
-const stack = duniter.statics.autoStack([{
+/*const stack = duniter.statics.autoStack([{
   name: 'currency-monit',
-  required: {
-
+  required: {*/
+module.exports = {
     duniter: {
 
+      config: {
+        onLoading: (conf, program) => co(function*() {
+
+          // Define duniter-currency-monit parameters namespace
+          const obj = conf['duniter-currency-monit'] = conf['duniter-currency-monit'] || {}
+        })
+      },
+
+      cliOptions: [
+        //{ value: '--wotexURL <url>', desc: 'URL of Wotex service for UID links on willMembers page'}
+      ],
+
       cli: [{
-        name: 'currency-monit [host] [port] [data-folder]',
-        desc: 'Starts specialized node currency-monit',
+        name: 'currency-monit [host] [port]',
+        desc: 'Start duniter with module currency-monit',
 
         // Disables Duniter node's logs
         logs: false,
@@ -44,17 +58,31 @@ const stack = duniter.statics.autoStack([{
           yield startServices();
 
           // Main Loop
-          yield main(server, SERVER_HOST, SERVER_PORT);
+          yield main(server, SERVER_HOST, SERVER_PORT, null, program);
 
           // Wait forever, this is a permanent program
           yield new Promise(() => null);
         })
       }]
+    },
+    duniterUI: {
+      inject: {
+	menu: fs.readFileSync(path.join(__dirname, 'injection/menu.js'), 'utf8')
+      },
+      
+      route: (app, server, conf, program, params) => {
+        // Main Loop
+        //main(server, SERVER_HOST, SERVER_PORT);
+	main(server, null, null, app, program);  // `app` est un serveur HTTP Express
+
+        // Wait forever, this is a permanent program
+        new Promise(() => null);
+      }
     }
   }
-}]);
+//}]);
 
-co(function*() {
+/*co(function*() {
   if (!process.argv.includes('--mdb')) {
     // We use the default database
     process.argv.push('--mdb');
@@ -64,4 +92,4 @@ co(function*() {
   yield stack.executeStack(process.argv);
   // End
   process.exit();
-});
+});*/

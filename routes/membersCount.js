@@ -1,8 +1,8 @@
 "use strict";
 
 const co = require('co')
-const timestampToDatetime = require('../lib/timestampToDatetime')
-const getLang = require('../lib/getLang')
+const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
+const getLang = require(__dirname + '/../lib/getLang')
 
 const STEP_COUNT_MAX = 150;
 
@@ -13,6 +13,9 @@ module.exports = (req, res, next) => co(function *() {
   try {
     // get GET parameters
     var format = req.query.format || 'HTML';
+    
+    // get lg file
+    const LANG = getLang(`${__dirname}/../lg/membersCount_${req.query.lg||'fr'}.txt`);
     
     // get medianTime of beginBlock
     var beginBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`hash` FROM block WHERE `fork`=0 AND `number` = '+cache.beginBlock[0].number+' LIMIT 1');
@@ -31,17 +34,28 @@ module.exports = (req, res, next) => co(function *() {
       if ( Math.ceil((cache.endBlock[0].number-cache.beginBlock[0].number)/cache.step) > STEP_COUNT_MAX  ) { cache.step = Math.ceil((cache.endBlock[0].number-cache.beginBlock[0].number)/STEP_COUNT_MAX); }
     }
     
-    // Initialize nextStepTimen, stepIssuerCount and bStep
+    // Initialize nextStepTime, stepIssuerCount and bStep
     var nextStepTime = blockchain[0].medianTime;
     let stepIssuerCount = 0;
     let bStep = 0;
+    
+    // Adapt nextStepTime initial value
+    switch (cache.stepUnit)
+    {
+	  case "hours": nextStepTime -= (blockchain[0].medianTime % 3600); break;
+	  case "days":case "weeks":case "months":case "years": nextStepTime -= (blockchain[0].medianTime % 86400); break;
+	  default: break;
+    }
 
     // fill tabMembersCount
     var tabMembersCount = [];
+    let cacheIndex = 0;
     for (let b=0;b<blockchain.length;b++)
     {
       stepIssuerCount += blockchain[b].issuersCount;
       bStep++;
+      
+      while (cacheIndex < (cache.blockchain.length-1) && cache.blockchain[cacheIndex+1].number <= b) { cacheIndex++; }
 
       // If achieve next step
       if ( (cache.stepUnit == "blocks" && bStep == cache.step) || (cache.stepUnit != "blocks" && blockchain[b].medianTime >= nextStepTime))
@@ -50,9 +64,9 @@ module.exports = (req, res, next) => co(function *() {
 	tabMembersCount.push({
 	    blockNumber: blockchain[b].number,
 	    timestamp: blockchain[b].medianTime,
-	    dateTime: timestampToDatetime(blockchain[b].medianTime),
+	    dateTime: timestampToDatetime(blockchain[b].medianTime, cache.onlyDate),
 	    membersCount: blockchain[b].membersCount,
-	    sentriesCount: cache.blockchain[parseInt(cache.beginBlock[0].number)+b].sentries,
+	    sentriesCount: cache.blockchain[cacheIndex].sentries,
 	    issuersCount: parseInt(stepIssuerCount/bStep)
 	});
 	  
@@ -66,9 +80,9 @@ module.exports = (req, res, next) => co(function *() {
     tabMembersCount.push({
 	    blockNumber: blockchain[blockchain.length-1].number,
 	    timestamp: blockchain[blockchain.length-1].medianTime,
-	    dateTime: timestampToDatetime(blockchain[blockchain.length-1].medianTime),
+	    dateTime: LANG['LAST_BLOCK'],
 	    membersCount: blockchain[blockchain.length-1].membersCount,
-	    sentriesCount: cache.blockchain[parseInt(cache.beginBlock[0].number)+blockchain.length-1].sentries,
+	    sentriesCount: cache.blockchain[cache.blockchain.length-1].sentries,
 	    issuersCount: blockchain[blockchain.length-1].issuersCount
 	  });
     
@@ -76,14 +90,11 @@ module.exports = (req, res, next) => co(function *() {
       res.status(200).jsonp( tabMembersCount )
     else
     {
-      // get lg file
-      const LANG = getLang(`./lg/membersCount_${req.query.lg||'fr'}.txt`);
-      
       // GET parameters
       var unit = req.query.unit == 'relative' ? 'relative' : 'quantitative';
       var massByMembers = req.query.massByMembers == 'no' ? 'no' : 'yes';
       
-      console.log("req.headers.host = %s", req.headers.host);
+      //console.log("req.headers.host = %s", req.headers.host);
       
       res.locals = {
 	host: req.headers.host.toString(),

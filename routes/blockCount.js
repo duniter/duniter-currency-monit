@@ -1,8 +1,8 @@
 "use strict";
 
 const co = require('co')
-const timestampToDatetime = require('../lib/timestampToDatetime')
-const colorScale = require('../lib/colorScale')
+const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
+const colorScale = require(__dirname + '/../lib/colorScale')
 
 // Garder l'index des blocs en mémoire vive
 var blockchain = [];
@@ -18,6 +18,7 @@ module.exports = (req, res, next) => co(function *() {
     var begin = req.query.begin >= 0 && req.query.begin || 0; // Default begin Value is zero
     var end = req.query.end >= 0 && req.query.end || -1; // Default Value is -1 (=current block)
     var format = req.query.format || 'HTML';
+    var help = req.query.help || 'yes';
     var data = req.query.data || 'nbBlocks';
     var perNode = (req.query.perNode == 'yes') ? 'yes':'no';
     var significantPercent = req.query.significantPercent || 3;
@@ -313,6 +314,7 @@ module.exports = (req, res, next) => co(function *() {
          tabBlockMembersSort, 
          begin, 
          end,
+	 help,
 	 data,
 	 perNode,
 	 description: ``,

@@ -1,15 +1,18 @@
 ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
+  <title>${currencyName}-monit</title>
+</head>
+<body>
 
 <!-- Afficher le menu -->
 <table align="center" width="100%">
   <tr>
-    <td><a href="willMembers?lg=${MENU_LANG['LG']}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
-    <td><a href="members?lg=${MENU_LANG['LG']}">${MENU_LANG["MEMBERS"]}</a></td>
-    <td><a href="membersCount?lg=${MENU_LANG['LG']}">${MENU_LANG["MEMBERS_COUNT"]}</a></td>
-    <td><a href="blockCount?lg=${MENU_LANG['LG']}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
-    <td><a href="monetaryMass?lg=${MENU_LANG['LG']}">${MENU_LANG["MONETARY_MASS"]}</a></td>
-    <td><a href="pubkeyBalance?lg=${MENU_LANG['LG']}">${MENU_LANG["PUBKEY_BALANCE"]}</a></td>
-    <td><a href="about?lg=${MENU_LANG['LG']}">${MENU_LANG["ABOUT"]}</a></td>
+    <td><a href="willMembers?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
+    <td><a href="members?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS"]}</a></td>
+    <td><a href="membersCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS_COUNT"]}</a></td>
+    <td><a href="blockCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
+    <td><a href="monetaryMass?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MONETARY_MASS"]}</a></td>
+    <td><a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WOTEX"]}</a></td>
+    <td><a href="about?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["ABOUT"]}</a></td>
     <td>
       <form action="" method="GET">
 	<select name="lg" onchange="this.form.submit()">
@@ -39,27 +42,30 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 <br>
 
 <!-- Afficher le currentBlockchainTimestamp et la légende -->
-<i><font color='DarkRed'>${LANG["SIG_PERIOD_LEGEND"]}</font><br>
-<font color='green'>${LANG["SIG_PERIOD_LEGEND2"]}</font></i><br>
-<br>
-<b>${LANG["HOW_TO_BECOME_MEMBER_TITLE"]}</b><br>
-${LANG["HOW_TO_BECOME_MEMBER_TEXT"]}<br>
-<br>
-<b>${LANG["DISTANCE_RULE_TITLE"]}</b><br>
-${LANG["DISTANCE_RULE_TXT"]}<br>
-<br>
-${LANG["BLOCKCHAIN_TIME"]} : <b>${timestampToDatetime(currentBlockchainTimestamp)}</b> (#<b>${currentBlockNumber}</b>).<br>
-${LANG["COUNT_READY_MEMBERS"]} : <b>${countMembersWithSigQtyValidCert}</b>.<br>
+${(help != 'no') ? `
+  <i><font color='DarkRed'>${LANG["SIG_PERIOD_LEGEND"]}</font><br>
+  <font color='green'>${LANG["SIG_PERIOD_LEGEND2"]}</font></i><br>
+  <br>
+  <b>${LANG["HOW_TO_BECOME_MEMBER_TITLE"]}</b><br>
+  ${LANG["HOW_TO_BECOME_MEMBER_TEXT"]}<br>
+  <br>
+  <b>${LANG["DISTANCE_RULE_TITLE"]}</b><br>
+  ${LANG["DISTANCE_RULE_TXT"]}<br>
+  <br>
+  ${LANG["BLOCKCHAIN_TIME"]} : <b>${timestampToDatetime(currentBlockchainTimestamp)}</b> (#<b>${currentBlockNumber}</b>).<br>
+  ${LANG["COUNT_READY_MEMBERS"]} : <b>${countMembersWithSigQtyValidCert}</b>.<br>
+`:''}
 <br>
 
 <!--On parcour toutes les identités-->
 
 <table border="1">
-  <tr><td colspan="${nbMaxCertifs+4}" align='center'>${LANG["TABLE_TITLE1"]} <b>${days}</b> ${LANG["TABLE_TITLE2"]}</td></tr>
+  <tr><td colspan="${nbMaxCertifs+6}" align='center'>${LANG["TABLE_TITLE1"]} <b>${days}</b> ${LANG["TABLE_TITLE2"]}</td></tr>
   <!-- Printer les nom des colonnes-->
   <tr>
     <td align='center'>${LANG['COL_1']}</td><td align='center'>${LANG['COL_2']}</td>
-    <td align='center'>${LANG['COL_3']}</td><td style="background:#000000">-</td>
+    <td align='center'>${LANG['COL_3']}</td><td align='center'>${LANG['COL_DISTANCE']}</td>
+    <td align='center'>${LANG['COL_MEMBERSHIP']}</td><td style="background:#000000">-</td>
     <td align='center' colspan="${nbMaxCertifs}">${sortSig == "Availability" 
                                                   ? LANG['COL_4_WITH_AVAIlABILITY_SORT']
                                                   : LANG['COL_4']}</td>
@@ -70,17 +76,25 @@ ${LANG["COUNT_READY_MEMBERS"]} : <b>${countMembersWithSigQtyValidCert}</b>.<br>
       
       <!--Printer la ligne-->
       <tr>
-        <td align="center" style="background:${idty.colorPending=color(idty.expires_on,idtyWindow,250)}">
-        <!--<td align="center" style="background:\${colorPendingIdty}">-->
-          <a href="http://wotex.cgeek.fr/?to=${idty['uid']}&pending=on&mode=undefined">${idty['uid'].substring(0, 20)}</a><br>
+        <td align="center" style="background:${(idty.validBlockStamp) ? idty.colorPending=color(idty.expires_on,idtyWindow,250) : idty.colorPending='#FF8000'}">
+          <a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${idty['uid']}${idty['wotexId']}&pending=on&mode=undefined">${idty['uid'].substring(0, 20)}</a><br>
           ${idty['pubkey'].substring(0, 8)}
           <br>->${idty.pendingCertifications.length}
         </td>
         <td align='center' style="background:${idty.colorPending}">${timestampToDatetime(idty['creationTimestamp'])}<br>
         #${idty['BlockNumber']}
+        ${(!idty.validBlockStamp) ? `
+          <br><font color="DarkRed">[${LANG['INVALID_BLOCKSTAMP']}]</font>
+        `:``}
         </td>
         <td align='center' style="background:${idty.colorPending}">
         ${timestampToDatetime(idty.expires_on)}</td>
+        <td align='center' style="background:${idty.colorPending}">
+          <span style="color: ${idty.isOutdistanced ? 'red' : 'green' }">${idty.isOutdistanced ? LANG['COL_DISTANCE_isOutdistanced'] : LANG['COL_DISTANCE_isNotOutdistanced'] }</span>
+        </td>
+        <td align='center' style="background:${idty.colorPending}">
+          <span style="color: ${idty.membership ? 'green' : 'red' }">${idty.membership? LANG['COL_MEMBERSHIP_OK'] : LANG['COL_MEMBERSHIP_KO'] }</span>
+        </td>
         <td style="background:#000000">-</td>
         
         <!--printer les certifications-->
@@ -88,7 +102,7 @@ ${LANG["COUNT_READY_MEMBERS"]} : <b>${countMembersWithSigQtyValidCert}</b>.<br>
           ${ (j<nbMaxCertifs) ? `
             <td align="center" style="background:${(cert.validBlockStamp) ? color(cert.timestampExpire,sigWindow,250) : '#FF8000'}">
             ${j==4?'<b>':''}
-	    ${cert['from']}
+        <a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${cert['from']}&pending=on&mode=undefined">${cert['from']}</a>
 	    <br>${timestampToDatetime(cert.timestampExpire)}
 	    <br>#${cert['blockNumber']}
 	    ${ ( !cert.validBlockStamp || cert['timestampWritable'] > currentBlockchainTimestamp ) ? `
@@ -106,7 +120,7 @@ ${LANG["COUNT_READY_MEMBERS"]} : <b>${countMembersWithSigQtyValidCert}</b>.<br>
   `).join('')}
   
   <tr>
-    <td colspan="${4+nbMaxCertifs}" align="center">
+    <td colspan="${nbMaxCertifs+6}" align="center">
       ${LANG['LAST_TR1']} : <b>${idtysListFiltered.length}</b> ${LANG['LAST_TR2']}.
     </td>
   </tr>

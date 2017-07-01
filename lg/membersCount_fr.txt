@@ -1,3 +1,4 @@
+LAST_BLOCK dernier bloc
 BEGIN Début
 END Fin
 STEP précision

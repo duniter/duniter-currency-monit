@@ -1,1 +1,33 @@
+FORM1 days - sort by
+SORT_BY_IDTY_WRITTEN identity written time
+SORT_BY_EXPIRE_MEMBERSHIP expire membership time
+SORT_LAST_RENEWAL last renewal time
+SORT_BY_OLDEST_SIG oldest sig time
+SORT_BY_LAST_SIG last sig time
+SORT_BY_SIG_COUNT certifications count
+ORDER_BY in the following order
+ASC ascending
+DESC descending
 SUBMIT_BUTTON submit
+CHECKBOX_PENDING_SIGS Include pending certifications
+CHECKBOX_MODE_SIG Print emitted certifications (Instead of received certifications)
+LEGEND_AVAILABILITY [availability : means this certification may already be written in the next block.]
+CURRENT_BLOCKCHAIN_TIME Current blockchain time
+TABLE_TITLE Members that will expire in less than
+DAYS days
+COL_UID uid
+COL_IDTY_WRITTEN_TIME identity written time
+COL_LAST_RENEWAL last renewal
+COL_EXPIRE_MEMBERSHIP expire membership
+COL_DISTANCE distance
+COL_DISTANCE_isOutdistanced KO
+COL_DISTANCE_isNotOutdistanced OK
+COL_LIST_RECEIVED_CERT list received certifications
+COL_LIST_EMITTED_CERT list emitted certifications
+LAST2OLDEST récentes -> anciennes
+OLDEST2LAST anciennes -> récentes
+EMITTED emitted
+WRITTEN written
+CERT_AVAILABLE available
+OVERALL Overall
+MEMBERS members

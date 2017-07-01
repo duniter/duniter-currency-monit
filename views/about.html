@@ -1,15 +1,18 @@
 ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
-
+  <title>${currencyName}-monit</title>
+</head>
+<body>
+  
 <!-- Afficher le menu -->
 <table align="center" width="100%">
   <tr>
-    <td><a href="willMembers?lg=${MENU_LANG['LG']}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
-    <td><a href="members?lg=${MENU_LANG['LG']}">${MENU_LANG["MEMBERS"]}</a></td>
-    <td><a href="membersCount?lg=${MENU_LANG['LG']}">${MENU_LANG["MEMBERS_COUNT"]}</a></td>
-    <td><a href="blockCount?lg=${MENU_LANG['LG']}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
-    <td><a href="monetaryMass?lg=${MENU_LANG['LG']}">${MENU_LANG["MONETARY_MASS"]}</a></td>
-    <td><a href="pubkeyBalance?lg=${MENU_LANG['LG']}">${MENU_LANG["PUBKEY_BALANCE"]}</a></td>
-    <td><a href="about?lg=${MENU_LANG['LG']}">${MENU_LANG["ABOUT"]}</a></td>
+    <td><a href="willMembers?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
+    <td><a href="members?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS"]}</a></td>
+    <td><a href="membersCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS_COUNT"]}</a></td>
+    <td><a href="blockCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
+    <td><a href="monetaryMass?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MONETARY_MASS"]}</a></td>
+    <td><a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WOTEX"]}</a></td>
+    <td><a href="about?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["ABOUT"]}</a></td>
     <td>
       <form action="" method="GET">
 	<select name="lg" onchange="this.form.submit()">
@@ -19,8 +22,7 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
     </td>
 </tr>
 </table>
-</select>
-
+</select> 
 
 </form>
 <hr>
@@ -29,6 +31,8 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
   <a href="https://github.com/duniter/duniter-currency-monit/blob/master/LICENSE">License AGPL V 3.0</a><br>
   <a href="https://github.com/duniter/duniter-currency-monit/">github repository</a>
 </div><br>
-<div align="left">Version : <a href="https://github.com/duniter/duniter-currency-monit/releases/tag/0.3.2">0.3.2</a></div><br>
+<div align="left">Version : <a href="https://github.com/duniter/duniter-currency-monit/releases/tag/module-0.2.13">module-0.2.13</a></div><br>
 <div align="left">Author : <a href="https://github.com/librelois">Éloïs Librelois</a></div><br>
-<div align="left">Contributors : <a href="https://github.com/jytou">jytou</a> (translator), <a href="https://github.com/devingfx">devingfx</a> (frontend), <a href="https://github.com/M5oul">M5oul</a> (adjustments)</div><br>
+<div align="left">Contributors : <a href="https://github.com/jytou">jytou</a> (translator), <a href="https://github.com/devingfx">devingfx</a> (frontend), <a href="https://github.com/c-geek">cgeek</a> (willMembers and wotex),<a href="https://github.com/M5oul">M5oul</a> (adjustments)</div><br>
+<br>
+<div align="left">If you want you can <a href="?lg=${MENU_LANG['LG']}&help=no">disable help</a>.</div><br>
