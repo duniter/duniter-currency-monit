@@ -58,7 +58,7 @@ module.exports = (req, res, next) => co(function *() {
 		cache.lockWillMembers = true;
 		
 		// Vérifier si le cache doit être Réinitialiser
-		let reinitCache = (!cache.lockWillMembers && Math.floor(Date.now() / 1000) > (cache.willMembersLastUptime + MIN_WILLMEMBERS_UPDATE_FREQ));
+		let reinitCache = (Math.floor(Date.now() / 1000) > (cache.willMembersLastUptime + MIN_WILLMEMBERS_UPDATE_FREQ));
 
 		if (reinitCache)
     {
