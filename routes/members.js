@@ -53,19 +53,19 @@ module.exports = (req, res, next) => co(function *() {
     // Alimenter wotb avec la toile actuelle
     const wotbInstance = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
 		
-		// Vérifier si le cache doit être Réinitialiser
-		let reinitCache = (!cache.lockMembers && Math.floor(Date.now() / 1000) > (cache.membersLastUptime + MIN_MEMBERS_UPDATE_FREQ));
-		
-		// Attendre que le cache soit déverouiller (même si on ne le modifie pas !)
+		// Attendre que le cache members soit déverouiller puis prendre la main dessus
 		while(cache.lockMembers);
+		cache.lockMembers = true;
 		
+		// Vérifier si le cache doit être Réinitialiser
+		let reinitCache = (Math.floor(Date.now() / 1000) > (cache.membersLastUptime + MIN_MEMBERS_UPDATE_FREQ));
+
 		// Si changement de conditions, forcer le rechargement du cache
 		if (previousMode != mode || previousCentrality != centrality) { reinitCache = true; }
 		
 		if (reinitCache)
 		{
 			// Réinitialiser le cache
-			cache.lockMembers = true;
 			previousMode = mode;
 			previousCentrality = centrality;
 			membersList = [];
@@ -573,6 +573,8 @@ module.exports = (req, res, next) => co(function *() {
           
         // }
       }
+      // Dévérouiller le cache members
+      cache.lockMembers = false;
       next()
     }
   } catch (e) {
