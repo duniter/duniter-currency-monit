@@ -97,9 +97,9 @@ ${(help != 'no') ? `
 					<tr><td align='center' colspan='2'>${LANG["DATA_AT"]} ${timestampToDatetime(membersLastCentralityCalcTime)}</td></tr>
 					<tr><td align='center'>${LANG["MEAN_LENGTH_PATH"]}</td><td align='center'><b>${(meanShortestsPathLength).toFixed(2)}</b></td></tr>
 					<tr><td align='center'>${LANG["MEAN_CENTRALITY"]}</td><td align='center'><b>${meanCentrality.toFixed(2)}</b></td></tr>
-					<tr><td align='center'>${LANG["NUMBER_OF_PAIRS_MEMBER"]}</td><td align='center'>${(membersListFiltered.length*(membersListFiltered.length-1))}</td></tr>
+					<tr><td align='center'>${LANG["NUMBER_OF_PAIRS_MEMBER"]}</td><td align='center'>${(currentMembersCount*(currentMembersCount-1))}</td></tr>
 					<tr><td align='center'>${LANG["NUMBER_OF_EXIST_PATH"]}</td><td align='center'><b>${nbShortestsPath}</b></td></tr>
-					<tr><td align='center'><b>${LANG["PROPORTION_OF_EXIST_PATH"]}</b></td><td align='center'><font color="red"><b>${((nbShortestsPath/(membersListFiltered.length*(membersListFiltered.length-1)))*100).toFixed(2)}%</b></font></td></tr>
+					<tr><td align='center'><b>${LANG["PROPORTION_OF_EXIST_PATH"]}</b></td><td align='center'><font color="red"><b>${((nbShortestsPath/(currentMembersCount*(currentMembersCount-1)))*100).toFixed(2)}%</b></font></td></tr>
 				</table>
 			`}
 		`}
