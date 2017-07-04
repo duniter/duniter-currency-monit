@@ -1,13 +1,30 @@
 "use strict";
 
 const co = require('co')
-//const wotb = require('wotb')
+const wotb = require('wotb')
 
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 
+const MIN_MEMBERS_UPDATE_FREQ = 180;
+
+// Préserver les résultats en cache
+var previousMode = null;
+var previousCentrality = null;
+var membersList = [];
+var membersIdentity = [];
+var membersFirstCertifExpire = [];
+var membersCertifsList = [];
+var membersPendingCertifsList = [];
+var membershipsTimeList = [];
+var membershipsBlockNumberList = [];
+var membershipsExpireTimeList = [];
+var nbMaxCertifs = 0;
+var sentries = [];
+var sentriesIndex = [];
+
 module.exports = (req, res, next) => co(function *() {
   
-  var { duniterServer, sigValidity, msValidity, sigWindow, idtyWindow, cache  } = req.app.locals
+  var { duniterServer, cache  } = req.app.locals
   
   try {
     // Initaliser les constantes
@@ -18,192 +35,345 @@ module.exports = (req, res, next) => co(function *() {
     const dSen = Math.ceil(Math.pow(membersCount, 1 / conf.stepMax));
     
     // Initaliser les variables
-    var contenu = "";
-    var membersIdentity = [];
-    var membersFirstCertifExpire = [];
-    var membersCertifsList = [];
-    var membersPendingCertifsList = [];
-    var membershipsTimeList = [];
-    var membershipsBlockNumberList = [];
-    var membershipsExpireTimeList = [];
-    
+		let membersListOrdered = [];
+		let membersCertifsListSorted = [];
+		let tabSort = [];
+		let countSentries = 0;
+		let membersNbSentriesUnreached = [];
+
     // Récupéré les paramètres
     var days = req.query.d || 400 // Valeur par défaut
     var mode = req.query.mode || 'received' // Valeur par défaut
     var order = req.query.d && req.query.order || 'desc' // Valeur par défaut
     var sort_by = req.query.sort_by || "idtyWritten" // Valeur par défaut
-    var pendingSigs = req.query.pendingSigs || "no";
-    var format = req.query.format || 'HTML';
+		var pendingSigs = req.query.pendingSigs || "no"; // Valeur par défaut
+		var centrality = req.query.centrality || "no"; // Valeur par défaut
+		var format = req.query.format || 'HTML'; // Valeur par défaut
     
     // Alimenter wotb avec la toile actuelle
-    //const wotbInstance = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
+    const wotbInstance = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
+		
+		// Vérifier si le cache doit être Réinitialiser
+		let reinitCache = (!cache.lockMembers && Math.floor(Date.now() / 1000) > (cache.membersLastUptime + MIN_MEMBERS_UPDATE_FREQ));
+		
+		// Attendre que le cache soit déverouiller (même si on ne le modifie pas !)
+		while(cache.lockMembers);
+		
+		// Si changement de conditions, forcer le rechargement du cache
+		if (previousMode != mode || previousCentrality != centrality) { reinitCache = true; }
+		
+		if (reinitCache)
+		{
+			// Réinitialiser le cache
+			cache.lockMembers = true;
+			previousMode = mode;
+			previousCentrality = centrality;
+			membersList = [];
+			membersIdentity = [];
+			membersFirstCertifExpire = [];
+			membersCertifsList = [];
+			membersPendingCertifsList = [];
+			membershipsTimeList = [];
+			membershipsBlockNumberList = [];
+			membershipsExpireTimeList = [];
+			nbMaxCertifs = 0;
+			sentries = [];
+			sentriesIndex = [];
+			cache.membersLastUptime = Math.floor(Date.now() / 1000);
+			cache.membersQualityExt = [];
+			cache.meanSentriesReachedBySentriesInSingleExtCert = 0;
+			cache.meanMembersReachedBySentriesInSingleExtCert = 0;
+			cache.meanSentriesReachedByMembersInSingleExtCert = 0;
+			cache.meanMembersReachedByMembersInSingleExtCert = 0;
+			
+			// Réinitialiser le cache des donénes de centralité (sauf il elles sont déjà en cours de recalcul)
+			if (centrality=='yes')
+			{
+				if (cache.lockCentralityCalc)
+				{
+					centrality = 'no';
+				}
+				else
+				{
+					cache.lockCentralityCalc = true;
+					cache.membersLastCentralityCalcTime = Math.floor(Date.now() / 1000);
+					cache.membersCentrality = [];
+					cache.meanCentrality = 0;
+					cache.meanShortestsPathLength = 0;
+					cache.nbShortestsPath = 0;
+				}
+			}
+			
+			// Récupérer la liste des membres référents
+			sentries = wotbInstance.getSentries(dSen);
     
-    // Récupérer la liste des identités ayant actuellement le statut de membre
-    const membersList = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`pub`,`member`,`written_on`,`wotb_id` FROM i_index WHERE `member`=1');
+			// Récupérer la liste des identités ayant actuellement le statut de membre
+			membersList = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`pub`,`member`,`written_on`,`wotb_id` FROM i_index WHERE `member`=1');
     
-    // Récupérer pour chaque identité, le numéro du block d'écriture du dernier membership
-    // Ainsi que la première ou dernière certification
-    var nbMaxCertifs = 0;
-    for (let m=0;m<membersList.length;m++)
-    {
-      // Récupérer les blockstamp d'écriture et date d'expiration du membership courant du membre m
-      let tmpQueryResult = yield duniterServer.dal.peerDAL.query(
-          'SELECT `written_on`,`expires_on` FROM m_index WHERE `pub`=\''+membersList[m].pub+'\' ORDER BY `expires_on` DESC LIMIT 1');
-        membershipsExpireTimeList.push(tmpQueryResult[0].expires_on);
-        
-      // Extraire le numéro de bloc du blockstamp d'écriture du membership courant
-      let blockstampMembershipWritten = tmpQueryResult[0].written_on.split("-"); // Separate blockNumber and blockHash
-      membershipsBlockNumberList.push(blockstampMembershipWritten[0]);
-      
-      // Extraire le numéro de bloc du blockstamp d'écriture de l'identité du membre
-      let blockstampIdtyWritten = membersList[m].written_on.split("-"); // Separate blockNumber and blockHash
-      
-      // Récupérer le champ medianTime du bloc d'écriture de l'identité du membre
-      let resultQueryTimeWrittenIdty = yield duniterServer.dal.peerDAL.query(
-          'SELECT `medianTime` FROM block WHERE `number`=\''+blockstampIdtyWritten[0]+'\' LIMIT 1')
-      
-      // Tester la distance
-      //let tmpWot = wotbInstance.memCopy();
-      let tmpWot = duniterServer.dal.wotb.memCopy();
+			// Récupérer pour chaque identité, le numéro du block d'écriture du dernier membership
+			// Ainsi que la première ou dernière certification
+			for (let m=0;m<membersList.length;m++)
+			{
+				// Récupérer les blockstamp d'écriture et date d'expiration du membership courant du membre m
+				let tmpQueryResult = yield duniterServer.dal.peerDAL.query(
+						'SELECT `written_on`,`expires_on` FROM m_index WHERE `pub`=\''+membersList[m].pub+'\' ORDER BY `expires_on` DESC LIMIT 1');
+					membershipsExpireTimeList.push(tmpQueryResult[0].expires_on);
+					
+				// Extraire le numéro de bloc du blockstamp d'écriture du membership courant
+				let blockstampMembershipWritten = tmpQueryResult[0].written_on.split("-"); // Separate blockNumber and blockHash
+				membershipsBlockNumberList.push(blockstampMembershipWritten[0]);
+				
+				// Extraire le numéro de bloc du blockstamp d'écriture de l'identité du membre
+				let blockstampIdtyWritten = membersList[m].written_on.split("-"); // Separate blockNumber and blockHash
+				
+				// Récupérer le champ medianTime du bloc d'écriture de l'identité du membre
+				let resultQueryTimeWrittenIdty = yield duniterServer.dal.peerDAL.query(
+						'SELECT `medianTime` FROM block WHERE `number`=\''+blockstampIdtyWritten[0]+'\' LIMIT 1')
+				
+				// Vérifier si le membre est référent
+				let currentMemberIsSentry = false;
+				sentriesIndex[membersList[m].uid] = false;
+				for (let s=0;s<sentries.length;s++)
+				{
+					if (sentries[s] == membersList[m].wotb_id)
+					{
+						currentMemberIsSentry=true;
+						sentries.splice(s, 1);
+						sentriesIndex[membersList[m].uid] = true;
+					}
+				}
+				
+				// Réinitialiser le degré de centralité du membre
+				if (centrality=='yes')
+				{
+					cache.membersCentrality[membersList[m].wotb_id] = 0;
+				}
+				
+				// Créer une wot temporaire
+				let tmpWot = wotbInstance.memCopy();
+				
+				// Récupérer les informations détaillés de distance pour le membre courant
+				let tmpWot1 = wotbInstance.memCopy();
+				let detailedDistance = tmpWot.detailedDistance(membersList[m].wotb_id, dSen, conf.stepMax, conf.xpercent);
+				membersNbSentriesUnreached[membersList[m].uid] = parseInt(detailedDistance.nbSentries)-parseInt(detailedDistance.nbSuccess);
+				//console.log("membersNbSentriesUnreached[%s] = %s", membersList[m].uid, membersNbSentriesUnreached[membersList[m].uid]);
+				
+				// Mesurer la qualité externe du membre courant
+				let detailedDistanceQualityExt = tmpWot.detailedDistance(membersList[m].wotb_id, dSen, conf.stepMax-1, conf.xpercent);
+				cache.membersQualityExt[membersList[m].uid] = ((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)/conf.xpercent).toFixed(2);
+				
+				// Calculate meanSentriesReachedBySentriesInSingleExtCert, meanMembersReachedBySentriesInSingleExtCert, meanSentriesReachedByMembersInSingleExtCert and meanMembersReachedByMembersInSingleExtCert
+				if (currentMemberIsSentry)
+				{
+					cache.meanSentriesReachedBySentriesInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)*100).toFixed(2));
+					cache.meanMembersReachedBySentriesInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbReached/membersList.length)*100).toFixed(2));
+					countSentries++;
+				}
+				cache.meanSentriesReachedByMembersInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)*100).toFixed(2));
+				cache.meanMembersReachedByMembersInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbReached/membersList.length)*100).toFixed(2));
+				
+				// Nettoyer la wot temporaire
+				tmpWot.clear();
+				
+				// Stocker les informations de l'identité
+				membersIdentity.push({
+					writtenBloc: blockstampIdtyWritten[0],
+					writtenTimestamp: resultQueryTimeWrittenIdty[0].medianTime,
+					detailedDistance: detailedDistance,
+					isSentry: currentMemberIsSentry
+				});
+				
+				// récupérer toutes les certification  reçus/émises par l'utilisateur
+				let tmpQueryCertifsList = [];
+				let tmpOrder = (sort_by == "lastSig") ? 'DESC' : 'ASC';
+				if (mode == 'emitted')
+				{
+					tmpQueryCertifsList = yield duniterServer.dal.peerDAL.query(
+						'SELECT `receiver`,`written_on`,`expires_on` FROM c_index WHERE `issuer`=\''+membersList[m].pub+'\' ORDER BY `expires_on` '+tmpOrder);
+				}
+				else
+				{
+					tmpQueryCertifsList = yield duniterServer.dal.peerDAL.query(
+						'SELECT `issuer`,`written_on`,`expires_on` FROM c_index WHERE `receiver`=\''+membersList[m].pub+'\' ORDER BY `expires_on` '+tmpOrder);
+				}
 
-      //let detailedDistance = tmpWot.detailedDistance(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent);
-      //let isOutdistanced = detailedDistance.isOutdistanced;
-      let isOutdistanced = tmpWot.isOutdistanced(membersList[m].wotb_id, dSen, conf.stepMax, conf.xpercent);
-      
-      // Stocker les informations de l'identité
-      membersIdentity.push({
-        writtenBloc: blockstampIdtyWritten[0],
-        writtenTimestamp: resultQueryTimeWrittenIdty[0].medianTime,
-        isOutdistanced: isOutdistanced
-        });
-      
-      // récupérer toutes les certification  reçus/émises par l'utilisateur
-      let tmpQueryCertifsList = [];
-      let tmpOrder = (sort_by == "lastSig") ? 'DESC' : 'ASC';
-      if (mode == 'emitted')
-      {
-        tmpQueryCertifsList = yield duniterServer.dal.peerDAL.query(
-          'SELECT `receiver`,`written_on`,`expires_on` FROM c_index WHERE `issuer`=\''+membersList[m].pub+'\' ORDER BY `expires_on` '+tmpOrder);
-      }
-      else
-      {
-	tmpQueryCertifsList = yield duniterServer.dal.peerDAL.query(
-          'SELECT `issuer`,`written_on`,`expires_on` FROM c_index WHERE `receiver`=\''+membersList[m].pub+'\' ORDER BY `expires_on` '+tmpOrder);
-      }
-
-      // Calculer le nombre de certifications reçus/émises par le membre courant
-      let nbWrittenCertifs = tmpQueryCertifsList.length;
-      
-      // Récupérer les uid des émetteurs/receveurs des certifications reçus/émises par l'utilisateur
-      // Et stocker les uid et dates d'expiration dans un tableau
-      membersCertifsList[m] = new Array();
-      for (var i=0;i<nbWrittenCertifs;i++)
-      {
-	let tmpQueryGetUidProtagonistCert
-	if (mode == 'emitted')
-	{
-          tmpQueryGetUidProtagonistCert = yield duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `pub`=\''+tmpQueryCertifsList[i].receiver+'\' LIMIT 1');
-	}
-	else
-	{
-          tmpQueryGetUidProtagonistCert = yield duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `pub`=\''+tmpQueryCertifsList[i].issuer+'\' LIMIT 1');
-	}
-        let tmpBlockWrittenOn = tmpQueryCertifsList[i].written_on.split("-");
-        
-        // Stoker la liste des certifications qui n'ont pas encore expirées
-        if (tmpQueryCertifsList[i].expires_on > currentBlockchainTimestamp)
-        {
-          if (i == 0)
-          {
-	    membersFirstCertifExpire.push(tmpQueryCertifsList[0].expires_on);
-          }
-          membersCertifsList[m].push({
-          issuer: (mode=='emitted') ? membersList[m].uid:tmpQueryGetUidProtagonistCert[0].uid,
-	  receiver: (mode!='emitted') ? membersList[m].uid:tmpQueryGetUidProtagonistCert[0].uid,
-          writtenBloc: tmpBlockWrittenOn[0],
-          timestampExpire: tmpQueryCertifsList[i].expires_on
-          });
-        }
-      }
-      
-      // SI LES CERTIFICATIONS EN PISCINE SONT DEMANDÉES
-      let nbValidPendingCertifs = 0;
-      
-      if (pendingSigs == "yes")
-      {
-        // récupérer toutes les certification en piscine
-        let tmpQueryPendingCertifsList = [];
-        if (mode == 'emitted')
-        {
-          tmpQueryPendingCertifsList = yield duniterServer.dal.peerDAL.query(
-	    'SELECT `from`,`to`,`block_number`,`expires_on` FROM certifications_pending WHERE `from`=\''+membersList[m].pub+'\' ORDER BY `expires_on` '+tmpOrder);
-        }
-        else
-        {
-          tmpQueryPendingCertifsList = yield duniterServer.dal.peerDAL.query(
-	    'SELECT `from`,`block_number`,`expires_on` FROM certifications_pending WHERE `to`=\''+membersList[m].pub+'\' ORDER BY `expires_on` '+tmpOrder);
-        }
-        
-        // Calculer le nombre de certifications en attentes destinées au membre courant
-        let nbPendingCertifs = tmpQueryPendingCertifsList.length;
-        
-        // Récupérer les uid des émetteurs des certifications reçus par l'utilisateur
-        // Et stocker les uid et dates d'expiration dans un tableau
-        membersPendingCertifsList[m] = new Array();
-        for (var i=0;i<nbPendingCertifs;i++)
-        {
-	  let tmpPub = (mode=='emitted') ? tmpQueryPendingCertifsList[i].to:tmpQueryPendingCertifsList[i].from;
-          let tmpQueryGetUidProtagonistPendingCert = yield duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `pub`=\''+tmpPub+'\' LIMIT 1');
-	  
-          // Vérifier que l'émetteur de la certification correspond à une identié connue
-          if ( tmpQueryGetUidProtagonistPendingCert.length > 0 )
-          {
-	    // récupérer le timestamp d'écriture de la dernière certification écrite par l'émetteur
-	    let tmpQueryLastIssuerCert = yield duniterServer.dal.peerDAL.query('SELECT `chainable_on` FROM c_index WHERE `issuer`=\''+tmpQueryPendingCertifsList[i].from+'\' ORDER BY `expires_on` DESC LIMIT 1');
-	    
-	    // Stoker la liste des certifications en piscine qui n'ont pas encore expirées
-	    if (tmpQueryPendingCertifsList[i].expires_on > currentBlockchainTimestamp)
-	    {
-	      membersPendingCertifsList[m].push({
-		  protagonist: tmpQueryGetUidProtagonistPendingCert[0].uid,
-		  blockNumber: tmpQueryPendingCertifsList[i].block_number,
-		  timestampExpire: tmpQueryPendingCertifsList[i].expires_on,
-		  timestampWritable: (typeof(tmpQueryLastIssuerCert[0]) == 'undefined') ? 0:tmpQueryLastIssuerCert[0].chainable_on
-	      });
-	      nbValidPendingCertifs++;
-	    }
-          }
-        }
-      }
-      
-      // Calculer le nombre maximal de certifications reçus par le membre courant
-      let nbCertifs = nbWrittenCertifs + nbValidPendingCertifs;
-      if ( nbCertifs > nbMaxCertifs) { nbMaxCertifs = nbCertifs; }
-    }
+				// Calculer le nombre de certifications reçus/émises par le membre courant
+				let nbWrittenCertifs = tmpQueryCertifsList.length;
+				
+				// Récupérer les uid des émetteurs/receveurs des certifications reçus/émises par l'utilisateur
+				// Et stocker les uid et dates d'expiration dans un tableau
+				membersCertifsList[m] = new Array();
+				for (var i=0;i<nbWrittenCertifs;i++)
+				{
+					let tmpQueryGetUidProtagonistCert
+					if (mode == 'emitted')
+					{
+						tmpQueryGetUidProtagonistCert = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`wotb_id` FROM i_index WHERE `pub`=\''+tmpQueryCertifsList[i].receiver+'\' LIMIT 1');
+					}
+					else
+					{
+						tmpQueryGetUidProtagonistCert = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`wotb_id` FROM i_index WHERE `pub`=\''+tmpQueryCertifsList[i].issuer+'\' LIMIT 1');
+					}
+					let tmpBlockWrittenOn = tmpQueryCertifsList[i].written_on.split("-");
+					
+					// Stoker la liste des certifications qui n'ont pas encore expirées
+					if (tmpQueryCertifsList[i].expires_on > currentBlockchainTimestamp)
+					{
+						if (i == 0)
+						{
+							membersFirstCertifExpire.push(tmpQueryCertifsList[0].expires_on);
+						}
+						membersCertifsList[m].push({
+							protagonistWotId: tmpQueryGetUidProtagonistCert[0].wotb_id,
+							issuer: (mode=='emitted') ? membersList[m].uid:tmpQueryGetUidProtagonistCert[0].uid,
+							receiver: (mode!='emitted') ? membersList[m].uid:tmpQueryGetUidProtagonistCert[0].uid,
+							writtenBloc: tmpBlockWrittenOn[0],
+							timestampExpire: tmpQueryCertifsList[i].expires_on
+						});
+					}
+				}
+				
+					// Récupérer toutes les certification en piscine
+					let nbValidPendingCertifs = 0;
+					let tmpQueryPendingCertifsList = [];
+					if (mode == 'emitted')
+					{
+						tmpQueryPendingCertifsList = yield duniterServer.dal.peerDAL.query(
+							'SELECT `from`,`to`,`block_number`,`expires_on` FROM certifications_pending WHERE `from`=\''+membersList[m].pub+'\' ORDER BY `expires_on` '+tmpOrder);
+					}
+					else
+					{
+						tmpQueryPendingCertifsList = yield duniterServer.dal.peerDAL.query(
+							'SELECT `from`,`block_number`,`block_hash`,`expires_on` FROM certifications_pending WHERE `to`=\''+membersList[m].pub+'\' ORDER BY `expires_on` '+tmpOrder);
+					}
+					
+					// Récupérer les uid des émetteurs des certifications reçus par l'utilisateur
+					// Et stocker les uid et dates d'expiration dans un tableau
+					membersPendingCertifsList[m] = new Array();
+					for (var i=0;i<tmpQueryPendingCertifsList.length;i++)
+					{
+						// Récupérer le medianTime et le hash du bloc d'émission de la certification 
+						let emittedBlock = yield duniterServer.dal.peerDAL.query('SELECT `hash`,`medianTime` FROM block WHERE `number`=\''+tmpQueryPendingCertifsList[i].block_number+'\' AND `fork`=0 LIMIT 1');
+						
+						let tmpPub = (mode=='emitted') ? tmpQueryPendingCertifsList[i].to:tmpQueryPendingCertifsList[i].from;
+						let tmpQueryGetUidProtagonistPendingCert = yield duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `pub`=\''+tmpPub+'\' LIMIT 1');
+						
+						// Vérifier que l'émetteur de la certification correspond à une identié connue
+						if ( tmpQueryGetUidProtagonistPendingCert.length > 0 )
+						{
+							// Vérifier la validité du blockStamp de la certification en piscine
+							let validBlockStamp = false;
+							if (typeof(emittedBlock[0]) != 'undefined' && emittedBlock[0].hash == tmpQueryPendingCertifsList[i].block_hash)
+							{ validBlockStamp = true; }
+							
+							// Vérifier que le membre courant n'a pas déjà émis/reçu d'autre(s) certification(s) vis à vis du même protagoniste ET dans le même état de validité du blockstamp
+							let doubloonPendingCertif = false;
+							for (const pendingCert of membersPendingCertifsList[m])
+							{
+								if (pendingCert.protagonist == tmpQueryGetUidProtagonistPendingCert[0].uid && pendingCert.validBlockStamp == validBlockStamp)
+								{
+									doubloonPendingCertif = true;
+								}
+							}
+							if (!doubloonPendingCertif)
+							{
+								// récupérer le timestamp d'écriture de la dernière certification écrite par l'émetteur
+								let tmpQueryLastIssuerCert = yield duniterServer.dal.peerDAL.query('SELECT `chainable_on` FROM c_index WHERE `issuer`=\''+tmpQueryPendingCertifsList[i].from+'\' ORDER BY `expires_on` DESC LIMIT 1');
+									
+								// Stoker la liste des certifications en piscine qui n'ont pas encore expirées
+								if (tmpQueryPendingCertifsList[i].expires_on > currentBlockchainTimestamp)
+								{
+									membersPendingCertifsList[m].push({
+											protagonist: tmpQueryGetUidProtagonistPendingCert[0].uid,
+											protagonistIsSentry: sentriesIndex[tmpQueryGetUidProtagonistPendingCert[0].uid],
+											blockNumber: tmpQueryPendingCertifsList[i].block_number,
+											timestampExpire: tmpQueryPendingCertifsList[i].expires_on,
+											timestampWritable: (typeof(tmpQueryLastIssuerCert[0]) == 'undefined') ? 0:tmpQueryLastIssuerCert[0].chainable_on,
+											validBlockStamp: validBlockStamp
+									});
+									nbValidPendingCertifs++;
+								}
+								
+							}
+						}
+					}
+				
+				// Calculer le nombre maximal de certifications reçus par le membre courant
+				let nbCertifs = nbWrittenCertifs + nbValidPendingCertifs;
+				if ( nbCertifs > nbMaxCertifs) { nbMaxCertifs = nbCertifs; }
+			} // END of members loop
+			
+			// Convertir chaque blockNumber (de membership) en timestamp
+			for (const membershipBlockNumber of membershipsBlockNumberList)
+			{
+				membershipsTimeList.push(yield duniterServer.dal.peerDAL.query(
+					'SELECT `medianTime` FROM block WHERE `number`=\''+membershipBlockNumber+'\' LIMIT 1') );
+			}
     
-    // Convertir chaque blockNumber (de membership) en timestamp
-    for (const membershipBlockNumber of membershipsBlockNumberList) {
-      membershipsTimeList.push(yield duniterServer.dal.peerDAL.query(
-        'SELECT `medianTime` FROM block WHERE `number`=\''+membershipBlockNumber+'\' LIMIT 1') );
-    }
-    
-    // Traiter les cas ou expires_on est indéfini
-    for (let i=0;i<membershipsExpireTimeList.length;i++) {
-      if (membershipsExpireTimeList[i] == null)
-      {
-        membershipsExpireTimeList[i] = membershipsTimeList[i] + msValidity;
-      }
-    }
+			// Traiter les cas ou expires_on est indéfini
+			for (let i=0;i<membershipsExpireTimeList.length;i++)
+			{
+				if (membershipsExpireTimeList[i] == null)
+				{
+					membershipsExpireTimeList[i] = membershipsTimeList[i] + msValidity;
+				}
+			}
+			
+			// Calculer le degré de centralité de tout les membres (si demandé)
+			if (centrality=='yes')
+			{
+				let test = '';
+				for (const member of membersList)
+				{
+					//if (sentriesIndex[member.uid])
+					//{
+						let tmpWot = wotbInstance.memCopy();
+						for (const member2 of membersList)
+						{
+							if (member.wotb_id != member2.wotb_id)
+							{
+								let paths = tmpWot.getPaths(member.wotb_id, member2.wotb_id, conf.stepMax);
+								if (paths.length > 0)
+								{
+									let shortestPathLength = paths[paths.length-1].length;
+									cache.meanShortestsPathLength += shortestPathLength;
+									cache.nbShortestsPath++;
+									let indexMembersPresent = new Array();
+									/*for (const path of paths)
+									{
+										if (path.length < shortestPathLength) { shortestPathLength = path.length; }
+									}*/
+									for (const path of paths)
+									{
+										//if (path[0] == 0 && path.length == shortestPathLength) { test += "\n"+'0-->'; }
+										for (let i=0;i<path.length;i++)
+										{
+											if (path.length == shortestPathLength && i>0 && i<(path.length-1))
+											{
+												//if (path[0] == 0) { test += path[i]+'-->'; }
+												cache.membersCentrality[path[i]]++;
+												indexMembersPresent[path[i]] = path[i];
+											}
+										}
+										//if (path[0] == 0 && path.length == shortestPathLength) { test += ''+path[path.length-1]; }
+									}
+									for (const indexMember of indexMembersPresent)
+									{
+										cache.membersCentrality[indexMember]++;
+									}
+								}
+							}
+						}
+						tmpWot.clear();
+					//}
+				}
+			}
+		} // END if (reinitCache)
         
-    // Initialiser le tableau membersListOrdered
-    var membersListOrdered = [];
-    var membersCertifsListSorted = [];
-
     // Calculer le timestamp limite à prendre en compte
-    var limitTimestamp = currentBlockchainTimestamp + (days*86400);
+    let limitTimestamp = currentBlockchainTimestamp + (days*86400);
         
     // trier les membres par ordre croissant/decroissant du critère sort_by
-    var tabSort = [];
     if (sort_by == "idtyWritten")
     { 
       for (const memberIdentity of membersIdentity)
@@ -223,7 +393,14 @@ module.exports = (req, res, next) => co(function *() {
     { 
       for (const memberCertifsList of membersFirstCertifExpire)
       { tabSort.push(memberCertifsList); }
-    }
+		}
+		else if (sort_by == "centrality")
+		{ 
+			for (const member of membersList)
+			{
+				tabSort.push(cache.membersCentrality[member.wotb_id]);
+			}
+		}
     else if (sort_by == "sigCount")
     { 
       for (const memberCertifsList of membersCertifsList)
@@ -231,11 +408,12 @@ module.exports = (req, res, next) => co(function *() {
         tabSort.push(memberCertifsList.length);
       }
     }
-    else { contenu += "<p>ERREUR : param <i>sort_by</i> invalid !</p>"; }
+    else { res.status(500).send(`<pre><p>ERREUR : param <i>sort_by</i> invalid !</p></pre>`) } //
+    
     for (var i=0;i<membersList.length;i++)
     {
       var maxTime = 0;
-      if (order == 'asc') { maxTime = currentBlockchainTimestamp + (msValidity*2); }
+      if (order == 'asc') { maxTime = currentBlockchainTimestamp + (conf.msValidity*2); }
       var idMaxTime =0;
       for (var j=0;j<membersList.length;j++) {
         if ( (order == 'desc' && tabSort[j] > maxTime)
@@ -251,6 +429,7 @@ module.exports = (req, res, next) => co(function *() {
       {
         // Push max value on sort table
         membersListOrdered.push({
+					wotb_id: membersList[idMaxTime].wotb_id,
           uid: membersList[idMaxTime].uid,
           pub: membersList[idMaxTime].pub,
           idtyWrittenTimestamp: membersIdentity[idMaxTime].writtenTimestamp,
@@ -260,19 +439,53 @@ module.exports = (req, res, next) => co(function *() {
           expireMembershipTimestamp: membershipsExpireTimeList[idMaxTime],
           certifications: membersCertifsList[idMaxTime],
           pendingCertifications: membersPendingCertifsList[idMaxTime],
-	  isOutdistanced: membersIdentity[idMaxTime].isOutdistanced
+					detailedDistance: membersIdentity[idMaxTime].detailedDistance,
+					percentSentriesReached: parseFloat(((membersIdentity[idMaxTime].detailedDistance.nbSuccess/membersIdentity[idMaxTime].detailedDistance.nbSentries)*100).toFixed(2)),
+					isSentry: membersIdentity[idMaxTime].isSentry
         });
         
         membersCertifsListSorted.push({
-        issuer: membersCertifsList[idMaxTime].issuer,
-	receiver: membersCertifsList[idMaxTime].receiver,
-        writtenBloc: membersCertifsList[idMaxTime].writtenBloc,
-        timestampExpire: membersCertifsList[idMaxTime].timestampExpire
+					issuer: membersCertifsList[idMaxTime].issuer,
+					receiver: membersCertifsList[idMaxTime].receiver,
+					writtenBloc: membersCertifsList[idMaxTime].writtenBloc,
+					timestampExpire: membersCertifsList[idMaxTime].timestampExpire
         });
       }
       // Exclure la valeur max avant de poursuivre le tri
       tabSort[idMaxTime] = -1;
     }
+    
+    if (reinitCache)
+		{
+			// Calculate mean Members/Sentries ReachedBy Members/Sentries InSingleExtCert
+			if (countSentries > 0)
+			{
+				cache.meanSentriesReachedBySentriesInSingleExtCert = parseFloat((cache.meanSentriesReachedBySentriesInSingleExtCert/countSentries).toFixed(2));
+				cache.meanMembersReachedBySentriesInSingleExtCert = parseFloat((cache.meanMembersReachedBySentriesInSingleExtCert/countSentries).toFixed(2));
+			}
+			if (membersList.length > 0)
+			{
+				cache.meanSentriesReachedByMembersInSingleExtCert = parseFloat((cache.meanSentriesReachedByMembersInSingleExtCert/membersList.length).toFixed(2));
+				cache.meanMembersReachedByMembersInSingleExtCert = parseFloat((cache.meanMembersReachedByMembersInSingleExtCert/membersList.length).toFixed(2));
+			}
+			
+			// recalculate meanCentrality and meanShortestsPathLength
+			if (centrality=='yes')
+			{
+				for (const memberCentrality of cache.membersCentrality)
+				{
+					cache.meanCentrality += memberCentrality;
+				}
+				cache.meanCentrality /= cache.membersCentrality.length;
+				cache.meanShortestsPathLength /= cache.nbShortestsPath;
+				
+				// Dévérouiller le cache des données de centralité
+				cache.lockCentralityCalc = false;
+			}
+			
+			// Dévérouiller le cache Members
+			cache.lockMembers = false;
+		}
     
     // Si le client demande la réponse au format JSON =, le faire
     if (format == 'JSON')
@@ -285,36 +498,52 @@ module.exports = (req, res, next) => co(function *() {
     {
       
       res.locals = {
-	host: req.headers.host.toString(),
-        
+				host: req.headers.host.toString(),
+				// get parameters
         days, mode, sort_by, order,
-        pendingSigs,
-        
+				pendingSigs, centrality,
+				
+				// page data
         currentBlockchainTimestamp,
-        limitTimestamp,
-        sigWindow,
-        idtyWindow,
-        msValidity,
-        sigValidity,
-        nbMaxCertifs,
-        
-        membersListOrdered,
-        membersListFiltered: membersListOrdered.filter( member=> 
-              member.expireMembershipTimestamp < limitTimestamp 
-              && member.expireMembershipTimestamp > currentBlockchainTimestamp
-            ),
+				limitTimestamp, nbMaxCertifs,
+				membersListFiltered: membersListOrdered.filter( member=> 
+				member.expireMembershipTimestamp < limitTimestamp 
+				&& member.expireMembershipTimestamp > currentBlockchainTimestamp
+				),
+				// currency parameters
+				xpercent: conf.xpercent,
+				sigWindow: conf.sigWindow,
+				idtyWindow: conf.idtyWindow,
+				msValidity: conf.msValidity,
+				sigValidity: conf.sigValidity,
+				stepMax: conf.stepMax,
+				
+				// members cache data
+				membersLastUptime: cache.membersLastUptime,
+				membersQualityExt: cache.membersQualityExt,
+				meanSentriesReachedBySentriesInSingleExtCert: cache.meanSentriesReachedBySentriesInSingleExtCert,
+				meanMembersReachedBySentriesInSingleExtCert: cache.meanMembersReachedBySentriesInSingleExtCert,
+				meanSentriesReachedByMembersInSingleExtCert: cache.meanSentriesReachedByMembersInSingleExtCert,
+				meanMembersReachedByMembersInSingleExtCert: cache.meanMembersReachedByMembersInSingleExtCert,
+				
+				// centrality cache data
+				lockCentralityCalc: cache.lockCentralityCalc,
+				membersLastCentralityCalcTime: cache.membersLastCentralityCalcTime,
+				membersCentrality: cache.membersCentrality,
+				meanCentrality: cache.meanCentrality,
+				meanShortestsPathLength: cache.meanShortestsPathLength,
+				nbShortestsPath: cache.nbShortestsPath,
         
         // Template helpers
-        
         timestampToDatetime,
-        // Calculer la proportion de temps restant avant l'expiration
-        color: function( timestamp, idtyWindow, max )
-        {
-          let proportion = ((timestamp-currentBlockchainTimestamp)*max)/idtyWindow;
-          proportion = proportion < 0 ? 0 : proportion > max ? max : proportion 
-          let hex = parseInt( proportion ).toString(16)
-          return `#${hex}${hex}${hex}`
-        },
+				// Calculer la proportion de temps restant avant l'expiration
+				color: function( timestamp, idtyWindow, max )
+				{
+					let proportion = ((timestamp-currentBlockchainTimestamp)*max)/idtyWindow;
+					proportion = proportion < 0 ? 0 : proportion > max ? max : proportion 
+					let hex = parseInt( proportion ).toString(16)
+					return `#${hex}${hex}${hex}`
+				},
         /**
          * background: hsl( ${proportion(item.time,period,1,120)}, 100%, 50%, 1 )
          * background: hsl( 0, 0%, ${proportion(item.time,period,0,200)}, 1 )
@@ -325,7 +554,7 @@ module.exports = (req, res, next) => co(function *() {
           let proportion = ( (timestamp-currentBlockchainTimestamp) * max ) / maxRange
           proportion = proportion < 0 ? 0 : proportion > max ? max : proportion 
           return proportion
-        },
+        }
         // color2: function( timestamp, maxRange, max )
         // {
         //   // Calculer la proportion de membership restant (en pour 255ème)

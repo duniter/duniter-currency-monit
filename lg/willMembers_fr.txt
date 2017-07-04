@@ -16,13 +16,25 @@ HOW_TO_BECOME_MEMBER_TITLE À quel moment une identité devient membre ?
 HOW_TO_BECOME_MEMBER_TEXT Une identité devient membre dès qu'elle bénéficie d'au moins <b>5</b> certifications à l'état <font color='green'>[disponible]</font> <b>au même moment <u>et</u></b> qu'elle respecte la règle de distance.<br>Vous pouvez cliquer directement sur une identité pour arriver sur la page wotex correspondante afin de vérifier si elle respecte la règle de distance.
 DISTANCE_RULE_TITLE C'est quoi la règle de distance ?
 DISTANCE_RULE_TXT Il faut qu'il existe un chemin de 5 pas maximum d'au moins <font color='blue'><b>80% des membres référents</b></font> vers l'identité qui souhaite devenir membre.<br>Tout membre devient automatiquement référent dès lors qu'il a émis <b><u>et</u></b> reçu Y[n] certifications. (Y[n] = CEILING(N(t)^(1/5))).<br>Actuellement, Yn = 
+WHAT_IS_CENTRALITY_TITLE Qu'est ce que le degré de centralité ?
+WHAT_IS_CENTRALITY_TEXT Le degré de centralité d'un membre est le nombre de couples orientés (membre->membre) pour lesquels il fait parti d'un des plus court chemin reliant ce couple.
 QUALITY_MEMBER_TITLE Qu'est ce que la qualité d'un membre ?
-QUALITY_MEMBER_TXT C'est le rapport entre le taux de membres référents rendu atteignables par une certification de ce membre et le taux de membres référents qui faut atteindre pour respecter la règle de distance. Si ce nombre est supérieur ou égal à 1 c'est qu'une certification de ce membre suffit à elle seule pour respecter la règle de distance.<br>Si les qualités de plusieurs certifieurs ne se sommes pas c'est tout simplement parce qu'une grande partie des membres référents qu'ils permettent d'atteindre sont les mêmes.
+QUALITY_MEMBER_TXT C'est le rapport entre le taux de membres référents rendu atteignables par une certification de ce membre et le taux de membres référents qui faut atteindre pour respecter la règle de distance. Si ce nombre est supérieur ou égal à 1 c'est qu'une certification de ce membre suffit à elle seule pour respecter la règle de distance. Si les qualités de plusieurs certifieurs ne se sommes pas c'est tout simplement parce qu'une grande partie des membres référents qu'ils permettent d'atteindre sont les mêmes.
 BLOCKCHAIN_TIME Temps Blockchain actuel
 TABLE_TITLE1 Identités qui vont expirer dans moins de
 TABLE_TITLE2 jours
 COUNT_READY_MEMBERS Identités avec au moins 5 certifications valides reçues
 WOT_TENSION_STATE État de tension de la toile
+CENTRALITY_NOT_CALC le degré de centralité des membres n'a jamais été calculé
+CENTRALITY_CALC_BUSY Les données de centralité sont en cours de mise à jours, pour les voir, rechargez cette page d'ici quelques minutes.
+MEAN_CENTRALITY Centralité moyenne
+NUMBER_OF_EXIST_PATH Nombre de couples orientés pour lequels il existe un chemin de 5 pas ou moins
+NUMBER_OF_PAIRS_MEMBER Nombre de couples orientés (membre->membre)
+PROPORTION_OF_EXIST_PATH Proportion de couples orientés pour lequels il existe un chemin de 5 pas ou moins
+MEAN_LENGTH_PATH Longueur moyenne d'un plus court chemin
+WOT_TENSION_FACTOR Facteur de tension de la toile*
+MEMBERS_PAGE_NOT_LOAD Svp veillez charger la page "liste des membres" au moins une fois pour obtenir l'état de tension de la toile
+DATA_AT Données au
 meanMembersReachedByMembersInSingleExtCert Taux moyen de membres joiniables via une seule certification
 MEMBER_CERT certification d'un membre
 MEMBERS_REACHED membres joiniables

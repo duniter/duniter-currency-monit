@@ -4,14 +4,37 @@ SORT_BY_EXPIRE_MEMBERSHIP expire membership time
 SORT_LAST_RENEWAL last renewal time
 SORT_BY_OLDEST_SIG oldest sig time
 SORT_BY_LAST_SIG last sig time
+SORT_BY_CENTRALITY centrality degree
 SORT_BY_SIG_COUNT certifications count
 ORDER_BY in the following order
 ASC ascending
 DESC descending
 SUBMIT_BUTTON submit
+CHECKBOX_CENTRALITY Recalculate members centrality degree
 CHECKBOX_PENDING_SIGS Include pending certifications
 CHECKBOX_MODE_SIG Print emitted certifications (Instead of received certifications)
+LEGEND Legend
 LEGEND_AVAILABILITY [availability : means this certification may already be written in the next block.]
+WHAT_IS_CENTRALITY_TITLE What is the centrality degree ?
+WHAT_IS_CENTRALITY_TEXT The centrality degree of a member is the number of pairs directed (member->member) for which the member makes left one of the shortest paths.
+QUALITY_MEMBER_TITLE What is the certification quality ?
+QUALITY_MEMBER_TXT It is the report enters the rate of referring members reachable by a certification of this member and the rate of referring members which needs to achieve to respect the rule of distance.
+WOT_TENSION_STATE Wot tension state
+CENTRALITY_NOT_CALC The degree of centrality of the members was never calculated
+CENTRALITY_CALC_BUSY The centrality data are currently recalculate, to see them, refresh this page by a few minutes
+MEAN_CENTRALITY Mean centrality degree
+NUMBER_OF_EXIST_PATH Number of pairs directed for which there is a path of 5 steps or less
+NUMBER_OF_PAIRS_MEMBER Number of pairs directed (member->member)
+PROPORTION_OF_EXIST_PATH Percent of pairs directed for which there is a path of 5 steps or less
+MEAN_LENGTH_PATH mean length shortest path
+WOT_TENSION_FACTOR Wot tension factor*
+DATA_AT Data at
+meanMembersReachedByMembersInSingleExtCert Mean members/sentries reached in single member/sentry certification
+SENTRIES_REACHED sentries reached
+MEMBERS_REACHED members reached
+SENTRY_CERT sentry certification
+MEMBER_CERT member certification
+MEAN_QUALITY mean quality
 CURRENT_BLOCKCHAIN_TIME Current blockchain time
 TABLE_TITLE Members that will expire in less than
 DAYS days
@@ -26,8 +49,14 @@ COL_LIST_RECEIVED_CERT list received certifications
 COL_LIST_EMITTED_CERT list emitted certifications
 LAST2OLDEST récentes -> anciennes
 OLDEST2LAST anciennes -> récentes
+REFERRING_MEMBER referring
+YES yes
+NO no
+QUALITY_EXT quality
+CENTRALITY centrality
 EMITTED emitted
 WRITTEN written
+INVALID_BLOCKSTAMP invalid blockstamp
 CERT_AVAILABLE available
 OVERALL Overall
 MEMBERS members

@@ -16,7 +16,6 @@ var countMembersWithSigQtyValidCert = 0;
 var sentries = [];
 var sentriesIndex = [];
 var wotbIdIndex = [];
-var issuersPendingCertsQuality = [];
 
 module.exports = (req, res, next) => co(function *() {
   
@@ -39,8 +38,6 @@ module.exports = (req, res, next) => co(function *() {
     let idtysListOrdered  = [];
     let sumPercentSentriesReached = 0;
     let sumPercentMembersReached = 0;
-    let countSentriesIssuersOfPendingCerts = 0;
-    let countMembersIssuersOfPendingCerts = 0;
     
     // Récupérer les paramètres
     let days = req.query.d || 65 // Valeur par défaut
@@ -57,11 +54,15 @@ module.exports = (req, res, next) => co(function *() {
     const wotbInstance = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
 		
 		// Vérifier si le cache doit être Réinitialiser
-		let reinitCache = (Math.floor(Date.now() / 1000) > (cache.willMembersLastUptime + MIN_WILLMEMBERS_UPDATE_FREQ));
+		let reinitCache = (!cache.lockWillMembers && Math.floor(Date.now() / 1000) > (cache.willMembersLastUptime + MIN_WILLMEMBERS_UPDATE_FREQ));
+		
+		// Attendre que les cache willMembers et Members soient déverouillés (même si on ne les modifient pas !)
+		while(cache.lockWillMembers || cache.lockMembers);
     
 		if (reinitCache)
     {
       // Réinitialiser le cache
+			cache.lockWillMembers = true;
       identitiesList = [];
 			idtysPendingCertifsList = [];
       nbMaxCertifs = 0;
@@ -169,7 +170,7 @@ module.exports = (req, res, next) => co(function *() {
 
 							// Vérifier si le blockstamp est correct
 							var validBlockStamp = false;
-							if (emittedBlock[0].hash == tmpQueryPendingCertifsList[j].block_hash)
+							if (typeof(emittedBlock[0]) != 'undefined' && emittedBlock[0].hash == tmpQueryPendingCertifsList[j].block_hash)
 							{ validBlockStamp = true; }
 							
 							// récupérer le timestamp d'enchainement de la dernière certification écrite par l'émetteur
@@ -224,12 +225,6 @@ module.exports = (req, res, next) => co(function *() {
 				cache.meanMembersReachedByIdtyPerCert[i] = 0;
 				cache.countIdtiesPerReceiveCert[i] = 0;
 			}
-			
-			// Réinitialiser mean Members/Sentries ReachedBy Members/Sentries InSingleExtCert
-			cache.meanSentriesReachedBySentriesInSingleExtCert = 0;
-			cache.meanMembersReachedBySentriesInSingleExtCert = 0;
-			cache.meanSentriesReachedByMembersInSingleExtCert = 0;
-			cache.meanMembersReachedByMembersInSingleExtCert = 0;
 		} // END if (reinitCache)
 		
       // Si demandé, retrier les, certifications par date de disponibilité
@@ -366,27 +361,6 @@ module.exports = (req, res, next) => co(function *() {
 						  {
 							  tmpWot.addLink(cert.wotb_id, pendingIdtyWID);
 							}
-						
-							// tmpWotOneCert
-							if (reinitCache && typeof(issuersPendingCertsQuality[cert.from]) == 'undefined')
-							{
-								issuersPendingCertsQuality[cert.from] = true;
-								let tmpWotOneCert = wotbInstance.memCopy();
-								let pendingIdtyWID_WotOneCert = tmpWotOneCert.addNode();
-								tmpWotOneCert.addLink(cert.wotb_id, pendingIdtyWID_WotOneCert);
-								let detailedDistanceOneCert = tmpWotOneCert.detailedDistance(pendingIdtyWID_WotOneCert, dSen, conf.stepMax, conf.xpercent);
-								tmpWotOneCert.clear();
-								if (cert.issuerIsSentry)
-								{
-									cache.meanSentriesReachedBySentriesInSingleExtCert += parseFloat(((detailedDistanceOneCert.nbSuccess/detailedDistanceOneCert.nbSentries)*100).toFixed(2));
-									cache.meanMembersReachedBySentriesInSingleExtCert += parseFloat(((detailedDistanceOneCert.nbReached/currentMembersCount)*100).toFixed(2));
-									countSentriesIssuersOfPendingCerts++;
-								}
-								cache.meanSentriesReachedByMembersInSingleExtCert += parseFloat(((detailedDistanceOneCert.nbSuccess/detailedDistanceOneCert.nbSentries)*100).toFixed(2));
-								cache.meanMembersReachedByMembersInSingleExtCert += parseFloat(((detailedDistanceOneCert.nbReached/currentMembersCount)*100).toFixed(2));
-								countMembersIssuersOfPendingCerts++;
-								issuersPendingCertsQuality[cert.from] = ((detailedDistanceOneCert.nbSuccess/detailedDistanceOneCert.nbSentries)/conf.xpercent).toFixed(2);
-							}
 							certIndex++;
 						}
 						let detailedDistance = tmpWot.detailedDistance(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent);
@@ -459,17 +433,8 @@ module.exports = (req, res, next) => co(function *() {
 				}
 			}
 			
-			// Calculate mean Members/Sentries ReachedBy Members/Sentries InSingleExtCert
-			if (countSentriesIssuersOfPendingCerts > 0)
-			{
-				cache.meanSentriesReachedBySentriesInSingleExtCert = parseFloat((cache.meanSentriesReachedBySentriesInSingleExtCert/countSentriesIssuersOfPendingCerts).toFixed(2));
-				cache.meanMembersReachedBySentriesInSingleExtCert = parseFloat((cache.meanMembersReachedBySentriesInSingleExtCert/countSentriesIssuersOfPendingCerts).toFixed(2));
-			}
-			if (countMembersIssuersOfPendingCerts > 0)
-			{
-				cache.meanSentriesReachedByMembersInSingleExtCert = parseFloat((cache.meanSentriesReachedByMembersInSingleExtCert/countMembersIssuersOfPendingCerts).toFixed(2));
-				cache.meanMembersReachedByMembersInSingleExtCert = parseFloat((cache.meanMembersReachedByMembersInSingleExtCert/countMembersIssuersOfPendingCerts).toFixed(2));
-			}
+			// Dévérouiller le cache
+			cache.lockWillMembers = false;
 		}
     
     // Si le client demande la réponse au format JSON, le faire
@@ -484,31 +449,46 @@ module.exports = (req, res, next) => co(function *() {
       res.locals = {
         // Les varibles à passer au template
 				host: req.headers.host.toString(),
+				// get parameters
         days, sort_by, order, sortSig,
         showIdtyWithZeroCert,
+				// page data
         currentBlockNumber,
         currentBlockchainTimestamp,
 				currentMembersCount,
         limitTimestamp,
-        dSen,
+				nbMaxCertifs,
+				countMembersWithSigQtyValidCert,
+				idtysListFiltered: idtysListOrdered.filter( idty=> 
+				idty.expires_on < limitTimestamp
+				&& idty.expires_on > currentBlockchainTimestamp
+				&& (showIdtyWithZeroCert == "yes" || idty.pendingCertifications.length > 0)
+				),
+				// currency parameters
+				dSen,
         sigQty: conf.sigQty,
         sigWindow: conf.sigWindow,
         idtyWindow: conf.idtyWindow,
         xpercent: conf.xpercent,
-        nbMaxCertifs,
-				countMembersWithSigQtyValidCert,
+				// willMembers cache data
 				meanSentriesReachedByIdtyPerCert: cache.meanSentriesReachedByIdtyPerCert,
 				meanMembersReachedByIdtyPerCert: cache.meanMembersReachedByIdtyPerCert,
+				// members cache data
+				membersLastUptime: cache.membersLastUptime,
+				membersQualityExt: cache.membersQualityExt,
 				meanSentriesReachedBySentriesInSingleExtCert: cache.meanSentriesReachedBySentriesInSingleExtCert,
 				meanMembersReachedBySentriesInSingleExtCert: cache.meanMembersReachedBySentriesInSingleExtCert,
 				meanSentriesReachedByMembersInSingleExtCert: cache.meanSentriesReachedByMembersInSingleExtCert,
 				meanMembersReachedByMembersInSingleExtCert: cache.meanMembersReachedByMembersInSingleExtCert,
-				issuersPendingCertsQuality,        
-        idtysListFiltered: idtysListOrdered.filter( idty=> 
-              idty.expires_on < limitTimestamp
-              && idty.expires_on > currentBlockchainTimestamp
-              && (showIdtyWithZeroCert == "yes" || idty.pendingCertifications.length > 0)
-				),
+				// centrality cache data
+				lockCentralityCalc: cache.lockCentralityCalc,
+				membersLastCentralityCalcTime: cache.membersLastCentralityCalcTime,
+				membersCentrality: cache.membersCentrality,
+				meanCentrality: cache.meanCentrality,
+				meanShortestsPathLength: cache.meanShortestsPathLength,
+				nbShortestsPath: cache.nbShortestsPath,
+				
+        
         // Template helpers
         timestampToDatetime,
         // Calculer la proportion de temps restant avant l'expiration
