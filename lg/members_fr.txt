@@ -18,7 +18,7 @@ LEGEND_AVAILABILITY [disponibilité : date à partir de laquelle cette certifica
 WHAT_IS_CENTRALITY_TITLE Qu'est ce que le degré de centralité ?
 WHAT_IS_CENTRALITY_TEXT Le degré de centralité d'un membre est le nombre de couples orientés (membre->membre) pour lesquels il fait parti d'un des plus court chemin reliant ce couple.
 QUALITY_MEMBER_TITLE Qu'est ce que la qualité d'un membre ?
-QUALITY_MEMBER_TXT C'est le rapport entre le taux de membres référents rendu atteignables par une certification de ce membre et le taux de membres référents qui faut atteindre pour respecter la règle de distance. Si ce nombre est supérieur ou égal à 1 c'est qu'une certification de ce membre suffit à elle seule pour respecter la règle de distance. Si les qualités de plusieurs certifieurs ne se sommes pas c'est tout simplement parce qu'une grande partie des membres référents qu'ils permettent d'atteindre sont les mêmes.
+QUALITY_MEMBER_TXT C'est le rapport entre le taux de membres référents rendu atteignables par une certification de ce membre et le taux de membres référents qui faut atteindre pour respecter la règle de distance. Si ce nombre est supérieur ou égal à 1 c'est qu'une certification de ce membre suffit à elle seule pour respecter la règle de distance. Si les qualités de plusieurs certifieurs ne s'additionnent pas c'est tout simplement parce qu'une grande partie des membres référents qu'ils permettent d'atteindre sont les mêmes.
 WOT_TENSION_STATE État de tension de la toile
 CENTRALITY_NOT_CALC le degré de centralité des membres n'a jamais été calculé
 CENTRALITY_CALC_BUSY Les données de centralité sont en cours de mise à jours, pour les voir, rechargez cette page d'ici quelques minutes.

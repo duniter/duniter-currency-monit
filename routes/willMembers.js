@@ -9,6 +9,8 @@ const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 const MIN_WILLMEMBERS_UPDATE_FREQ = 180;
 
 // Préserver les résultats en cache
+var lockWillMembers = false;
+var willMembersLastUptime = 0;
 var identitiesList = [];
 var idtysPendingCertifsList = [];
 var nbMaxCertifs = 0;
@@ -16,10 +18,14 @@ var countMembersWithSigQtyValidCert = 0;
 var sentries = [];
 var sentriesIndex = [];
 var wotbIdIndex = [];
+var meanSentriesReachedByIdtyPerCert = [];
+var meanMembersReachedByIdtyPerCert = [];
+var countIdtiesPerReceiveCert = [];
+var membersQualityExt = [];
 
 module.exports = (req, res, next) => co(function *() {
   
-  var { duniterServer, cache } = req.app.locals
+  var { duniterServer } = req.app.locals
   
   try {
     // get blockchain timestamp
@@ -54,11 +60,11 @@ module.exports = (req, res, next) => co(function *() {
     const wotbInstance = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
 		
 		// Attendre que le cache willMembers soit déverouillé (même si on ne le modifie pas !) puis prendre la main dessus
-		while(cache.lockWillMembers);
-		cache.lockWillMembers = true;
+		while(lockWillMembers);
+		lockWillMembers = true;
 		
 		// Vérifier si le cache doit être Réinitialiser
-		let reinitCache = (Math.floor(Date.now() / 1000) > (cache.willMembersLastUptime + MIN_WILLMEMBERS_UPDATE_FREQ));
+		let reinitCache = (Math.floor(Date.now() / 1000) > (willMembersLastUptime + MIN_WILLMEMBERS_UPDATE_FREQ));
 
 		if (reinitCache)
     {
@@ -70,7 +76,8 @@ module.exports = (req, res, next) => co(function *() {
       sentries = [];
       sentriesIndex = [];
       wotbIdIndex = [];
-      cache.willMembersLastUptime = Math.floor(Date.now() / 1000);
+			membersQualityExt = [];
+      willMembersLastUptime = Math.floor(Date.now() / 1000);
       
       // Récupérer la liste des membres référents
       sentries = wotbInstance.getSentries(dSen);
@@ -221,9 +228,9 @@ module.exports = (req, res, next) => co(function *() {
       // Réinitialiser sumSentriesReachedByIdtyPerCert, sumMembersReachedByIdtyPerCert et countIdtiesPerReceiveCert
       for (let i=0;i<=nbMaxCertifs;i++)
       {
-				cache.meanSentriesReachedByIdtyPerCert[i] = 0;
-				cache.meanMembersReachedByIdtyPerCert[i] = 0;
-				cache.countIdtiesPerReceiveCert[i] = 0;
+				meanSentriesReachedByIdtyPerCert[i] = 0;
+				meanMembersReachedByIdtyPerCert[i] = 0;
+				countIdtiesPerReceiveCert[i] = 0;
 			}
 		} // END if (reinitCache)
 		
@@ -351,18 +358,29 @@ module.exports = (req, res, next) => co(function *() {
 							}
 						}
 						
-						// Tester la distance à l'aide des certifications disponibles
+						// Créer une wot temporaire
 						let tmpWot = wotbInstance.memCopy();
+						
+						// Mesurer la qualité externe de chaque emetteur de chaque certification
+						for (const cert of idtysPendingCertifsList[idMax])
+						{
+							if ( typeof(membersQualityExt[cert.from]) == 'undefined' )
+							{
+								let detailedDistanceQualityExt = tmpWot.detailedDistance(cert.wotb_id, dSen, conf.stepMax-1, conf.xpercent);
+								membersQualityExt[cert.from] = ((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)/conf.xpercent).toFixed(2);
+							}
+						}
+						
+						// Ajouter un noeud a la wot temporaire et lui donner toute les certifications valides reçues par l'indentité idMax
 						let pendingIdtyWID = tmpWot.addNode();
-						let certIndex=0;
 						for (const cert of idtysPendingCertifsList[idMax])
 						{
 						  if (cert.validBlockStamp)
 						  {
 							  tmpWot.addLink(cert.wotb_id, pendingIdtyWID);
 							}
-							certIndex++;
 						}
+						// Récupérer les données de distance du dossier d'adhésion de l'indentité idMax
 						let detailedDistance = tmpWot.detailedDistance(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent);
 
 						// Nettoyer la wot temporaire
@@ -393,9 +411,9 @@ module.exports = (req, res, next) => co(function *() {
 						if (reinitCache && identitiesList[idMax].nbValidPendingCert > 0)
 						{
 						  let nbReceiveCert = identitiesList[idMax].nbValidPendingCert;
-							cache.meanSentriesReachedByIdtyPerCert[nbReceiveCert-1] += percentSentriesReached;
-							cache.meanMembersReachedByIdtyPerCert[nbReceiveCert-1] += percentMembersReached;
-							cache.countIdtiesPerReceiveCert[nbReceiveCert-1] += 1;
+							meanSentriesReachedByIdtyPerCert[nbReceiveCert-1] += percentSentriesReached;
+							meanMembersReachedByIdtyPerCert[nbReceiveCert-1] += percentMembersReached;
+							countIdtiesPerReceiveCert[nbReceiveCert-1] += 1;
 						}
 					} // END if (!doubloon)
 				}  // END days limit rule
@@ -421,15 +439,15 @@ module.exports = (req, res, next) => co(function *() {
 		  // Calculate meanSentriesReachedByIdtyPerCert and meanMembersReachedByIdtyPerCert
 		  for (let i=0;i<=nbMaxCertifs;i++)
       {
-        if ( cache.countIdtiesPerReceiveCert[i] > 0 )
+        if ( countIdtiesPerReceiveCert[i] > 0 )
         {
-					cache.meanSentriesReachedByIdtyPerCert[i] = parseFloat((cache.meanSentriesReachedByIdtyPerCert[i]/cache.countIdtiesPerReceiveCert[i]).toFixed(2));
-					cache.meanMembersReachedByIdtyPerCert[i] = parseFloat((cache.meanMembersReachedByIdtyPerCert[i]/cache.countIdtiesPerReceiveCert[i]).toFixed(2));
+					meanSentriesReachedByIdtyPerCert[i] = parseFloat((meanSentriesReachedByIdtyPerCert[i]/countIdtiesPerReceiveCert[i]).toFixed(2));
+					meanMembersReachedByIdtyPerCert[i] = parseFloat((meanMembersReachedByIdtyPerCert[i]/countIdtiesPerReceiveCert[i]).toFixed(2));
 				}
 				else
 				{
-					cache.meanSentriesReachedByIdtyPerCert[i] = 0.0;
-					cache.meanMembersReachedByIdtyPerCert[i] = 0.0;
+					meanSentriesReachedByIdtyPerCert[i] = 0.0;
+					meanMembersReachedByIdtyPerCert[i] = 0.0;
 				}
 			}
 		}
@@ -468,24 +486,9 @@ module.exports = (req, res, next) => co(function *() {
         idtyWindow: conf.idtyWindow,
         xpercent: conf.xpercent,
 				// willMembers cache data
-				meanSentriesReachedByIdtyPerCert: cache.meanSentriesReachedByIdtyPerCert,
-				meanMembersReachedByIdtyPerCert: cache.meanMembersReachedByIdtyPerCert,
-				// members cache data
-				membersLastUptime: cache.membersLastUptime,
-				membersQualityExt: cache.membersQualityExt,
-				meanSentriesReachedBySentriesInSingleExtCert: cache.meanSentriesReachedBySentriesInSingleExtCert,
-				meanMembersReachedBySentriesInSingleExtCert: cache.meanMembersReachedBySentriesInSingleExtCert,
-				meanSentriesReachedByMembersInSingleExtCert: cache.meanSentriesReachedByMembersInSingleExtCert,
-				meanMembersReachedByMembersInSingleExtCert: cache.meanMembersReachedByMembersInSingleExtCert,
-				// centrality cache data
-				lockCentralityCalc: cache.lockCentralityCalc,
-				membersLastCentralityCalcTime: cache.membersLastCentralityCalcTime,
-				membersCentrality: cache.membersCentrality,
-				meanCentrality: cache.meanCentrality,
-				meanShortestsPathLength: cache.meanShortestsPathLength,
-				nbShortestsPath: cache.nbShortestsPath,
-				
-        
+				meanSentriesReachedByIdtyPerCert,
+				meanMembersReachedByIdtyPerCert,
+				membersQualityExt,
         // Template helpers
         timestampToDatetime,
         // Calculer la proportion de temps restant avant l'expiration
@@ -499,7 +502,7 @@ module.exports = (req, res, next) => co(function *() {
         }
       }
       // Dévérouiller les caches willMembers et members
-      cache.lockWillMembers = false;
+      lockWillMembers = false;
 			// Passer la main au template
       next()
     }

@@ -24,23 +24,7 @@ BLOCKCHAIN_TIME Current Blockchain Time
 TABLE_TITLE1 Identities that will expire in less than
 TABLE_TITLE2 days
 COUNT_READY_MEMBERS Identities having received 5 valid certifications or more
-WOT_TENSION_STATE Wot tension state
-CENTRALITY_NOT_CALC The degree of centrality of the members was never calculated
-CENTRALITY_CALC_BUSY The centrality data are currently recalculate, to see them, refresh this page by a few minutes
-MEAN_CENTRALITY Mean centrality
-NUMBER_OF_EXIST_PATH Number of pairs directed for which there is a path of 5 steps or less
-NUMBER_OF_PAIRS_MEMBER Number of pairs directed (member->member)
-PROPORTION_OF_EXIST_PATH Percent of pairs directed for which there is a path of 5 steps or less
-MEAN_LENGTH_PATH mean length shortest path
-WOT_TENSION_FACTOR Wot tension factor*
-MEMBERS_PAGE_NOT_LOAD Please load members page at least once time for get wot tension data
-DATA_AT Data at
-meanMembersReachedByMembersInSingleExtCert Mean members/sentries reached in single member/sentry certification
-SENTRIES_REACHED sentries reached
-MEMBERS_REACHED members reached
-SENTRY_CERT sentry certification
-MEMBER_CERT member certification
-MEAN_QUALITY mean quality
+WOT_TENSION_STATE Quality averages cases of membership according to the number of received valid certifications
 NUMBER_OF_RECEIVED_CERTS Number of received certs
 MEAN_SENTRIES_REACHED mean sentries reached
 MEAN_QUALITY_CERTS Quality averages of the set of certifications

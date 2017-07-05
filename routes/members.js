@@ -8,6 +8,8 @@ const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 const MIN_MEMBERS_UPDATE_FREQ = 180;
 
 // Préserver les résultats en cache
+var lockMembers = false;
+var membersLastUptime = 0;
 var previousMode = null;
 var previousCentrality = null;
 var membersList = [];
@@ -21,10 +23,24 @@ var membershipsExpireTimeList = [];
 var nbMaxCertifs = 0;
 var sentries = [];
 var sentriesIndex = [];
+var membersQualityExt = [];
+var meanSentriesReachedBySentriesInSingleExtCert = 0;
+var meanMembersReachedBySentriesInSingleExtCert = 0;
+var meanSentriesReachedByMembersInSingleExtCert = 0;
+var meanMembersReachedByMembersInSingleExtCert = 0;
+
+// wotCentrality cache
+var lockCentralityCalc = false;
+var membersLastCentralityCalcTime = 0;
+var membersCentrality = [];
+var meanCentrality = 0;
+var meanShortestsPathLength = 0;
+var nbShortestsPath = 0;
+
 
 module.exports = (req, res, next) => co(function *() {
   
-  var { duniterServer, cache  } = req.app.locals
+  var { duniterServer  } = req.app.locals
   
   try {
     // Initaliser les constantes
@@ -54,11 +70,11 @@ module.exports = (req, res, next) => co(function *() {
     const wotbInstance = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
 		
 		// Attendre que le cache members soit déverouiller puis prendre la main dessus
-		while(cache.lockMembers);
-		cache.lockMembers = true;
+		while(lockMembers);
+		lockMembers = true;
 		
 		// Vérifier si le cache doit être Réinitialiser
-		let reinitCache = (Math.floor(Date.now() / 1000) > (cache.membersLastUptime + MIN_MEMBERS_UPDATE_FREQ));
+		let reinitCache = (Math.floor(Date.now() / 1000) > (membersLastUptime + MIN_MEMBERS_UPDATE_FREQ));
 
 		// Si changement de conditions, forcer le rechargement du cache
 		if (previousMode != mode || previousCentrality != centrality) { reinitCache = true; }
@@ -66,6 +82,7 @@ module.exports = (req, res, next) => co(function *() {
 		if (reinitCache)
 		{
 			// Réinitialiser le cache
+			membersLastUptime = Math.floor(Date.now() / 1000);
 			previousMode = mode;
 			previousCentrality = centrality;
 			membersList = [];
@@ -79,29 +96,20 @@ module.exports = (req, res, next) => co(function *() {
 			nbMaxCertifs = 0;
 			sentries = [];
 			sentriesIndex = [];
-			cache.membersLastUptime = Math.floor(Date.now() / 1000);
-			cache.membersQualityExt = [];
-			cache.meanSentriesReachedBySentriesInSingleExtCert = 0;
-			cache.meanMembersReachedBySentriesInSingleExtCert = 0;
-			cache.meanSentriesReachedByMembersInSingleExtCert = 0;
-			cache.meanMembersReachedByMembersInSingleExtCert = 0;
+			membersQualityExt = [];
+			meanSentriesReachedBySentriesInSingleExtCert = 0;
+			meanMembersReachedBySentriesInSingleExtCert = 0;
+			meanSentriesReachedByMembersInSingleExtCert = 0;
+			meanMembersReachedByMembersInSingleExtCert = 0;
 			
-			// Réinitialiser le cache des donénes de centralité (sauf il elles sont déjà en cours de recalcul)
+			// Réinitialiser le cache des données de centralité
 			if (centrality=='yes')
 			{
-				if (cache.lockCentralityCalc)
-				{
-					centrality = 'no';
-				}
-				else
-				{
-					cache.lockCentralityCalc = true;
-					cache.membersLastCentralityCalcTime = Math.floor(Date.now() / 1000);
-					cache.membersCentrality = [];
-					cache.meanCentrality = 0;
-					cache.meanShortestsPathLength = 0;
-					cache.nbShortestsPath = 0;
-				}
+				membersLastCentralityCalcTime = Math.floor(Date.now() / 1000);
+				membersCentrality = [];
+				meanCentrality = 0;
+				meanShortestsPathLength = 0;
+				nbShortestsPath = 0;
 			}
 			
 			// Récupérer la liste des membres référents
@@ -146,7 +154,7 @@ module.exports = (req, res, next) => co(function *() {
 				// Réinitialiser le degré de centralité du membre
 				if (centrality=='yes')
 				{
-					cache.membersCentrality[membersList[m].wotb_id] = 0;
+					membersCentrality[membersList[m].wotb_id] = 0;
 				}
 				
 				// Créer une wot temporaire
@@ -160,17 +168,17 @@ module.exports = (req, res, next) => co(function *() {
 				
 				// Mesurer la qualité externe du membre courant
 				let detailedDistanceQualityExt = tmpWot.detailedDistance(membersList[m].wotb_id, dSen, conf.stepMax-1, conf.xpercent);
-				cache.membersQualityExt[membersList[m].uid] = ((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)/conf.xpercent).toFixed(2);
+				membersQualityExt[membersList[m].uid] = ((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)/conf.xpercent).toFixed(2);
 				
 				// Calculate meanSentriesReachedBySentriesInSingleExtCert, meanMembersReachedBySentriesInSingleExtCert, meanSentriesReachedByMembersInSingleExtCert and meanMembersReachedByMembersInSingleExtCert
 				if (currentMemberIsSentry)
 				{
-					cache.meanSentriesReachedBySentriesInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)*100).toFixed(2));
-					cache.meanMembersReachedBySentriesInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbReached/membersList.length)*100).toFixed(2));
+					meanSentriesReachedBySentriesInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)*100).toFixed(2));
+					meanMembersReachedBySentriesInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbReached/membersList.length)*100).toFixed(2));
 					countSentries++;
 				}
-				cache.meanSentriesReachedByMembersInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)*100).toFixed(2));
-				cache.meanMembersReachedByMembersInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbReached/membersList.length)*100).toFixed(2));
+				meanSentriesReachedByMembersInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)*100).toFixed(2));
+				meanMembersReachedByMembersInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbReached/membersList.length)*100).toFixed(2));
 				
 				// Nettoyer la wot temporaire
 				tmpWot.clear();
@@ -336,8 +344,8 @@ module.exports = (req, res, next) => co(function *() {
 								if (paths.length > 0)
 								{
 									let shortestPathLength = paths[paths.length-1].length;
-									cache.meanShortestsPathLength += shortestPathLength;
-									cache.nbShortestsPath++;
+									meanShortestsPathLength += shortestPathLength;
+									nbShortestsPath++;
 									let indexMembersPresent = new Array();
 									/*for (const path of paths)
 									{
@@ -351,7 +359,7 @@ module.exports = (req, res, next) => co(function *() {
 											if (path.length == shortestPathLength && i>0 && i<(path.length-1))
 											{
 												//if (path[0] == 0) { test += path[i]+'-->'; }
-												cache.membersCentrality[path[i]]++;
+												membersCentrality[path[i]]++;
 												indexMembersPresent[path[i]] = path[i];
 											}
 										}
@@ -359,7 +367,7 @@ module.exports = (req, res, next) => co(function *() {
 									}
 									for (const indexMember of indexMembersPresent)
 									{
-										cache.membersCentrality[indexMember]++;
+										membersCentrality[indexMember]++;
 									}
 								}
 							}
@@ -398,7 +406,7 @@ module.exports = (req, res, next) => co(function *() {
 		{ 
 			for (const member of membersList)
 			{
-				tabSort.push(cache.membersCentrality[member.wotb_id]);
+				tabSort.push(membersCentrality[member.wotb_id]);
 			}
 		}
     else if (sort_by == "sigCount")
@@ -460,31 +468,25 @@ module.exports = (req, res, next) => co(function *() {
 			// Calculate mean Members/Sentries ReachedBy Members/Sentries InSingleExtCert
 			if (countSentries > 0)
 			{
-				cache.meanSentriesReachedBySentriesInSingleExtCert = parseFloat((cache.meanSentriesReachedBySentriesInSingleExtCert/countSentries).toFixed(2));
-				cache.meanMembersReachedBySentriesInSingleExtCert = parseFloat((cache.meanMembersReachedBySentriesInSingleExtCert/countSentries).toFixed(2));
+				meanSentriesReachedBySentriesInSingleExtCert = parseFloat((meanSentriesReachedBySentriesInSingleExtCert/countSentries).toFixed(2));
+				meanMembersReachedBySentriesInSingleExtCert = parseFloat((meanMembersReachedBySentriesInSingleExtCert/countSentries).toFixed(2));
 			}
 			if (membersList.length > 0)
 			{
-				cache.meanSentriesReachedByMembersInSingleExtCert = parseFloat((cache.meanSentriesReachedByMembersInSingleExtCert/membersList.length).toFixed(2));
-				cache.meanMembersReachedByMembersInSingleExtCert = parseFloat((cache.meanMembersReachedByMembersInSingleExtCert/membersList.length).toFixed(2));
+				meanSentriesReachedByMembersInSingleExtCert = parseFloat((meanSentriesReachedByMembersInSingleExtCert/membersList.length).toFixed(2));
+				meanMembersReachedByMembersInSingleExtCert = parseFloat((meanMembersReachedByMembersInSingleExtCert/membersList.length).toFixed(2));
 			}
 			
 			// recalculate meanCentrality and meanShortestsPathLength
 			if (centrality=='yes')
 			{
-				for (const memberCentrality of cache.membersCentrality)
+				for (const memberCentrality of membersCentrality)
 				{
-					cache.meanCentrality += memberCentrality;
+					meanCentrality += memberCentrality;
 				}
-				cache.meanCentrality /= cache.membersCentrality.length;
-				cache.meanShortestsPathLength /= cache.nbShortestsPath;
-				
-				// Dévérouiller le cache des données de centralité
-				cache.lockCentralityCalc = false;
+				meanCentrality /= membersCentrality.length;
+				meanShortestsPathLength /= nbShortestsPath;
 			}
-			
-			// Dévérouiller le cache Members
-			cache.lockMembers = false;
 		}
     
     // Si le client demande la réponse au format JSON =, le faire
@@ -519,20 +521,20 @@ module.exports = (req, res, next) => co(function *() {
 				stepMax: conf.stepMax,
 				
 				// members cache data
-				membersLastUptime: cache.membersLastUptime,
-				membersQualityExt: cache.membersQualityExt,
-				meanSentriesReachedBySentriesInSingleExtCert: cache.meanSentriesReachedBySentriesInSingleExtCert,
-				meanMembersReachedBySentriesInSingleExtCert: cache.meanMembersReachedBySentriesInSingleExtCert,
-				meanSentriesReachedByMembersInSingleExtCert: cache.meanSentriesReachedByMembersInSingleExtCert,
-				meanMembersReachedByMembersInSingleExtCert: cache.meanMembersReachedByMembersInSingleExtCert,
+				membersLastUptime,
+				membersQualityExt,
+				meanSentriesReachedBySentriesInSingleExtCert,
+				meanMembersReachedBySentriesInSingleExtCert,
+				meanSentriesReachedByMembersInSingleExtCert,
+				meanMembersReachedByMembersInSingleExtCert,
 				
 				// centrality cache data
-				lockCentralityCalc: cache.lockCentralityCalc,
-				membersLastCentralityCalcTime: cache.membersLastCentralityCalcTime,
-				membersCentrality: cache.membersCentrality,
-				meanCentrality: cache.meanCentrality,
-				meanShortestsPathLength: cache.meanShortestsPathLength,
-				nbShortestsPath: cache.nbShortestsPath,
+				lockCentralityCalc,
+				membersLastCentralityCalcTime,
+				membersCentrality,
+				meanCentrality,
+				meanShortestsPathLength,
+				nbShortestsPath,
         
         // Template helpers
         timestampToDatetime,
@@ -574,7 +576,7 @@ module.exports = (req, res, next) => co(function *() {
         // }
       }
       // Dévérouiller le cache members
-      cache.lockMembers = false;
+      lockMembers = false;
       next()
     }
   } catch (e) {

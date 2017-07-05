@@ -19,28 +19,12 @@ DISTANCE_RULE_TXT Il faut qu'il existe un chemin de 5 pas maximum d'au moins <fo
 WHAT_IS_CENTRALITY_TITLE Qu'est ce que le degré de centralité ?
 WHAT_IS_CENTRALITY_TEXT Le degré de centralité d'un membre est le nombre de couples orientés (membre->membre) pour lesquels il fait parti d'un des plus court chemin reliant ce couple.
 QUALITY_MEMBER_TITLE Qu'est ce que la qualité d'un membre ?
-QUALITY_MEMBER_TXT C'est le rapport entre le taux de membres référents rendu atteignables par une certification de ce membre et le taux de membres référents qui faut atteindre pour respecter la règle de distance. Si ce nombre est supérieur ou égal à 1 c'est qu'une certification de ce membre suffit à elle seule pour respecter la règle de distance. Si les qualités de plusieurs certifieurs ne se sommes pas c'est tout simplement parce qu'une grande partie des membres référents qu'ils permettent d'atteindre sont les mêmes.
+QUALITY_MEMBER_TXT C'est le rapport entre le taux de membres référents rendu atteignables par une certification de ce membre et le taux de membres référents qui faut atteindre pour respecter la règle de distance. Si ce nombre est supérieur ou égal à 1 c'est qu'une certification de ce membre suffit à elle seule pour respecter la règle de distance. Si les qualités de plusieurs certifieurs ne s'additionnent pas c'est tout simplement parce qu'une grande partie des membres référents qu'ils permettent d'atteindre sont les mêmes.
 BLOCKCHAIN_TIME Temps Blockchain actuel
 TABLE_TITLE1 Identités qui vont expirer dans moins de
 TABLE_TITLE2 jours
 COUNT_READY_MEMBERS Identités avec au moins 5 certifications valides reçues
-WOT_TENSION_STATE État de tension de la toile
-CENTRALITY_NOT_CALC le degré de centralité des membres n'a jamais été calculé
-CENTRALITY_CALC_BUSY Les données de centralité sont en cours de mise à jours, pour les voir, rechargez cette page d'ici quelques minutes.
-MEAN_CENTRALITY Centralité moyenne
-NUMBER_OF_EXIST_PATH Nombre de couples orientés pour lequels il existe un chemin de 5 pas ou moins
-NUMBER_OF_PAIRS_MEMBER Nombre de couples orientés (membre->membre)
-PROPORTION_OF_EXIST_PATH Proportion de couples orientés pour lequels il existe un chemin de 5 pas ou moins
-MEAN_LENGTH_PATH Longueur moyenne d'un plus court chemin
-WOT_TENSION_FACTOR Facteur de tension de la toile*
-MEMBERS_PAGE_NOT_LOAD Svp veillez charger la page "liste des membres" au moins une fois pour obtenir l'état de tension de la toile
-DATA_AT Données au
-meanMembersReachedByMembersInSingleExtCert Taux moyen de membres joiniables via une seule certification
-MEMBER_CERT certification d'un membre
-MEMBERS_REACHED membres joiniables
-SENTRY_CERT certification d'un membre référent
-SENTRIES_REACHED membres référents joiniables
-MEAN_QUALITY Qualité moyenne
+WOT_TENSION_STATE Qualité moyenne des dossiers d'adhésion en fonction du nombre de certifications valides reçues
 NUMBER_OF_RECEIVED_CERTS Nombre de certifications reçues
 MEAN_SENTRIES_REACHED Taux moyen de membres référents joiniables
 MEAN_QUALITY_CERTS Qualité moyenne par groupe de certifications reçues
