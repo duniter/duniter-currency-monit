@@ -28,6 +28,8 @@ var meanSentriesReachedBySentriesInSingleExtCert = 0;
 var meanMembersReachedBySentriesInSingleExtCert = 0;
 var meanSentriesReachedByMembersInSingleExtCert = 0;
 var meanMembersReachedByMembersInSingleExtCert = 0;
+var proportionMembersWithQualityUpper1 = 0;
+var proportionMembersWithQualityUpper1IfNoSentries = 0;
 
 // wotCentrality cache
 var lockCentralityCalc = false;
@@ -119,6 +121,8 @@ module.exports = (req, res, next) => co(function *() {
 			meanMembersReachedBySentriesInSingleExtCert = 0;
 			meanSentriesReachedByMembersInSingleExtCert = 0;
 			meanMembersReachedByMembersInSingleExtCert = 0;
+			proportionMembersWithQualityUpper1 = 0;
+			proportionMembersWithQualityUpper1IfNoSentries = 0;
 			
 			// Réinitialiser le cache des données de centralité
 			if (centrality=='yes')
@@ -182,11 +186,24 @@ module.exports = (req, res, next) => co(function *() {
 				let tmpWot1 = wotbInstance.memCopy();
 				let detailedDistance = tmpWot.detailedDistance(membersList[m].wotb_id, dSen, conf.stepMax, conf.xpercent);
 				membersNbSentriesUnreached[membersList[m].uid] = parseInt(detailedDistance.nbSentries)-parseInt(detailedDistance.nbSuccess);
-				//console.log("membersNbSentriesUnreached[%s] = %s", membersList[m].uid, membersNbSentriesUnreached[membersList[m].uid]);
 				
-				// Mesurer la qualité externe du membre courant
+				// Récupérer les informations détaillés de distance pour une nouvelle identité qui ne serait certifiée que par le membre courant (ce qui équivaut à récupérer les informations de distance pour le membre courant en décrémentant stepMax de 1)
 				let detailedDistanceQualityExt = tmpWot.detailedDistance(membersList[m].wotb_id, dSen, conf.stepMax-1, conf.xpercent);
+				
+				// Calculer la qualité du membre courant
 				membersQualityExt[membersList[m].uid] = ((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)/conf.xpercent).toFixed(2);
+				if (membersQualityExt[membersList[m].uid] >= 1.0)
+				{
+				  proportionMembersWithQualityUpper1++;
+				}
+				
+				// Calculer la qualité du membre courant s'il n'y avait pas de référents (autrement di si tout les membres était référents)
+				let membersQualityIfNoSentries = ((detailedDistanceQualityExt.nbReached/membersList.length)/conf.xpercent).toFixed(2);
+				//console.log("membersQualityIfNoSentries[%s] = %s", membersList[m].uid, membersQualityIfNoSentries);
+				if (membersQualityIfNoSentries >= 1.0)
+				{
+					proportionMembersWithQualityUpper1IfNoSentries++;
+				}
 				
 				// Calculate meanSentriesReachedBySentriesInSingleExtCert, meanMembersReachedBySentriesInSingleExtCert, meanSentriesReachedByMembersInSingleExtCert and meanMembersReachedByMembersInSingleExtCert
 				if (currentMemberIsSentry)
@@ -434,6 +451,13 @@ module.exports = (req, res, next) => co(function *() {
 				}
 			}
 		}
+		else if (sort_by == "quality")
+		{ 
+			for (const member of membersList)
+			{
+				tabSort.push(membersQualityExt[member.uid]);
+			}
+		}
     else if (sort_by == "sigCount")
     { 
       for (const memberCertifsList of membersCertifsList)
@@ -512,6 +536,13 @@ module.exports = (req, res, next) => co(function *() {
 				meanCentrality /= membersCentrality.length;
 				meanShortestsPathLength /= nbShortestsPath;
 			}
+			
+			//Calculate proportionMembersWithQualityUpper1 and proportionMembersWithQualityUpper1IfNoSentries
+			proportionMembersWithQualityUpper1 /= membersList.length;
+			proportionMembersWithQualityUpper1IfNoSentries /= membersList.length;
+			
+			// Dévérouiller le cache members
+			lockMembers = false;
 		}
     
     // Si le client demande la réponse au format JSON =, le faire
@@ -552,6 +583,8 @@ module.exports = (req, res, next) => co(function *() {
 				meanMembersReachedBySentriesInSingleExtCert,
 				meanSentriesReachedByMembersInSingleExtCert,
 				meanMembersReachedByMembersInSingleExtCert,
+				proportionMembersWithQualityUpper1,
+				proportionMembersWithQualityUpper1IfNoSentries,
 				
 				// centrality cache data
 				lockCentralityCalc,
@@ -600,8 +633,6 @@ module.exports = (req, res, next) => co(function *() {
           
         // }
       }
-      // Dévérouiller le cache members
-      lockMembers = false;
       next()
     }
   } catch (e) {

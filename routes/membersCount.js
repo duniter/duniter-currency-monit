@@ -16,7 +16,7 @@ module.exports = (req, res, next) => co(function *() {
 		var pow = req.query.pow || 'no';
     
     // get lg file
-    const LANG = getLang(`${__dirname}/../lg/membersCount_${req.query.lg||'fr'}.txt`);
+    const LANG = getLang(`${__dirname}/../lg/membersCount_${req.query.lg||'fr'}.txt`); //
     
     // get medianTime of beginBlock
     var beginBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`hash` FROM block WHERE `fork`=0 AND `number` = '+cache.beginBlock[0].number+' LIMIT 1');
@@ -63,11 +63,40 @@ module.exports = (req, res, next) => co(function *() {
       // If achieve next step
       if ( (cache.stepUnit == "blocks" && bStep == cache.step) || (cache.stepUnit != "blocks" && blockchain[b].medianTime >= nextStepTime))
       {
+				let previousDateTime = "";
+				if(tabMembersCount.length > 0)
+				{
+					previousDateTime = timestampToDatetime(tabMembersCount[tabMembersCount.length-1].timestamp, cache.onlyDate);
+				}
+				else
+				{
+					previousDateTime = timestampToDatetime(blockchain[0].medianTime);
+				}
+				let dateTime = "";
+				if (cache.stepUnit != "blocks")
+				{
+					if (cache.step > 1)
+					{
+						switch (cache.stepUnit)
+						{
+							case "hours": dateTime = previousDateTime+" - "+timestampToDatetime(blockchain[b].medianTime, cache.onlyDate); break;
+							case "days": dateTime = previousDateTime+" - "+timestampToDatetime(blockchain[b].medianTime-(cache.stepTime/cache.step), cache.onlyDate); break;
+							case "weeks": dateTime = previousDateTime+" - "+timestampToDatetime(blockchain[b].medianTime, cache.onlyDate); break;
+							case "months": dateTime = previousDateTime+" - "+timestampToDatetime(blockchain[b].medianTime, cache.onlyDate); break;
+							case "years": dateTime = previousDateTime+" - "+timestampToDatetime(blockchain[b].medianTime, cache.onlyDate); break;
+						}
+					}
+					else
+					{
+						dateTime = previousDateTime; 
+					}
+				}
+				
 				// push tabMembersCount
 				tabMembersCount.push({
 						blockNumber: blockchain[b].number,
 						timestamp: blockchain[b].medianTime,
-						dateTime: timestampToDatetime(blockchain[b].medianTime, cache.onlyDate),
+						dateTime: dateTime,
 						membersCount: blockchain[b].membersCount,
 						sentriesCount: cache.blockchain[cacheIndex].sentries,
 						issuersCount: parseInt(stepIssuerCount/bStep),
@@ -81,16 +110,22 @@ module.exports = (req, res, next) => co(function *() {
       }
     }
     
-    // Add current block data
-    tabMembersCount.push({
-	    blockNumber: blockchain[blockchain.length-1].number,
-	    timestamp: blockchain[blockchain.length-1].medianTime,
-	    dateTime: LANG['LAST_BLOCK'],
-	    membersCount: blockchain[blockchain.length-1].membersCount,
-	    sentriesCount: cache.blockchain[cache.blockchain.length-1].sentries,
-	    issuersCount: blockchain[blockchain.length-1].issuersCount,
-			powMin: blockchain[blockchain.length-1].powMin
-	  });
+    // Add current block data (only if end parameter is undefined or negative)
+    if (typeof(req.query.end) == 'undefined' || req.query.end <= 0)
+		{
+			tabMembersCount.push({
+				blockNumber: blockchain[blockchain.length-1].number,
+				timestamp: blockchain[blockchain.length-1].medianTime,
+				dateTime: LANG['LAST_BLOCK'],
+				membersCount: blockchain[blockchain.length-1].membersCount,
+				sentriesCount: cache.blockchain[cache.blockchain.length-1].sentries,
+				issuersCount: blockchain[blockchain.length-1].issuersCount,
+				powMin: blockchain[blockchain.length-1].powMin
+			});
+		}
+		
+		// Delete first tabMembersCount cell
+		tabMembersCount.splice(0, 1);
     
     if (format == 'JSON')
       res.status(200).jsonp( tabMembersCount )
@@ -143,7 +178,7 @@ module.exports = (req, res, next) => co(function *() {
         tabMembersCount,
         begin: cache.beginBlock[0].number,
         end: cache.endBlock[0].number,
-        form: `${LANG["BEGIN"]} #<input type="number" name="begin" value="${cache.beginBlock[0].number}" min="0"> - ${LANG["END"]} #<input type="number" name="end" value="${cache.endBlock[0].number}" min="1"> - 		${LANG["STEP"]} <input type="number" name="step" value="${cache.step}" min="1">
+        form: `${LANG["BEGIN"]} #<input type="number" name="begin" value="${cache.beginBlock[0].number}" min="0"> - ${LANG["END"]} #<input type="number" name="end" value="${cache.endBlock[0].number}" > - 		${LANG["STEP"]} <input type="number" name="step" value="${cache.step}" min="1">
 					<select name="stepUnit">
 						<option name="stepUnit" value ="blocks"${cache.stepUnit == 'blocks' ? 'selected' : ''}>${LANG["BLOCKS"]}
 						<option name="stepUnit" value ="hours"${cache.stepUnit == 'hours' ? 'selected' : ''}>${LANG["HOURS"]}
@@ -157,7 +192,7 @@ module.exports = (req, res, next) => co(function *() {
         chart: {
           type: 'line',
           data: {
-            labels: tabMembersCount.map(item=>item.dateTime),
+						labels: (cache.stepUnit == "blocks") ? tabMembersCount.map(item=>item.blockNumber):tabMembersCount.map(item=>item.dateTime),
 						datasets: datasets,
           },
           options: {

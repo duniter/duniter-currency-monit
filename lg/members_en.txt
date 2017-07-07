@@ -5,6 +5,7 @@ SORT_LAST_RENEWAL last renewal time
 SORT_BY_OLDEST_SIG oldest sig time
 SORT_BY_LAST_SIG last sig time
 SORT_BY_CENTRALITY centrality degree
+SORT_BY_QUALITY member quality
 SORT_BY_SIG_COUNT certifications count
 ORDER_BY in the following order
 ASC ascending
@@ -35,6 +36,7 @@ MEMBERS_REACHED members reached
 SENTRY_CERT sentry certification
 MEMBER_CERT member certification
 MEAN_QUALITY mean quality
+PROPORTION_MEMBERS_WITH_QUALITY_UPPER_1 Proportion of members with an upper quality an equal in 1
 CURRENT_BLOCKCHAIN_TIME Current blockchain time
 TABLE_TITLE Members that will expire in less than
 DAYS days

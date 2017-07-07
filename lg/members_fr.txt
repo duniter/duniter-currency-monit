@@ -5,6 +5,7 @@ SORT_LAST_RENEWAL date de dernier renouvellement
 SORT_BY_OLDEST_SIG date de plus vielle certification
 SORT_BY_LAST_SIG date de plus récente certification
 SORT_BY_CENTRALITY degré de centralité
+SORT_BY_QUALITY qualité du membre
 SORT_BY_SIG_COUNT nombre de certifications reçues
 ORDER_BY dans l'ordre
 ASC croissant
@@ -35,6 +36,7 @@ MEMBERS_REACHED membres joiniables
 SENTRY_CERT certification d'un membre référent
 SENTRIES_REACHED membres référents joiniables
 MEAN_QUALITY Qualité moyenne
+PROPORTION_MEMBERS_WITH_QUALITY_UPPER_1 Proportion de membre avec une qualité >= 1
 CURRENT_BLOCKCHAIN_TIME Temps Blockchain actuel
 TABLE_TITLE Membres dont le statut de membre va expirer dans moins de
 DAYS jours
