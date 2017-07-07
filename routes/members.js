@@ -69,15 +69,33 @@ module.exports = (req, res, next) => co(function *() {
     // Alimenter wotb avec la toile actuelle
     const wotbInstance = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
 		
-		// Attendre que le cache members soit déverouiller puis prendre la main dessus
-		while(lockMembers);
-		lockMembers = true;
-		
 		// Vérifier si le cache doit être Réinitialiser
 		let reinitCache = (Math.floor(Date.now() / 1000) > (membersLastUptime + MIN_MEMBERS_UPDATE_FREQ));
-
-		// Si changement de conditions, forcer le rechargement du cache
-		if (previousMode != mode || previousCentrality != centrality) { reinitCache = true; }
+		
+		// Si changement de conditions, alors forcer le rechargement du cache s'il n'est pas, vérouillé, sinon forcer les conditions à celles en mémoire
+		if (previousMode != mode || previousCentrality != centrality)
+		{
+			if (!lockMembers)
+			{
+				lockMembers = true;
+				reinitCache = true;
+			}
+			else
+			{
+				mode = previousMode;
+				centrality = previousCentrality;
+			}
+		}
+		// Sinon, si les conditions sont identiques :
+		// Si le cache members est dévérouillé, le vérouiller, sinon ne pas réinitialiser le cache
+		else if (reinitCache && !lockMembers)
+		{
+			lockMembers = true;
+		}
+		else if(lockMembers)
+		{
+			reinitCache = false;
+		}
 		
 		if (reinitCache)
 		{

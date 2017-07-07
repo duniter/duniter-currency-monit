@@ -59,12 +59,19 @@ module.exports = (req, res, next) => co(function *() {
     // Alimenter wotb avec la toile de confiance actuelle
     const wotbInstance = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
 		
-		// Attendre que le cache willMembers soit déverouillé (même si on ne le modifie pas !) puis prendre la main dessus
-		while(lockWillMembers);
-		lockWillMembers = true;
 		
 		// Vérifier si le cache doit être Réinitialiser
 		let reinitCache = (Math.floor(Date.now() / 1000) > (willMembersLastUptime + MIN_WILLMEMBERS_UPDATE_FREQ));
+		
+		// Si le cache willMembers est dévérouillé, le vérouiller, sinon ne pas réinitialiser le cache
+		if (reinitCache && !lockWillMembers)
+		{
+			lockWillMembers = true;
+		}
+		else if(lockWillMembers)
+		{
+			reinitCache = false;
+		}
 
 		if (reinitCache)
     {
@@ -450,6 +457,9 @@ module.exports = (req, res, next) => co(function *() {
 					meanMembersReachedByIdtyPerCert[i] = 0.0;
 				}
 			}
+			
+			// Dévérouiller le cache willMembers
+			lockWillMembers = false;
 		}
     
     // Si le client demande la réponse au format JSON, le faire
@@ -501,8 +511,6 @@ module.exports = (req, res, next) => co(function *() {
           return `#${hex}${hex}${hex}`
         }
       }
-      // Dévérouiller les caches willMembers et members
-      lockWillMembers = false;
 			// Passer la main au template
       next()
     }
