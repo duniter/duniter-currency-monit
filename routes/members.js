@@ -424,7 +424,14 @@ module.exports = (req, res, next) => co(function *() {
 		{ 
 			for (const member of membersList)
 			{
-				tabSort.push(membersCentrality[member.wotb_id]);
+				if (membersCentrality[member.wotb_id] > 0)
+				{
+				  tabSort.push(membersCentrality[member.wotb_id]);
+				}
+				else
+				{
+					tabSort.push(1);
+				}
 			}
 		}
     else if (sort_by == "sigCount")
@@ -439,7 +446,7 @@ module.exports = (req, res, next) => co(function *() {
     for (var i=0;i<membersList.length;i++)
     {
       var maxTime = 0;
-      if (order == 'asc') { maxTime = currentBlockchainTimestamp + (conf.msValidity*2); }
+      if (order == 'asc') { maxTime = currentBlockchainTimestamp + (conf.msValidity*2); } // maxTime = +infiny;
       var idMaxTime =0;
       for (var j=0;j<membersList.length;j++) {
         if ( (order == 'desc' && tabSort[j] > maxTime)
