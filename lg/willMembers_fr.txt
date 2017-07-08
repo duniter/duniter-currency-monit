@@ -45,6 +45,7 @@ QUALITY_CERTIFIERS qualité certificateurs
 CERTIFIERS_COUNT Nombre de certificateurs
 QUALITY qualité
 SIG_PERIOD_OK disponible
+IDTY_REVOKED [identité revoquée]
 INVALID_BLOCKSTAMP blockstamp incorrect
 LAST_TR1  total
 LAST_TR2  identités

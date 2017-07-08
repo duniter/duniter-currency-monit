@@ -163,43 +163,47 @@ ${(help != 'no') ? `
       
       <!--Printer la ligne-->
       <tr>
-        <td align="center" style="background:${(idty.validBlockStamp) ? idty.colorPending=color(idty.expires_on,idtyWindow,250) : idty.colorPending='#FF8000'}">
-          <a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${idty['uid']}${idty['wotexId']}&pending=on&mode=undefined">${idty['uid'].substring(0, 20)}</a>
+        <td align="center" style="background:${(idty.validBlockStamp) ? ((idty.expires_on > 0) ? idty.colorPending=color(idty.expires_on,idtyWindow,250):'#FF0000'): idty.colorPending='#FF8000'}">
+          <a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${idty['uid']}${idty['wotexId']}&pending=on&mode=undefined">${idty['uid'].substring(0, 25)}</a>
           <br>${idty['pubkey'].substring(0, 16)}
           <br>${LANG['EMITTED_ON']} ${timestampToDatetime(idty['creationTimestamp'])}
           <br>${LANG['AT_BLOCK']} #${idty['BlockNumber']}
-          <br>${LANG['EXPIRE_ON']} <b>${timestampToDatetime(idty.expires_on)}</b>
+          ${(idty.expires_on > 0) ? '<br><b>'+LANG['EXPIRE_ON']+' '+timestampToDatetime(idty.expires_on)+'</b>':``}
         ${(!idty.validBlockStamp) ? `
           <br><font color="DarkRed">[${LANG['INVALID_BLOCKSTAMP']}]</font>
         `:``}
         </td>
-        <td align='center' style="background:${idty.colorPending}">
-          ${(idty.membership && !idty.detailedDistance.isOutdistanced && idty.nbValidPendingCert >= sigQty) ? `<font color="green">${LANG['OK']}` : `<font color="DarkRed">${LANG['KO']}` }</font>
-          <br>${LANG['MEMBERSHIP_ASKED']} : ${idty.membership? `<font color="green">${LANG['YES']}` : `<font color="DarkRed">${LANG['NO']}` }</font>
-          <br><font color="${idty.detailedDistance.isOutdistanced ? 'DarkRed' : 'blue' }">${idty.percentSentriesReached}% (${idty.detailedDistance.nbSuccess}/${idty.detailedDistance.nbSentries})
-          <br>${LANG['QUALITY_CERTIFIERS']} : <b>${(idty.validBlockStamp) ? ((idty.detailedDistance.nbSuccess/idty.detailedDistance.nbSentries)/xpercent).toFixed(2):`0.00`}</b></font>
-          <br>${LANG['CERTIFIERS_COUNT']} : ${(idty.nbValidPendingCert >= sigQty) ? `<font color="green">${idty.nbValidPendingCert}/${sigQty}` : `<font color="DarkRed">${idty.nbValidPendingCert}/${sigQty}` }</font>
-        </td>
+        ${(idty.expires_on > 0) ? `
+					<td align='center' style="background:${idty.colorPending}">
+						${(idty.membership && !idty.detailedDistance.isOutdistanced && idty.nbValidPendingCert >= sigQty) ? `<font color="green">${LANG['OK']}` : `<font color="DarkRed">${LANG['KO']}` }</font>
+						<br>${LANG['MEMBERSHIP_ASKED']} : ${idty.membership? `<font color="green">${LANG['YES']}` : `<font color="DarkRed">${LANG['NO']}` }</font>
+						<br><font color="${idty.detailedDistance.isOutdistanced ? 'DarkRed' : 'blue' }">${idty.percentSentriesReached}% (${idty.detailedDistance.nbSuccess}/${idty.detailedDistance.nbSentries})
+						<br>${LANG['QUALITY_CERTIFIERS']} : <b>${(idty.validBlockStamp) ? ((idty.detailedDistance.nbSuccess/idty.detailedDistance.nbSentries)/xpercent).toFixed(2):`0.00`}</b></font>
+						<br>${LANG['CERTIFIERS_COUNT']} : ${(idty.nbValidPendingCert >= sigQty) ? `<font color="green">${idty.nbValidPendingCert}/${sigQty}` : `<font color="DarkRed">${idty.nbValidPendingCert}/${sigQty}` }</font>
+					</td>
+				`:`
+					<td align='center' style="background:#FF0000"><b>${LANG['IDTY_REVOKED']}</b></td>
+				`}
         <td style="background:#000000">-</td>
         
         <!--printer les certifications-->
         ${idty.pendingCertifications.map( (cert,j)=> `
           ${ (j<nbMaxCertifs) ? `
-            <td align="center" style="background:${(cert.validBlockStamp) ? color(cert.timestampExpire,sigWindow,250) : '#FF8000'}">
-            ${cert.issuerIsSentry ? '<b>':''}
-	      <a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${cert['from']}&pending=on&mode=undefined">${cert['from']}</a>
-	    ${cert.issuerIsSentry ? '</b>':''}
-	    <br>${LANG['QUALITY']} : <b>${(typeof(membersQualityExt[cert.from])=='undefined' || !cert.validBlockStamp) ? `0.00`:membersQualityExt[cert.from]}</b>
-	    <br>${timestampToDatetime(cert.timestampExpire)}
-	    <br>#${cert['blockNumber']}
-	    ${j==(4+idty.pendingCertifications.length-idty.nbValidPendingCert)?'<b>':''}
-	    ${ ( !cert.validBlockStamp || cert['timestampWritable'] > currentBlockchainTimestamp ) ? `
-	      <br><font color="DarkRed">[${ (cert.validBlockStamp) ? timestampToDatetime(cert['timestampWritable']):LANG['INVALID_BLOCKSTAMP']}]</font>
-	    ` : `
-	      <br><font color='green'>[${LANG['SIG_PERIOD_OK']}]</font>
-	    `}
-	    ${j==(4+idty.pendingCertifications.length-idty.nbValidPendingCert)?'</b>':''}
-	    </td>
+              <td align="center" style="background:${(cert.validBlockStamp) ? color(cert.timestampExpire,sigWindow,250) : '#FF8000'}">
+							${cert.issuerIsSentry ? '<b>':''}
+								<a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${cert['from']}&pending=on&mode=undefined">${cert['from']}</a>
+							${cert.issuerIsSentry ? '</b>':''}
+							<br>${LANG['QUALITY']} : <b>${(typeof(membersQualityExt[cert.from])=='undefined' || !cert.validBlockStamp) ? `0.00`:membersQualityExt[cert.from]}</b>
+							<br>${timestampToDatetime(cert.timestampExpire)}
+							<br>#${cert['blockNumber']}
+							${j==(4+idty.pendingCertifications.length-idty.nbValidPendingCert)?'<b>':''}
+							${ ( !cert.validBlockStamp || cert['timestampWritable'] > currentBlockchainTimestamp ) ? `
+								<br><font color="DarkRed">[${ (cert.validBlockStamp) ? timestampToDatetime(cert['timestampWritable']):LANG['INVALID_BLOCKSTAMP']}]</font>
+							` : `
+								<br><font color='green'>[${LANG['SIG_PERIOD_OK']}]</font>
+							`}
+							${j==(4+idty.pendingCertifications.length-idty.nbValidPendingCert)?'</b>':''}
+						</td>
           `:''}
         `).join('')}
       

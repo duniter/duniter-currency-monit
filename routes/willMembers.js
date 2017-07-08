@@ -119,18 +119,18 @@ module.exports = (req, res, next) => co(function *() {
 	
 				// vérifier la validité du blockstamp de l'identité
 				let validIdtyBlockStamp = false;
-				if (idtyEmittedBlock[0].hash == idtyBlockStamp[1])
+				if (typeof(idtyEmittedBlock[0]) == 'undefined' || idtyEmittedBlock[0].hash == idtyBlockStamp[1])
 				{ validIdtyBlockStamp = true; }
 
 				// Stocker les informations de l'identité
 				identitiesList.push({
 						BlockNumber: idtyBlockNumber,
-						creationTimestamp: idtyEmittedBlock[0].medianTime,
+						creationTimestamp: (typeof(idtyEmittedBlock[0]) == 'undefined' ) ? currentBlockchainTimestamp:idtyEmittedBlock[0].medianTime,
 						pubkey: resultQueryIdtys[i].pubkey,
 						uid: resultQueryIdtys[i].uid,
 						hash: resultQueryIdtys[i].hash,
 						wotexId: wotexId,
-						expires_on: resultQueryIdtys[i].expires_on,
+						expires_on: (resultQueryIdtys[i].expires_on=="") ? 0:resultQueryIdtys[i].expires_on,
 						nbCert: 0,
 						nbValidPendingCert: 0,
 						registrationAvailability: 0,
@@ -486,7 +486,7 @@ module.exports = (req, res, next) => co(function *() {
 				countMembersWithSigQtyValidCert,
 				idtysListFiltered: idtysListOrdered.filter( idty=> 
 				idty.expires_on < limitTimestamp
-				&& idty.expires_on > currentBlockchainTimestamp
+				//&& idty.expires_on > currentBlockchainTimestamp
 				&& (showIdtyWithZeroCert == "yes" || idty.pendingCertifications.length > 0)
 				),
 				// currency parameters

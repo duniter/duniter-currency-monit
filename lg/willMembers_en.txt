@@ -45,6 +45,7 @@ QUALITY_CERTIFIERS quality certifiers
 CERTIFIERS_COUNT certifiers count
 QUALITY quality
 SIG_PERIOD_OK available
+IDTY_REVOKED [identity revoked]
 INVALID_BLOCKSTAMP invalid blockstamp
 LAST_TR1  total
 LAST_TR2  identities
