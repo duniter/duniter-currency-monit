@@ -1,11 +1,12 @@
 "use strict";
 
 const co = require('co')
-const wotb = require('wotb')
+
+const constants = require(__dirname + '/../lib/constants')
+
+const wotb = (constants.USE_WOTB6) ? require('wotb'):null;
 
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
-
-const MIN_MEMBERS_UPDATE_FREQ = 180;
 
 // Préserver les résultats en cache
 var lockMembers = false;
@@ -69,10 +70,10 @@ module.exports = (req, res, next) => co(function *() {
 		var format = req.query.format || 'HTML'; // Valeur par défaut
     
     // Alimenter wotb avec la toile actuelle
-    const wotbInstance = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
+		const wotbInstance = (constants.USE_WOTB6) ? wotb.newFileInstance(duniterServer.home + '/wotb.bin'):duniterServer.dal.wotb;
 		
 		// Vérifier si le cache doit être Réinitialiser
-		let reinitCache = (Math.floor(Date.now() / 1000) > (membersLastUptime + MIN_MEMBERS_UPDATE_FREQ));
+		let reinitCache = (Math.floor(Date.now() / 1000) > (membersLastUptime + constants.MIN_MEMBERS_UPDATE_FREQ));
 		
 		// Si changement de conditions, alors forcer le rechargement du cache s'il n'est pas, vérouillé, sinon forcer les conditions à celles en mémoire
 		if (previousMode != mode || previousCentrality != centrality)
@@ -183,37 +184,52 @@ module.exports = (req, res, next) => co(function *() {
 				let tmpWot = wotbInstance.memCopy();
 				
 				// Récupérer les informations détaillés de distance pour le membre courant
-				let tmpWot1 = wotbInstance.memCopy();
-				let detailedDistance = tmpWot.detailedDistance(membersList[m].wotb_id, dSen, conf.stepMax, conf.xpercent);
-				membersNbSentriesUnreached[membersList[m].uid] = parseInt(detailedDistance.nbSentries)-parseInt(detailedDistance.nbSuccess);
-				
-				// Récupérer les informations détaillés de distance pour une nouvelle identité qui ne serait certifiée que par le membre courant (ce qui équivaut à récupérer les informations de distance pour le membre courant en décrémentant stepMax de 1)
-				let detailedDistanceQualityExt = tmpWot.detailedDistance(membersList[m].wotb_id, dSen, conf.stepMax-1, conf.xpercent);
-				
-				// Calculer la qualité du membre courant
-				membersQualityExt[membersList[m].uid] = ((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)/conf.xpercent).toFixed(2);
-				if (membersQualityExt[membersList[m].uid] >= 1.0)
+				let detailedDistance = null;
+				if (constants.USE_WOTB6)
 				{
-				  proportionMembersWithQualityUpper1++;
+					detailedDistance = tmpWot.detailedDistance(membersList[m].wotb_id, dSen, conf.stepMax, conf.xpercent);
+				}
+				else
+				{
+					detailedDistance = {
+						isOutdistanced: tmpWot.isOutdistanced(membersList[m].wotb_id, dSen, conf.stepMax, conf.xpercent)
+					};
 				}
 				
-				// Calculer la qualité du membre courant s'il n'y avait pas de référents (autrement di si tout les membres était référents)
-				let membersQualityIfNoSentries = ((detailedDistanceQualityExt.nbReached/membersList.length)/conf.xpercent).toFixed(2);
-				//console.log("membersQualityIfNoSentries[%s] = %s", membersList[m].uid, membersQualityIfNoSentries);
-				if (membersQualityIfNoSentries >= 1.0)
-				{
-					proportionMembersWithQualityUpper1IfNoSentries++;
-				}
 				
-				// Calculate meanSentriesReachedBySentriesInSingleExtCert, meanMembersReachedBySentriesInSingleExtCert, meanSentriesReachedByMembersInSingleExtCert and meanMembersReachedByMembersInSingleExtCert
-				if (currentMemberIsSentry)
+				if (constants.USE_WOTB6)
 				{
-					meanSentriesReachedBySentriesInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)*100).toFixed(2));
-					meanMembersReachedBySentriesInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbReached/membersList.length)*100).toFixed(2));
-					countSentries++;
+					// Calculate membersNbSentriesUnreached
+					membersNbSentriesUnreached[membersList[m].uid] =  parseInt(detailedDistance.nbSentries)-parseInt(detailedDistance.nbSuccess);
+					
+					// Récupérer les informations détaillés de distance pour une nouvelle identité qui ne serait certifiée que par le membre courant (ce qui équivaut à récupérer les informations de distance pour le membre courant en décrémentant stepMax de 1)
+					let detailedDistanceQualityExt = tmpWot.detailedDistance(membersList[m].wotb_id, dSen, conf.stepMax-1, conf.xpercent);
+					
+					// Calculer la qualité du membre courant
+					membersQualityExt[membersList[m].uid] = ((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)/conf.xpercent).toFixed(2);
+					if (membersQualityExt[membersList[m].uid] >= 1.0)
+					{
+						proportionMembersWithQualityUpper1++;
+					}
+					
+					// Calculer la qualité du membre courant s'il n'y avait pas de référents (autrement di si tout les membres était référents)
+					let membersQualityIfNoSentries = ((detailedDistanceQualityExt.nbReached/membersList.length)/conf.xpercent).toFixed(2);
+					//console.log("membersQualityIfNoSentries[%s] = %s", membersList[m].uid, membersQualityIfNoSentries);
+					if (membersQualityIfNoSentries >= 1.0)
+					{
+						proportionMembersWithQualityUpper1IfNoSentries++;
+					}
+					
+					// Calculate meanSentriesReachedBySentriesInSingleExtCert, meanMembersReachedBySentriesInSingleExtCert, meanSentriesReachedByMembersInSingleExtCert and meanMembersReachedByMembersInSingleExtCert
+					if (currentMemberIsSentry)
+					{
+						meanSentriesReachedBySentriesInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)*100).toFixed(2));
+						meanMembersReachedBySentriesInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbReached/membersList.length)*100).toFixed(2));
+						countSentries++;
+					}
+					meanSentriesReachedByMembersInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)*100).toFixed(2));
+					meanMembersReachedByMembersInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbReached/membersList.length)*100).toFixed(2));
 				}
-				meanSentriesReachedByMembersInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)*100).toFixed(2));
-				meanMembersReachedByMembersInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbReached/membersList.length)*100).toFixed(2));
 				
 				// Nettoyer la wot temporaire
 				tmpWot.clear();
@@ -514,16 +530,23 @@ module.exports = (req, res, next) => co(function *() {
     
     if (reinitCache)
 		{
-			// Calculate mean Members/Sentries ReachedBy Members/Sentries InSingleExtCert
-			if (countSentries > 0)
+			if (constants.USE_WOTB6)
 			{
-				meanSentriesReachedBySentriesInSingleExtCert = parseFloat((meanSentriesReachedBySentriesInSingleExtCert/countSentries).toFixed(2));
-				meanMembersReachedBySentriesInSingleExtCert = parseFloat((meanMembersReachedBySentriesInSingleExtCert/countSentries).toFixed(2));
-			}
-			if (membersList.length > 0)
-			{
-				meanSentriesReachedByMembersInSingleExtCert = parseFloat((meanSentriesReachedByMembersInSingleExtCert/membersList.length).toFixed(2));
-				meanMembersReachedByMembersInSingleExtCert = parseFloat((meanMembersReachedByMembersInSingleExtCert/membersList.length).toFixed(2));
+				// Calculate mean Members/Sentries ReachedBy Members/Sentries InSingleExtCert
+				if (countSentries > 0)
+				{
+					meanSentriesReachedBySentriesInSingleExtCert = parseFloat((meanSentriesReachedBySentriesInSingleExtCert/countSentries).toFixed(2));
+					meanMembersReachedBySentriesInSingleExtCert = parseFloat((meanMembersReachedBySentriesInSingleExtCert/countSentries).toFixed(2));
+				}
+				if (membersList.length > 0)
+				{
+					meanSentriesReachedByMembersInSingleExtCert = parseFloat((meanSentriesReachedByMembersInSingleExtCert/membersList.length).toFixed(2));
+					meanMembersReachedByMembersInSingleExtCert = parseFloat((meanMembersReachedByMembersInSingleExtCert/membersList.length).toFixed(2));
+				}
+				
+				//Calculate proportionMembersWithQualityUpper1 and proportionMembersWithQualityUpper1IfNoSentries
+				proportionMembersWithQualityUpper1 /= membersList.length;
+				proportionMembersWithQualityUpper1IfNoSentries /= membersList.length;
 			}
 			
 			// recalculate meanCentrality and meanShortestsPathLength
@@ -536,11 +559,7 @@ module.exports = (req, res, next) => co(function *() {
 				meanCentrality /= membersCentrality.length;
 				meanShortestsPathLength /= nbShortestsPath;
 			}
-			
-			//Calculate proportionMembersWithQualityUpper1 and proportionMembersWithQualityUpper1IfNoSentries
-			proportionMembersWithQualityUpper1 /= membersList.length;
-			proportionMembersWithQualityUpper1IfNoSentries /= membersList.length;
-			
+
 			// Dévérouiller le cache members
 			lockMembers = false;
 		}
@@ -557,6 +576,7 @@ module.exports = (req, res, next) => co(function *() {
       
       res.locals = {
 				host: req.headers.host.toString(),
+				USE_WOTB6: constants.USE_WOTB6,
 				// get parameters
         days, mode, sort_by, order,
 				pendingSigs, centrality,

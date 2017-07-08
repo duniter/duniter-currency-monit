@@ -2,11 +2,12 @@
 
 const co = require('co')
 const crypto = require('crypto')
-const wotb = require('wotb')
+
+const constants = require(__dirname + '/../lib/constants')
+
+const wotb = (constants.USE_WOTB6) ? require('wotb'):null;
 
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
-
-const MIN_WILLMEMBERS_UPDATE_FREQ = 180;
 
 // Préserver les résultats en cache
 var lockWillMembers = false;
@@ -56,12 +57,12 @@ module.exports = (req, res, next) => co(function *() {
     // Calculer le timestamp limite à prendre en compte
     let limitTimestamp = currentBlockchainTimestamp + (days*86400);
     
-    // Alimenter wotb avec la toile de confiance actuelle
-    const wotbInstance = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
+    // Alimenter wotb avec la toile de confiance 
+		const wotbInstance = (constants.USE_WOTB6) ? wotb.newFileInstance(duniterServer.home + '/wotb.bin'):duniterServer.dal.wotb;
 		
 		
 		// Vérifier si le cache doit être Réinitialiser
-		let reinitCache = (Math.floor(Date.now() / 1000) > (willMembersLastUptime + MIN_WILLMEMBERS_UPDATE_FREQ));
+		let reinitCache = (Math.floor(Date.now() / 1000) > (willMembersLastUptime + constants.MIN_WILLMEMBERS_UPDATE_FREQ));
 		
 		// Si le cache willMembers est dévérouillé, le vérouiller, sinon ne pas réinitialiser le cache
 		if (reinitCache && !lockWillMembers)
@@ -369,12 +370,15 @@ module.exports = (req, res, next) => co(function *() {
 						let tmpWot = wotbInstance.memCopy();
 						
 						// Mesurer la qualité externe de chaque emetteur de chaque certification
-						for (const cert of idtysPendingCertifsList[idMax])
+						if (constants.USE_WOTB6)
 						{
-							if ( typeof(membersQualityExt[cert.from]) == 'undefined' )
+							for (const cert of idtysPendingCertifsList[idMax])
 							{
-								let detailedDistanceQualityExt = tmpWot.detailedDistance(cert.wotb_id, dSen, conf.stepMax-1, conf.xpercent);
-								membersQualityExt[cert.from] = ((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)/conf.xpercent).toFixed(2);
+								if ( typeof(membersQualityExt[cert.from]) == 'undefined' )
+								{
+									let detailedDistanceQualityExt = tmpWot.detailedDistance(cert.wotb_id, dSen, conf.stepMax-1, conf.xpercent);
+									membersQualityExt[cert.from] = ((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)/conf.xpercent).toFixed(2);
+								}
 							}
 						}
 						
@@ -388,14 +392,14 @@ module.exports = (req, res, next) => co(function *() {
 							}
 						}
 						// Récupérer les données de distance du dossier d'adhésion de l'indentité idMax
-						let detailedDistance = tmpWot.detailedDistance(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent);
+						let detailedDistance = (constants.USE_WOTB6) ? tmpWot.detailedDistance(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent):tmpWot.isOutdistanced(pendingIdtyWID, dSen, conf.stepMax, conf.xpercent);
 
 						// Nettoyer la wot temporaire
 						tmpWot.clear();
 						
 						// Calculer percentSentriesReached et percentMembersReached
-						let percentSentriesReached = parseFloat(((detailedDistance.nbSuccess/detailedDistance.nbSentries)*100).toFixed(2));
-						let percentMembersReached = parseFloat(((detailedDistance.nbReached/currentMembersCount)*100).toFixed(2));
+						let percentSentriesReached = (constants.USE_WOTB6) ? parseFloat(((detailedDistance.nbSuccess/detailedDistance.nbSentries)*100).toFixed(2)):null;
+						let percentMembersReached = (constants.USE_WOTB6) ? parseFloat(((detailedDistance.nbReached/currentMembersCount)*100).toFixed(2)):null;
 						
 						// Pousser l'identité dans le tableau idtysListOrdered
 						idtysListOrdered.push({
@@ -415,7 +419,7 @@ module.exports = (req, res, next) => co(function *() {
 						});
 						
 						// Si le cache a été réinitialiser, recalculer les sommes meanSentriesReachedByIdtyPerCert et meanMembersReachedByIdtyPerCert
-						if (reinitCache && identitiesList[idMax].nbValidPendingCert > 0)
+						if (constants.USE_WOTB6 && reinitCache && identitiesList[idMax].nbValidPendingCert > 0)
 						{
 						  let nbReceiveCert = identitiesList[idMax].nbValidPendingCert;
 							meanSentriesReachedByIdtyPerCert[nbReceiveCert-1] += percentSentriesReached;
@@ -444,17 +448,20 @@ module.exports = (req, res, next) => co(function *() {
 		if (reinitCache)
 		{
 		  // Calculate meanSentriesReachedByIdtyPerCert and meanMembersReachedByIdtyPerCert
-		  for (let i=0;i<=nbMaxCertifs;i++)
-      {
-        if ( countIdtiesPerReceiveCert[i] > 0 )
-        {
-					meanSentriesReachedByIdtyPerCert[i] = parseFloat((meanSentriesReachedByIdtyPerCert[i]/countIdtiesPerReceiveCert[i]).toFixed(2));
-					meanMembersReachedByIdtyPerCert[i] = parseFloat((meanMembersReachedByIdtyPerCert[i]/countIdtiesPerReceiveCert[i]).toFixed(2));
-				}
-				else
+			if (constants.USE_WOTB6)
+			{
+				for (let i=0;i<=nbMaxCertifs;i++)
 				{
-					meanSentriesReachedByIdtyPerCert[i] = 0.0;
-					meanMembersReachedByIdtyPerCert[i] = 0.0;
+					if ( countIdtiesPerReceiveCert[i] > 0 )
+					{
+						meanSentriesReachedByIdtyPerCert[i] = parseFloat((meanSentriesReachedByIdtyPerCert[i]/countIdtiesPerReceiveCert[i]).toFixed(2));
+						meanMembersReachedByIdtyPerCert[i] = parseFloat((meanMembersReachedByIdtyPerCert[i]/countIdtiesPerReceiveCert[i]).toFixed(2));
+					}
+					else
+					{
+						meanSentriesReachedByIdtyPerCert[i] = 0.0;
+						meanMembersReachedByIdtyPerCert[i] = 0.0;
+					}
 				}
 			}
 			
@@ -474,6 +481,7 @@ module.exports = (req, res, next) => co(function *() {
       res.locals = {
         // Les varibles à passer au template
 				host: req.headers.host.toString(),
+				USE_WOTB6: constants.USE_WOTB6,
 				// get parameters
         days, sort_by, order, sortSig,
         showIdtyWithZeroCert,

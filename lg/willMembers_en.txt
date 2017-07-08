@@ -42,6 +42,7 @@ MEMBERSHIP_ASKED Membership asked
 YES yes
 NO no
 QUALITY_CERTIFIERS quality certifiers
+DISTANCE Distance
 CERTIFIERS_COUNT certifiers count
 QUALITY quality
 SIG_PERIOD_OK available

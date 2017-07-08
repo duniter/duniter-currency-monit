@@ -32,7 +32,7 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 <option name="sort_by" value ="oldestSig" ${sort_by == 'oldestSig' ? 'selected' : ''}>${LANG["SORT_BY_OLDEST_SIG"]}
 <option name="sort_by" value ="lastSig" ${sort_by == 'lastSig' ? 'selected' : ''}>${LANG["SORT_BY_LAST_SIG"]}
 <option name="sort_by" value ="centrality" ${sort_by == 'centrality' ? 'selected' : ''}>${LANG["SORT_BY_CENTRALITY"]}
-<option name="sort_by" value ="quality" ${sort_by == 'quality' ? 'selected' : ''}>${LANG["SORT_BY_QUALITY"]}
+${(USE_WOTB6) ? `<option name="sort_by" value ="quality" ${sort_by == 'quality' ? 'selected' : ''}>${LANG["SORT_BY_QUALITY"]}`:``}
 <option name="sort_by" value ="sigCount" ${sort_by == 'sigCount' ? 'selected' : ''}>${LANG["SORT_BY_SIG_COUNT"]}
 </select> ${LANG["ORDER_BY"]} <select name="order">
 <option name="order" value ="asc"> ${LANG["ASC"]}
@@ -76,15 +76,17 @@ ${(membersLastCentralityCalcTime==0) ? `
 	`}
 `}
 <br>
-<table border="1">
-	<tr><td align='center' colspan='3'>${LANG["DATA_AT"]} ${timestampToDatetime(membersLastUptime)}</td></tr>
-	<tr><td align='center'>${LANG["meanMembersReachedByMembersInSingleExtCert"]}</td><td align='center'>${LANG["SENTRIES_REACHED"]}</td><td align='center'>${LANG["MEMBERS_REACHED"]}</td></tr>
-	<tr><td align='center'>${LANG["SENTRY_CERT"]}</td><td align='center'>${meanSentriesReachedBySentriesInSingleExtCert}%</td><td align='center'>${meanMembersReachedBySentriesInSingleExtCert}%</td></tr>
-	<tr><td align='center'>${LANG["MEMBER_CERT"]}</td><td align='center'><font color="${(meanSentriesReachedByMembersInSingleExtCert<xpercent) ? 'DarkRed' : 'blue' }"><b>${meanSentriesReachedByMembersInSingleExtCert}%</b></font></td><td align='center'><b>${meanMembersReachedByMembersInSingleExtCert}%</b></td></tr>
-	<tr><td align='center'><b>${LANG["MEAN_QUALITY"]}</b></td><td align='center'><font color="red"><b>${(meanSentriesReachedByMembersInSingleExtCert/(xpercent*100)).toFixed(2)}</b></font></td><td align='center'><b>${(meanMembersReachedByMembersInSingleExtCert/(xpercent*100)).toFixed(2)}</b></td></tr>
-	<tr><td align='center'><b>${LANG["PROPORTION_MEMBERS_WITH_QUALITY_UPPER_1"]}</b></td><td align='center'><font color="red"><b>${(proportionMembersWithQualityUpper1*100).toFixed(2)}%</b></font></td><td align='center'><b>${(proportionMembersWithQualityUpper1IfNoSentries*100).toFixed(2)}%</b></td></tr>
-</table>
-<br>
+${(USE_WOTB6) ? `
+	<table border="1">
+		<tr><td align='center' colspan='3'>${LANG["DATA_AT"]} ${timestampToDatetime(membersLastUptime)}</td></tr>
+		<tr><td align='center'>${LANG["meanMembersReachedByMembersInSingleExtCert"]}</td><td align='center'>${LANG["SENTRIES_REACHED"]}</td><td align='center'>${LANG["MEMBERS_REACHED"]}</td></tr>
+		<tr><td align='center'>${LANG["SENTRY_CERT"]}</td><td align='center'>${meanSentriesReachedBySentriesInSingleExtCert}%</td><td align='center'>${meanMembersReachedBySentriesInSingleExtCert}%</td></tr>
+		<tr><td align='center'>${LANG["MEMBER_CERT"]}</td><td align='center'><font color="${(meanSentriesReachedByMembersInSingleExtCert<xpercent) ? 'DarkRed' : 'blue' }"><b>${meanSentriesReachedByMembersInSingleExtCert}%</b></font></td><td align='center'><b>${meanMembersReachedByMembersInSingleExtCert}%</b></td></tr>
+		<tr><td align='center'><b>${LANG["MEAN_QUALITY"]}</b></td><td align='center'><font color="red"><b>${(meanSentriesReachedByMembersInSingleExtCert/(xpercent*100)).toFixed(2)}</b></font></td><td align='center'><b>${(meanMembersReachedByMembersInSingleExtCert/(xpercent*100)).toFixed(2)}</b></td></tr>
+		<tr><td align='center'><b>${LANG["PROPORTION_MEMBERS_WITH_QUALITY_UPPER_1"]}</b></td><td align='center'><font color="red"><b>${(proportionMembersWithQualityUpper1*100).toFixed(2)}%</b></font></td><td align='center'><b>${(proportionMembersWithQualityUpper1IfNoSentries*100).toFixed(2)}%</b></td></tr>
+	</table>
+	<br>
+`:``}
 
 <!-- Afficher le currentBlockchainTimestamp -->
 <i>${LANG["CURRENT_BLOCKCHAIN_TIME"]} : ${timestampToDatetime(currentBlockchainTimestamp)}.</i><br>
@@ -113,7 +115,9 @@ ${(membersLastCentralityCalcTime==0) ? `
           <b>${member.uid}</b><br>
           
           ${(member.isSentry) ? `<font color="blue">${LANG['REFERRING_MEMBER']} : ${LANG['YES']}</font>`:`${LANG['REFERRING_MEMBER']} : ${LANG['NO']}`}<br>
-          ${LANG['QUALITY_EXT']} : <b>${(typeof(membersQualityExt[member.uid])=='undefined') ? `0.00`:membersQualityExt[member.uid]}</b><br>
+          ${(USE_WOTB6) ? `
+            ${LANG['QUALITY_EXT']} : <b>${(typeof(membersQualityExt[member.uid])=='undefined') ? `0.00`:membersQualityExt[member.uid]}</b><br>
+					`:``}
           <b>${(membersLastCentralityCalcTime==0) ? `${LANG['CENTRALITY']} : ?`:`
 						${LANG['CENTRALITY']} : <b>${(typeof(membersCentrality[member.wotb_id])=='undefined') ? `0`:membersCentrality[member.wotb_id]}
 					`}</b><br>
@@ -133,10 +137,13 @@ ${(membersLastCentralityCalcTime==0) ? `
         <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)">
           ${timestampToDatetime(member.expireMembershipTimestamp)}</td>
         <td align='center' style="background:hsla(${member.proportion}, 100%, 50%, 1)">
-          <font color="${member.detailedDistance.isOutdistanced ? 'red' : 'blue' }">
-            ${member.detailedDistance.isOutdistanced ? LANG['COL_DISTANCE_isOutdistanced'] : LANG['COL_DISTANCE_isNotOutdistanced'] }
-            <br>${member.percentSentriesReached}% (${member.detailedDistance.nbSuccess}/${member.detailedDistance.nbSentries})
-          </font>
+          
+						<font color="${member.detailedDistance.isOutdistanced ? 'red' : 'blue' }">
+							${member.detailedDistance.isOutdistanced ? LANG['COL_DISTANCE_isOutdistanced'] : LANG['COL_DISTANCE_isNotOutdistanced'] }
+							${(USE_WOTB6) ? `
+								<br>${member.percentSentriesReached}% (${member.detailedDistance.nbSuccess}/${member.detailedDistance.nbSentries})
+							`:``}
+						</font>
         </td>
         <td style="background:#000000">-</td>
   

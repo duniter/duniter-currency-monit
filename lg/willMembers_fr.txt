@@ -42,6 +42,7 @@ MEMBERSHIP_ASKED Adhésion demandée
 YES oui
 NO non
 QUALITY_CERTIFIERS qualité certificateurs
+DISTANCE Distance
 CERTIFIERS_COUNT Nombre de certificateurs
 QUALITY qualité
 SIG_PERIOD_OK disponible
