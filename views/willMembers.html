@@ -1,5 +1,21 @@
 ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
   <title>${currencyName}-monit</title>
+  
+<script type="text/javascript">// <![CDATA[
+	function deroule(champ,valeur)
+	{
+		/*valeur est la hauteur en pixel de la zone*/
+		switch (champ)
+		{
+			case 1: /*si champ vaut 1 alors on change la hauteur de zone1*/
+				document.getElementById("zone1").style.height=valeur+'px';
+				break;
+		case 2: /*si champ vaut 2 alors on change la hauteur de zone2*/
+				document.getElementById("zone2").style.height=valeur+'px';
+				break;
+		}
+	}
+// ]]></script>
 </head>
 <body>
 
@@ -14,7 +30,7 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
     <td><a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WOTEX"]}</a></td>
     <td><a href="about?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["ABOUT"]}</a></td>
     <td>
-      <form action="" method="GET">
+      <form action="" method="GET"><input type="hidden" name="help" value="${help}">
 	<select name="lg" onchange="this.form.submit()">
 	  <option name="lg" value="fr" ${MENU_LANG['LG'] == 'fr' ? 'selected' : ''}>FR
 	  <option name="lg" value="en" ${MENU_LANG['LG'] == 'en' ? 'selected' : ''}>EN
@@ -35,37 +51,110 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 		<option name="order" value ="desc" ${order == 'desc' ? 'selected' : ''}>${LANG["ORDER_DESC"]}
 	</select> <input type="submit" value="${LANG["SUBMIT_TXT"]}"><br>
 	
-	<input type="checkbox" name="hideIdtyWithZeroCert" value="yes" ${hideIdtyWithZeroCert == 'yes' ? 'checked' : ''}>${LANG["CHECKBOX_HIDE_IDTY_WITH_ZERO_CERT"]}<br>
+	<input type="checkbox" name="showIdtyWithZeroCert" value="yes" ${showIdtyWithZeroCert == 'yes' ? 'checked' : ''}>${LANG["CHECKBOX_SHOW_IDTY_WITH_ZERO_CERT"]}<br>
 	
 	<input type="checkbox" name="sortSig" value="Availability" ${sortSig == 'Availability' ? 'checked' : ''}>${LANG["CHECKBOX_SORT_SIG"]}
 </form>
 <br>
+<hr>
 
-<!-- Afficher le currentBlockchainTimestamp et la légende -->
+<!-- Afficher la légende et l'aide -->
 ${(help != 'no') ? `
-  <i><font color='DarkRed'>${LANG["SIG_PERIOD_LEGEND"]}</font><br>
-  <font color='green'>${LANG["SIG_PERIOD_LEGEND2"]}</font></i><br>
-  <br>
-  <b>${LANG["HOW_TO_BECOME_MEMBER_TITLE"]}</b><br>
-  ${LANG["HOW_TO_BECOME_MEMBER_TEXT"]}<br>
-  <br>
-  <b>${LANG["DISTANCE_RULE_TITLE"]}</b><br>
-  ${LANG["DISTANCE_RULE_TXT"]}<br>
-  <br>
+  <div id="zone1" style="width: 100%; height: 20px; background: White; border: 1px solid DimGrey; transition: height 1s; -moz-transition: height 1s;-webkit-transition: height 1s;-o-transition: height 1s; overflow: hidden;">
+    <div id="bandeau1" style="height: 20px; width: 100%; font-size: medium; color: white; background-color: darkgrey;" onmouseover="deroule(1,400);" onmouseout="deroule(1,20);"><b>${LANG["LEGEND"]}</b>
+    </div>
+    <div id="texte1" style="float: left;">
+			<i><font color='DarkRed'>${LANG["SIG_PERIOD_LEGEND"]}</font><br>
+			<font color='green'>${LANG["SIG_PERIOD_LEGEND2"]}</font></i><br>
+			<br>
+			<b>${LANG["HOW_TO_BECOME_MEMBER_TITLE"]}</b><br>
+			${LANG["HOW_TO_BECOME_MEMBER_TEXT"]}<br>
+			<br>
+			<b>${LANG["DISTANCE_RULE_TITLE"]}</b><br>
+			${LANG["DISTANCE_RULE_TXT"]} <b>${dSen}</b><br>
+			<br>
+			<b>${LANG["WHAT_IS_CENTRALITY_TITLE"]}</b><br>
+			${LANG["WHAT_IS_CENTRALITY_TEXT"]}<br>
+			<br>
+			<b>${LANG["QUALITY_MEMBER_TITLE"]}</b><br>
+			${LANG["QUALITY_MEMBER_TXT"]}<br>
+		</div>
+	</div>
+`:''}
+
+<!-- Afficher l'état de tension de la toile de confiance -->
+${ (USE_WOTB6) ? `
+	<div id="zone2" style="width: 100%; height: 20px; background: White; border: 1px solid DimGrey; transition: height 1s; -moz-transition: height 1s;-webkit-transition: height 1s;-o-transition: height 1s; overflow: hidden;">
+		<div id="bandeau2" style="height: 20px; width: 100%; font-size: medium; color: white; background-color: darkgrey;" onmouseover="deroule(2,150);" onmouseout="deroule(2,20);"><b>${LANG["WOT_TENSION_STATE"]}</b>
+		</div>
+		<div id="texte2" style="float: left;">
+			<table border="1">
+			<tr>
+				<td align='center'>${LANG["NUMBER_OF_RECEIVED_CERTS"]}</td><td align='center'>1</td><td align='center'>2</td><td align='center'>3</td><td align='center'>4</td><td align='center'>5</td>
+				${(nbMaxCertifs>5) ? `<td align='center'>6</td>`:``}
+				${(nbMaxCertifs>6) ? `<td align='center'>7</td>`:``}
+				${(nbMaxCertifs>7) ? `<td align='center'>8</td>`:``}
+				${(nbMaxCertifs>8) ? `<td align='center'>9</td>`:``}
+				${(nbMaxCertifs>9) ? `<td align='center'>10</td>`:``}
+			</tr>
+			<!-- Afficher les moyennes SentriesReachedByIdtyPerCert -->
+			<tr>
+				<td align='center'>${LANG["MEAN_SENTRIES_REACHED"]}</td>
+				<td><font color="${(meanSentriesReachedByIdtyPerCert[0]<xpercent) ? 'DarkRed' : 'blue' }"><b>${meanSentriesReachedByIdtyPerCert[0]}%</b></font></td>
+				<td><font color="${(meanSentriesReachedByIdtyPerCert[1]<xpercent) ? 'DarkRed' : 'blue' }"><b>${meanSentriesReachedByIdtyPerCert[1]}%</b></font></td>
+				<td><font color="${(meanSentriesReachedByIdtyPerCert[2]<xpercent) ? 'DarkRed' : 'blue' }"><b>${meanSentriesReachedByIdtyPerCert[2]}%</b></font></td>
+				<td><font color="${(meanSentriesReachedByIdtyPerCert[3]<xpercent) ? 'DarkRed' : 'blue' }"><b>${meanSentriesReachedByIdtyPerCert[3]}%</b></font></td>
+				<td><font color="${(meanSentriesReachedByIdtyPerCert[4]<xpercent) ? 'DarkRed' : 'blue' }"><b>${meanSentriesReachedByIdtyPerCert[4]}%</b></font></td>
+				${(nbMaxCertifs>5) ? `<td><font color="${(meanSentriesReachedByIdtyPerCert[5]<xpercent) ? 'DarkRed' : 'blue' }"><b>${meanSentriesReachedByIdtyPerCert[5]}%</b></font></td>`:``}
+				${(nbMaxCertifs>6) ? `<td><font color="${(meanSentriesReachedByIdtyPerCert[6]<xpercent) ? 'DarkRed' : 'blue' }"><b>${meanSentriesReachedByIdtyPerCert[6]}%</b></font></td>`:``}
+				${(nbMaxCertifs>7) ? `<td><font color="${(meanSentriesReachedByIdtyPerCert[7]<xpercent) ? 'DarkRed' : 'blue' }"><b>${meanSentriesReachedByIdtyPerCert[7]}%</b></font></td>`:``}
+				${(nbMaxCertifs>8) ? `<td><font color="${(meanSentriesReachedByIdtyPerCert[8]<xpercent) ? 'DarkRed' : 'blue' }"><b>${meanSentriesReachedByIdtyPerCert[8]}%</b></font></td>`:``}
+				${(nbMaxCertifs>9) ? `<td><font color="${(meanSentriesReachedByIdtyPerCert[9]<xpercent) ? 'DarkRed' : 'blue' }"><b>${meanSentriesReachedByIdtyPerCert[9]}%</b></font></td>`:``}
+			</tr>
+			<!-- Afficher les qualités moyennes -->
+			<tr>
+				<td align='center'>${LANG["MEAN_QUALITY_CERTS"]}</td>
+				<td align='center'><font color="${(meanSentriesReachedByIdtyPerCert[0]<xpercent) ? 'DarkRed' : 'blue' }"><b>${(meanSentriesReachedByIdtyPerCert[0]/(xpercent*100)).toFixed(2)}</b></font></td>
+				<td align='center'><font color="${(meanSentriesReachedByIdtyPerCert[1]<xpercent) ? 'DarkRed' : 'blue' }"><b>${(meanSentriesReachedByIdtyPerCert[1]/(xpercent*100)).toFixed(2)}</b></font></td>
+				<td align='center'><font color="${(meanSentriesReachedByIdtyPerCert[2]<xpercent) ? 'DarkRed' : 'blue' }"><b>${(meanSentriesReachedByIdtyPerCert[2]/(xpercent*100)).toFixed(2)}</b></font></td>
+				<td align='center'><font color="${(meanSentriesReachedByIdtyPerCert[3]<xpercent) ? 'DarkRed' : 'blue' }"><b>${(meanSentriesReachedByIdtyPerCert[3]/(xpercent*100)).toFixed(2)}</b></font></td>
+				<td align='center'><font color="${(meanSentriesReachedByIdtyPerCert[4]<xpercent) ? 'DarkRed' : 'blue' }"><b>${(meanSentriesReachedByIdtyPerCert[4]/(xpercent*100)).toFixed(2)}</b></font></td>
+				${(nbMaxCertifs>5) ? `<td align='center'><font color="${(meanSentriesReachedByIdtyPerCert[5]<xpercent) ? 'DarkRed' : 'blue' }"><b>${(meanSentriesReachedByIdtyPerCert[5]/(xpercent*100)).toFixed(2)}</b></font></td>`:``}
+				${(nbMaxCertifs>6) ? `<td align='center'><font color="${(meanSentriesReachedByIdtyPerCert[6]<xpercent) ? 'DarkRed' : 'blue' }"><b>${(meanSentriesReachedByIdtyPerCert[6]/(xpercent*100)).toFixed(2)}</b></font></td>`:``}
+				${(nbMaxCertifs>7) ? `<td align='center'><font color="${(meanSentriesReachedByIdtyPerCert[7]<xpercent) ? 'DarkRed' : 'blue' }"><b>${(meanSentriesReachedByIdtyPerCert[7]/(xpercent*100)).toFixed(2)}</b></font></td>`:``}
+				${(nbMaxCertifs>8) ? `<td align='center'><font color="${(meanSentriesReachedByIdtyPerCert[8]<xpercent) ? 'DarkRed' : 'blue' }"><b>${(meanSentriesReachedByIdtyPerCert[8]/(xpercent*100)).toFixed(2)}</b></font></td>`:``}
+				${(nbMaxCertifs>9) ? `<td align='center'><font color="${(meanSentriesReachedByIdtyPerCert[9]<xpercent) ? 'DarkRed' : 'blue' }"><b>${(meanSentriesReachedByIdtyPerCert[9]/(xpercent*100)).toFixed(2)}</b></font></td>`:``}
+			</tr>
+			<!-- Afficher les moyennes MembersReachedByIdtyPerCert -->
+			<tr>
+				<td align='center'>${LANG["MEAN_MEMBERS_REACHED"]}</td>
+				<td><b>${meanMembersReachedByIdtyPerCert[0]}%</b></td>
+				<td><b>${meanMembersReachedByIdtyPerCert[1]}%</b></td>
+				<td><b>${meanMembersReachedByIdtyPerCert[2]}%</b></td>
+				<td><b>${meanMembersReachedByIdtyPerCert[3]}%</b></td>
+				<td><b>${meanMembersReachedByIdtyPerCert[4]}%</b></td>
+				${(nbMaxCertifs>5) ? `<td><b>${meanMembersReachedByIdtyPerCert[5]}%</b></td>`:``}
+				${(nbMaxCertifs>6) ? `<td><b>${meanMembersReachedByIdtyPerCert[6]}%</b></td>`:``}
+				${(nbMaxCertifs>7) ? `<td><b>${meanMembersReachedByIdtyPerCert[7]}%</b></td>`:``}
+				${(nbMaxCertifs>8) ? `<td><b>${meanMembersReachedByIdtyPerCert[8]}%</b></td>`:``}
+				${(nbMaxCertifs>9) ? `<td><b>${meanMembersReachedByIdtyPerCert[9]}%</b></td>`:``}
+			</tr>
+			</table>
+		</div>
+	</div>
+`:``}
+
+<!-- Afficher le currentBlockchainTimestamp et le nombre d'identités au dossier complet -->
   ${LANG["BLOCKCHAIN_TIME"]} : <b>${timestampToDatetime(currentBlockchainTimestamp)}</b> (#<b>${currentBlockNumber}</b>).<br>
   ${LANG["COUNT_READY_MEMBERS"]} : <b>${countMembersWithSigQtyValidCert}</b>.<br>
-`:''}
-<br>
 
-<!--On parcour toutes les identités-->
-
+<!-- Tableau de toutes les identités en piscine -->
 <table border="1">
-  <tr><td colspan="${nbMaxCertifs+6}" align='center'>${LANG["TABLE_TITLE1"]} <b>${days}</b> ${LANG["TABLE_TITLE2"]}</td></tr>
-  <!-- Printer les nom des colonnes-->
+  <tr><td colspan="${nbMaxCertifs+3}" align='center'>${LANG["TABLE_TITLE1"]} <b>${days}</b> ${LANG["TABLE_TITLE2"]}</td></tr>
+  <!-- Printer les nom des colonnes -->
   <tr>
-    <td align='center'>${LANG['COL_1']}</td><td align='center'>${LANG['COL_2']}</td>
-    <td align='center'>${LANG['COL_3']}</td><td align='center'>${LANG['COL_DISTANCE']}</td>
-    <td align='center'>${LANG['COL_MEMBERSHIP']}</td><td style="background:#000000">-</td>
+    <td align='center'>${LANG['IDENTITY']}</td><td align='center'>${LANG['MEMBERSHIP_CASE']}</td>
+    <td style="background:#000000">-</td>
     <td align='center' colspan="${nbMaxCertifs}">${sortSig == "Availability" 
                                                   ? LANG['COL_4_WITH_AVAIlABILITY_SORT']
                                                   : LANG['COL_4']}</td>
@@ -76,42 +165,53 @@ ${(help != 'no') ? `
       
       <!--Printer la ligne-->
       <tr>
-        <td align="center" style="background:${(idty.validBlockStamp) ? idty.colorPending=color(idty.expires_on,idtyWindow,250) : idty.colorPending='#FF8000'}">
-          <a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${idty['uid']}${idty['wotexId']}&pending=on&mode=undefined">${idty['uid'].substring(0, 20)}</a><br>
-          ${idty['pubkey'].substring(0, 8)}
-          <br>->${idty.pendingCertifications.length}
-        </td>
-        <td align='center' style="background:${idty.colorPending}">${timestampToDatetime(idty['creationTimestamp'])}<br>
-        #${idty['BlockNumber']}
+        <td align="center" style="background:${(idty.validBlockStamp) ? ((idty.expires_on > 0) ? idty.colorPending=color(idty.expires_on,idtyWindow,250):'#FF0000'): idty.colorPending='#FF8000'}">
+          <a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${idty['uid']}${idty['wotexId']}&pending=on&mode=undefined">${idty['uid'].substring(0, 25)}</a>
+          <br>${idty['pubkey'].substring(0, 16)}
+          <br>${LANG['EMITTED_ON']} ${timestampToDatetime(idty['creationTimestamp'])}
+          <br>${LANG['AT_BLOCK']} #${idty['BlockNumber']}
+          ${(idty.expires_on > 0) ? '<br><b>'+LANG['EXPIRE_ON']+' '+timestampToDatetime(idty.expires_on)+'</b>':``}
         ${(!idty.validBlockStamp) ? `
           <br><font color="DarkRed">[${LANG['INVALID_BLOCKSTAMP']}]</font>
         `:``}
         </td>
-        <td align='center' style="background:${idty.colorPending}">
-        ${timestampToDatetime(idty.expires_on)}</td>
-        <td align='center' style="background:${idty.colorPending}">
-          <span style="color: ${idty.isOutdistanced ? 'red' : 'green' }">${idty.isOutdistanced ? LANG['COL_DISTANCE_isOutdistanced'] : LANG['COL_DISTANCE_isNotOutdistanced'] }</span>
-        </td>
-        <td align='center' style="background:${idty.colorPending}">
-          <span style="color: ${idty.membership ? 'green' : 'red' }">${idty.membership? LANG['COL_MEMBERSHIP_OK'] : LANG['COL_MEMBERSHIP_KO'] }</span>
-        </td>
+        ${(idty.expires_on > 0) ? `
+					<td align='center' style="background:${idty.colorPending}">
+						${(idty.membership && !idty.detailedDistance.isOutdistanced && idty.nbValidPendingCert >= sigQty) ? `<font color="green">${LANG['OK']}` : `<font color="DarkRed">${LANG['KO']}` }</font><br>
+						${LANG['MEMBERSHIP_ASKED']} : ${idty.membership? `<font color="green">${LANG['YES']}` : `<font color="DarkRed">${LANG['NO']}` }</font><br>
+						${ (USE_WOTB6) ? `
+							<font color="${idty.detailedDistance.isOutdistanced ? 'DarkRed' : 'blue' }">${idty.percentSentriesReached}% (${idty.detailedDistance.nbSuccess}/${idty.detailedDistance.nbSentries})
+							<br>${LANG['QUALITY_CERTIFIERS']} : <b>${(idty.validBlockStamp) ? ((idty.detailedDistance.nbSuccess/idty.detailedDistance.nbSentries)/xpercent).toFixed(2):`0.00`}</b></font>
+						`:`
+						  <font color="${idty.detailedDistance ? 'DarkRed' : 'blue' }">${LANG['DISTANCE']} : ${idty.detailedDistance ? LANG['KO']:LANG['OK'] }</font>
+						`}
+						<br>${LANG['CERTIFIERS_COUNT']} : ${(idty.nbValidPendingCert >= sigQty) ? `<font color="green">${idty.nbValidPendingCert}/${sigQty}` : `<font color="DarkRed">${idty.nbValidPendingCert}/${sigQty}` }</font>
+					</td>
+				`:`
+					<td align='center' style="background:#FF0000"><b>${LANG['IDTY_REVOKED']}</b></td>
+				`}
         <td style="background:#000000">-</td>
         
         <!--printer les certifications-->
         ${idty.pendingCertifications.map( (cert,j)=> `
           ${ (j<nbMaxCertifs) ? `
-            <td align="center" style="background:${(cert.validBlockStamp) ? color(cert.timestampExpire,sigWindow,250) : '#FF8000'}">
-            ${j==4?'<b>':''}
-        <a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${cert['from']}&pending=on&mode=undefined">${cert['from']}</a>
-	    <br>${timestampToDatetime(cert.timestampExpire)}
-	    <br>#${cert['blockNumber']}
-	    ${ ( !cert.validBlockStamp || cert['timestampWritable'] > currentBlockchainTimestamp ) ? `
-	      <br><font color="DarkRed">[${ (cert.validBlockStamp) ? timestampToDatetime(cert['timestampWritable']):LANG['INVALID_BLOCKSTAMP']}]</font>
-	    ` : `
-	    <br><font color='green'>[${LANG['SIG_PERIOD_OK']}]</font>
-	    `}
-	    ${j==4?'</b>':''}
-	    </td>
+              <td align="center" style="background:${(cert.validBlockStamp) ? color(cert.timestampExpire,sigWindow,250) : '#FF8000'}">
+							${cert.issuerIsSentry ? '<b>':''}
+								<a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${cert['from']}&pending=on&mode=undefined">${cert['from']}</a>
+							${cert.issuerIsSentry ? '</b>':''}
+							${ (USE_WOTB6) ? `
+								<br>${LANG['QUALITY']} : <b>${(typeof(membersQualityExt[cert.from])=='undefined' || !cert.validBlockStamp) ? `0.00`:membersQualityExt[cert.from]}</b>
+							`:''}
+							<br>${timestampToDatetime(cert.timestampExpire)}
+							<br>#${cert['blockNumber']}
+							${j==(4+idty.pendingCertifications.length-idty.nbValidPendingCert)?'<b>':''}
+							${ ( !cert.validBlockStamp || cert['timestampWritable'] > currentBlockchainTimestamp ) ? `
+								<br><font color="DarkRed">[${ (cert.validBlockStamp) ? timestampToDatetime(cert['timestampWritable']):LANG['INVALID_BLOCKSTAMP']}]</font>
+							` : `
+								<br><font color='green'>[${LANG['SIG_PERIOD_OK']}]</font>
+							`}
+							${j==(4+idty.pendingCertifications.length-idty.nbValidPendingCert)?'</b>':''}
+						</td>
           `:''}
         `).join('')}
       
@@ -120,7 +220,7 @@ ${(help != 'no') ? `
   `).join('')}
   
   <tr>
-    <td colspan="${nbMaxCertifs+6}" align="center">
+    <td colspan="${nbMaxCertifs+3}" align="center">
       ${LANG['LAST_TR1']} : <b>${idtysListFiltered.length}</b> ${LANG['LAST_TR2']}.
     </td>
   </tr>

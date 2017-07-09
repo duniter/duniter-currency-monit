@@ -34,6 +34,7 @@ module.exports = (req, res, next) => co(function *() {
       }));
 
       let searchResult = '';
+			let lignes = [];
       if (req.query.to) {
         let idty;
         let pos = 0, search = req.query.to;
@@ -64,7 +65,6 @@ module.exports = (req, res, next) => co(function *() {
           idty = res.idty;
           const mapPendingCerts = res.mapPendingCerts;
 
-          let lignes = [];
           for (const membre of membres) {
             if (req.query.mode == "u2w") {
               alimenteLignes(wotb, idty, membre, lignes, dicoIdentites, mapPendingCerts);
@@ -79,26 +79,26 @@ module.exports = (req, res, next) => co(function *() {
       // Si le client demande la réponse au format JSON, le faire
       if (format == 'JSON')
       {
-	// Send JSON reponse
-	//res.status(200).jsonp( ? )
+				// Send JSON reponse
+				res.status(200).jsonp( lignes )
       }
       // Sinon, printer la page html
       else
       {
-	// write sentriesHTML
-	let sentriesHTML = sentries
-	    .map((sentry) => `
-		<div class="sentry isSentry"><a href="wotex?lg=${LANG['LG']}&to=${sentry.uid}">${sentry.uid}</a></div>
-	      `)
-	    .join('');
-	
-	res.locals = {
-	  // Les varibles à passer au template
-	  host: req.headers.host.toString(),
-	  searchResult,
-	  sentriesHTML
-	}
-	next()
+				// write sentriesHTML
+				let sentriesHTML = sentries
+						.map((sentry) => `
+					<div class="sentry isSentry"><a href="wotex?lg=${LANG['LG']}&to=${sentry.uid}">${sentry.uid}</a></div>
+							`)
+						.join('');
+				
+				res.locals = {
+					// Les varibles à passer au template
+					host: req.headers.host.toString(),
+					searchResult,
+					sentriesHTML
+				}
+				next()
       }
     } catch (e) {
       // En cas d'exception, afficher le message

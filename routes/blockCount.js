@@ -29,9 +29,9 @@ module.exports = (req, res, next) => co(function *() {
       let newHashPreviousCurrentblock = yield duniterServer.dal.peerDAL.query('SELECT `hash` FROM block WHERE `fork`=0 AND `number` = '+(blockchain.length-1)+' LIMIT 1');
       if ( hashPreviousCurrentblock != newHashPreviousCurrentblock )
       {
-	blockchain.splice(0, blockchain.length);
-	hashPreviousCurrentblock = 0;
-	previousBlockchainTime = 0;
+				blockchain.splice(0, blockchain.length);
+				hashPreviousCurrentblock = 0;
+				previousBlockchainTime = 0;
       }
     }
     

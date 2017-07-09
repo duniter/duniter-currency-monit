@@ -7,30 +7,46 @@ ORDER in the following order
 ORDER_ASC ascending
 ORDER_DESC descending
 SUBMIT_TXT Submit
-CHECKBOX_HIDE_IDTY_WITH_ZERO_CERT Hide identities that didn't receive any certification.
+CHECKBOX_SHOW_IDTY_WITH_ZERO_CERT Show identities that didn't receive any certification.
 CHECKBOX_SORT_SIG sort certifications by availability time.
+LEGEND Legend
 SIG_PERIOD_LEGEND darkred : [date from which this certification can be written according to sigPeriod].
 SIG_PERIOD_LEGEND2 green : [available] : means this certification may already be written in the next block.
 HOW_TO_BECOME_MEMBER_TITLE When does an identity become a member ?
 HOW_TO_BECOME_MEMBER_TEXT An identity becomes a member as soon as it has at least <b>5</b> certifications in the <font color='green'>[available]</font> state <b>at the same time <u>and</u></b> it respects the Distance Rule.<br>You can click directly on an identity to reach the according wotex page to verify if it respects the Distance Rule.
 DISTANCE_RULE_TITLE What is the Distance Rule ?
-DISTANCE_RULE_TXT It is required that for more than 80% of the referring members, a path of at most 5 steps should exist between each of them and the identity about to be certified.<br>Every member automatically becomes a referring member as soon as he has emitted <b><u>and</u></b> received Y[n] certifications. (Y[n] = CEILING(N(t)^(1/5))).
+DISTANCE_RULE_TXT It is required that for more than <font color='blue'><b>80% of the referring members</b></font>, a path of at most 5 steps should exist between each of them and the identity about to be certified.<br>Every member automatically becomes a referring member as soon as he has emitted <b><u>and</u></b> received Y[n] certifications. (Y[n] = CEILING(N(t)^(1/5))).<br>Currently, Yn = 
+WHAT_IS_CENTRALITY_TITLE What is the centrality degree ?
+WHAT_IS_CENTRALITY_TEXT The centrality degree of a member is the number of pairs directed (member->member) for which the member makes left one of the shortest paths.
+QUALITY_MEMBER_TITLE What is the certification quality ?
+QUALITY_MEMBER_TXT It is the report enters the rate of referring members reachable by a certification of this member and the rate of referring members which needs to achieve to respect the rule of distance.
 BLOCKCHAIN_TIME Current Blockchain Time
 TABLE_TITLE1 Identities that will expire in less than
 TABLE_TITLE2 days
 COUNT_READY_MEMBERS Identities having received 5 valid certifications or more
-COL_1 uid
-COL_2 Identity created
-COL_3 Identity expires
+WOT_TENSION_STATE Quality averages cases of membership according to the number of received valid certifications
+NUMBER_OF_RECEIVED_CERTS Number of received certs
+MEAN_SENTRIES_REACHED mean sentries reached
+MEAN_QUALITY_CERTS Quality averages of the set of certifications
+MEAN_MEMBERS_REACHED mean members reached
+IDENTITY Identity
+MEMBERSHIP_CASE membership case
 COL_4 List of received certifications (recent -> old)
 COL_4_WITH_AVAIlABILITY_SORT List of received certifications (by availability time)
-COL_DISTANCE distance
-COL_DISTANCE_isOutdistanced KO
-COL_DISTANCE_isNotOutdistanced OK
-COL_MEMBERSHIP membership
-COL_MEMBERSHIP_KO KO
-COL_MEMBERSHIP_OK OK
+EMITTED_ON emitted on
+AT_BLOCK at block
+EXPIRE_ON expire on 
+KO KO
+OK OK
+MEMBERSHIP_ASKED Membership asked
+YES yes
+NO no
+QUALITY_CERTIFIERS quality certifiers
+DISTANCE Distance
+CERTIFIERS_COUNT certifiers count
+QUALITY quality
 SIG_PERIOD_OK available
+IDTY_REVOKED [identity revoked]
 INVALID_BLOCKSTAMP invalid blockstamp
 LAST_TR1  total
 LAST_TR2  identities
