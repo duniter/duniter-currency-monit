@@ -410,7 +410,6 @@ module.exports = (req, res, next) => co(function *() {
 											if (path.length == shortestPathLength && i>0 && i<(path.length-1))
 											{
 												//if (path[0] == 0) { test += path[i]+'-->'; }
-												membersCentrality[path[i]]++;
 												indexMembersPresent[path[i]] = path[i];
 											}
 										}
@@ -552,11 +551,11 @@ module.exports = (req, res, next) => co(function *() {
 			// recalculate meanCentrality and meanShortestsPathLength
 			if (centrality=='yes')
 			{
-				for (const memberCentrality of membersCentrality)
+				for (const member of membersList)
 				{
-					meanCentrality += memberCentrality;
+					meanCentrality += membersCentrality[member.wotb_id];
 				}
-				meanCentrality /= membersCentrality.length;
+				meanCentrality /= membersList.length;
 				meanShortestsPathLength /= nbShortestsPath;
 			}
 

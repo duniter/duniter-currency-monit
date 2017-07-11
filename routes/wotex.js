@@ -8,7 +8,7 @@ const MAX_STEP_LOOK = 7
 
 module.exports = (req, res, next) => co(function *() {
   
-  var { duniterServer, sigValidity, msValidity, sigWindow, idtyWindow, cache  } = req.app.locals
+  var { duniterServer  } = req.app.locals
 
     try {
       // get GET parameters

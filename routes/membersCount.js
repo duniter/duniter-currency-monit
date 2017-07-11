@@ -8,7 +8,7 @@ const STEP_COUNT_MAX = 150;
 
 module.exports = (req, res, next) => co(function *() {
   
-  var { duniterServer, sigValidity, msValidity, sigWindow, idtyWindow, sigQty, stepMax, cache } = req.app.locals
+  var { duniterServer, cache } = req.app.locals
   
   try {
     // get GET parameters

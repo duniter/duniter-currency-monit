@@ -165,7 +165,7 @@ ${ (USE_WOTB6) ? `
       
       <!--Printer la ligne-->
       <tr>
-        <td align="center" style="background:${(idty.validBlockStamp) ? ((idty.expires_on > 0) ? idty.colorPending=color(idty.expires_on,idtyWindow,250):'#FF0000'): idty.colorPending='#FF8000'}">
+        <td align="center" style="background:${(idty.validBlockStamp) ? ((idty.expires_on > 0) ? idty.colorPending=color(idty.expires_on,idtyWindow,250):idty.colorPending='#FF0000'): idty.colorPending='#FF8000'}">
           <a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${idty['uid']}${idty['wotexId']}&pending=on&mode=undefined">${idty['uid'].substring(0, 25)}</a>
           <br>${idty['pubkey'].substring(0, 16)}
           <br>${LANG['EMITTED_ON']} ${timestampToDatetime(idty['creationTimestamp'])}

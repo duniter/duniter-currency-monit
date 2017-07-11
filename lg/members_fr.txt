@@ -26,7 +26,7 @@ CENTRALITY_CALC_BUSY Les données de centralité sont en cours de mise à jours,
 MEAN_CENTRALITY Dégré de centralité moyen
 NUMBER_OF_EXIST_PATH Nombre de couples orientés pour lequels il existe un chemin de 5 pas ou moins
 NUMBER_OF_PAIRS_MEMBER Nombre de couples orientés (membre->membre)
-PROPORTION_OF_EXIST_PATH Proportion de couples orientés pour lequels il existe un chemin de 5 pas ou moins
+PROPORTION_OF_EXIST_PATH Proportion de couples orientés pour lesquels il existe un chemin de 5 pas ou moins
 MEAN_LENGTH_PATH Longueur moyenne d'un plus court chemin
 WOT_TENSION_FACTOR Facteur de tension de la toile*
 DATA_AT Données au
