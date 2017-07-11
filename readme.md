@@ -1,14 +1,35 @@
-# Currency-Monit
+# Currency-Monit Module
 
-Requires Node.js v6
+Requires Duniter 1.3.9 or higher
 
 ## Installation
 
-    git clone https://github.com/librelois/duniter-currency-monit.git
-    cd duniter-currency-monit
-    npm install
-    node index.js config --autoconf
-    node index.js sync g1.duniter.org 10901
-    node index.js currency-monit
+**Warning: only tar.gz format works ! Don't use zip format.**
 
-Then, visit http://localhost:10501.
+### If you use web-ui, install it very easy:
+
+1. go to localhost:9220/#/main/settings/modules
+and at the foot of page enter:
+```bash
+https://github.com/duniter/duniter-currency-monit/archive/0.3.7.tar.gz
+```
+
+then clik to button INSTALL THIS MODULE
+
+2. restart your duniter node
+
+### If you don't use web-ui:
+
+1. download and uncompress archive at the location of your choice
+2. plug the plugin to your duniter node:
+
+```bash
+duniter plug https://github.com/duniter/duniter-currency-monit/archive/0.3.7.tar.gz
+```
+
+3. Stop your duniter node and restart it in the following method:
+```bash
+duniter currency-monit [host] [port]
+```
+
+then visit `host:port` (default is `localhost:10500`)
