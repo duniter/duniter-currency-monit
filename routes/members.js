@@ -477,7 +477,14 @@ module.exports = (req, res, next) => co(function *() {
     { 
       for (const memberCertifsList of membersCertifsList)
       {
-        tabSort.push(memberCertifsList.length);
+		if (memberCertifsList.length > 0)
+		{
+			tabSort.push(memberCertifsList.length+1);
+		}
+		else
+		{
+			tabSort.push(1);
+		}
       }
     }
     else { res.status(500).send(`<pre><p>ERREUR : param <i>sort_by</i> invalid !</p></pre>`) } //
