@@ -8,7 +8,8 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Currency-Monit",
-            "program": "${workspaceRoot}/run.js currency-monit"
+            "program": "${workspaceRoot}/run.js",
+            "args": ["currency-monit"]
         }
     ]
 }
