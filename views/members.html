@@ -91,7 +91,7 @@ ${(USE_WOTB6) ? `
 <!-- Afficher le currentBlockchainTimestamp -->
 <i>${LANG["CURRENT_BLOCKCHAIN_TIME"]} : ${timestampToDatetime(currentBlockchainTimestamp)}.<br>
 <!-- Afficher le nombre de membres et de membres référents -->
-<b>${membersListFiltered.length}</b> ${LANG["MEMBERS"]} ${LANG["OF_WHICH"]} <b>${membersListFiltered[0].detailedDistance.nbSentries}</b> ${LANG['REFERRING_MEMBERS']} (<b>${((membersListFiltered[0].detailedDistance.nbSentries/membersListFiltered.length)*100).toFixed(2)}%</b>).</i><br>
+<b>${membersListFiltered.length}</b> ${LANG["MEMBERS"]} ${LANG["OF_WHICH"]} <b>${countSentries}</b> ${LANG['REFERRING_MEMBERS']} (<b>${((countSentries/membersListFiltered.length)*100).toFixed(2)}%</b>).</i><br>
 <br>
 
 <!-- On parcour tout les membres pour afficher ceux dont la date d'expiration est dans moins de 'd' jours -->

@@ -24,6 +24,7 @@ var membershipsExpireTimeList = [];
 var nbMaxCertifs = 0;
 var sentries = [];
 var sentriesIndex = [];
+var countSentries = 0;
 var membersQualityExt = [];
 var meanSentriesReachedBySentriesInSingleExtCert = 0;
 var meanMembersReachedBySentriesInSingleExtCert = 0;
@@ -57,7 +58,6 @@ module.exports = (req, res, next) => co(function *() {
 		let membersListOrdered = [];
 		let membersCertifsListSorted = [];
 		let tabSort = [];
-		let countSentries = 0;
 		let membersNbSentriesUnreached = [];
 
     // Récupéré les paramètres
@@ -117,6 +117,7 @@ module.exports = (req, res, next) => co(function *() {
 			nbMaxCertifs = 0;
 			sentries = [];
 			sentriesIndex = [];
+			countSentries = 0;
 			membersQualityExt = [];
 			meanSentriesReachedBySentriesInSingleExtCert = 0;
 			meanMembersReachedBySentriesInSingleExtCert = 0;
@@ -196,7 +197,12 @@ module.exports = (req, res, next) => co(function *() {
 					};
 				}
 				
-				
+				// Calculer le nombre de membres référents
+				if (currentMemberIsSentry)
+				{
+					countSentries++;
+				}
+
 				if (constants.USE_WOTB6)
 				{
 					// Calculate membersNbSentriesUnreached
@@ -225,7 +231,6 @@ module.exports = (req, res, next) => co(function *() {
 					{
 						meanSentriesReachedBySentriesInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)*100).toFixed(2));
 						meanMembersReachedBySentriesInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbReached/membersList.length)*100).toFixed(2));
-						countSentries++;
 					}
 					meanSentriesReachedByMembersInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)*100).toFixed(2));
 					meanMembersReachedByMembersInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbReached/membersList.length)*100).toFixed(2));
@@ -593,6 +598,7 @@ module.exports = (req, res, next) => co(function *() {
 					member.expireMembershipTimestamp < limitTimestamp 
 					&& member.expireMembershipTimestamp > currentBlockchainTimestamp
 				),
+				countSentries,
 				// currency parameters
 				xpercent: conf.xpercent,
 				sigWindow: conf.sigWindow,
