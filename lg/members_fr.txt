@@ -40,6 +40,8 @@ PROPORTION_MEMBERS_WITH_QUALITY_UPPER_1 Proportion de membre avec une qualité >
 CURRENT_BLOCKCHAIN_TIME Temps Blockchain actuel
 TABLE_TITLE Membres dont le statut de membre va expirer dans moins de
 DAYS jours
+OF_WHICH dont
+REFERRING_MEMBERS référents
 COL_UID uid
 COL_IDTY_WRITTEN_TIME obtention statut membre
 COL_LAST_RENEWAL dernier renouvellement
@@ -60,5 +62,4 @@ EMITTED émise
 WRITTEN écrite
 INVALID_BLOCKSTAMP blockstamp incorrect
 CERT_AVAILABLE disponible
-OVERALL Total
 MEMBERS membres

@@ -579,20 +579,19 @@ module.exports = (req, res, next) => co(function *() {
     // Sinon, printer le tableau html
     else
     {
-      
       res.locals = {
 				host: req.headers.host.toString(),
 				USE_WOTB6: constants.USE_WOTB6,
 				// get parameters
-        days, mode, sort_by, order,
+        		days, mode, sort_by, order,
 				pendingSigs, centrality,
 				
 				// page data
-        currentBlockchainTimestamp,
+        		currentBlockchainTimestamp,
 				limitTimestamp, nbMaxCertifs,
 				membersListFiltered: membersListOrdered.filter( member=> 
-				member.expireMembershipTimestamp < limitTimestamp 
-				&& member.expireMembershipTimestamp > currentBlockchainTimestamp
+					member.expireMembershipTimestamp < limitTimestamp 
+					&& member.expireMembershipTimestamp > currentBlockchainTimestamp
 				),
 				// currency parameters
 				xpercent: conf.xpercent,

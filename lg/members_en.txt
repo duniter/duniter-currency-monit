@@ -40,6 +40,8 @@ PROPORTION_MEMBERS_WITH_QUALITY_UPPER_1 Proportion of members with an upper qual
 CURRENT_BLOCKCHAIN_TIME Current blockchain time
 TABLE_TITLE Members that will expire in less than
 DAYS days
+OF_WHICH of which
+REFERRING_MEMBERS referrings
 COL_UID uid
 COL_IDTY_WRITTEN_TIME identity written time
 COL_LAST_RENEWAL last renewal
@@ -60,5 +62,4 @@ EMITTED emitted
 WRITTEN written
 INVALID_BLOCKSTAMP invalid blockstamp
 CERT_AVAILABLE available
-OVERALL Overall
 MEMBERS members
