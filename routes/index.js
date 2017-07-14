@@ -93,35 +93,10 @@ app.get('/membersCount',
   require(__dirname + '/../lib/updateCache.js'), require(__dirname + '/membersCount.js'),
   (req, res)=> res.render('Chart.html', {
     printMenu,
+    pageName: 'MEMBERS_COUNT',
     help: req.query.help,
     MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
     LANG: getLang(`${__dirname}/../lg/membersCount_${req.query.lg||'fr'}.txt`)
-  })
-)
-
-/***************************************
-* Lister les block en graph
-***************************************/
-app.get('/blockCount', 
-  require(__dirname + '/blockCount.js'),
-  (req, res)=> res.render('Chart.html', {
-    printMenu,
-    help: req.query.help,
-    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
-    LANG: getLang(`${__dirname}/../lg/blockCount_${req.query.lg||'fr'}.txt`)
-  })
-)
-
-/***************************************
-* Évolution de la masse monétaire totale
-***************************************/
-app.get('/monetaryMass',
-  require(__dirname + '/monetaryMass.js'),
-  (req, res)=> res.render('Chart.html', {
-    printMenu,
-    help: req.query.help,
-    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
-    LANG: getLang(`${__dirname}/../lg/monetaryMass_${req.query.lg||'fr'}.txt`)
   })
 )
 
@@ -135,6 +110,34 @@ app.get('/wotex',
     help: req.query.help,
     MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
     LANG: getLang(`${__dirname}/../lg/wotex_${req.query.lg||'fr'}.txt`)
+  })
+)
+
+/***************************************
+* Lister les block en graph
+***************************************/
+app.get('/blockCount', 
+  require(__dirname + '/blockCount.js'),
+  (req, res)=> res.render('Chart.html', {
+    printMenu,
+    pageName: 'BLOCK_COUNT',
+    help: req.query.help,
+    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
+    LANG: getLang(`${__dirname}/../lg/blockCount_${req.query.lg||'fr'}.txt`)
+  })
+)
+
+/***************************************
+* Évolution de la masse monétaire totale
+***************************************/
+app.get('/monetaryMass',
+  require(__dirname + '/monetaryMass.js'),
+  (req, res)=> res.render('Chart.html', {
+    printMenu,
+    pageName: 'MONETARY_MASS',
+    help: req.query.help,
+    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
+    LANG: getLang(`${__dirname}/../lg/monetaryMass_${req.query.lg||'fr'}.txt`)
   })
 )
 
