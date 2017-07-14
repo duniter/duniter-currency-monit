@@ -5,25 +5,6 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 
 <!-- Afficher le menu -->
 ${printMenu(MENU_LANG, help)}
-<!-- <table align="center" width="100%">
-  <tr>
-    <td><a href="willMembers?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
-    <td><a href="members?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS"]}</a></td>
-    <td><a href="membersCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS_COUNT"]}</a></td>
-    <td><a href="blockCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
-    <td><a href="monetaryMass?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MONETARY_MASS"]}</a></td>
-    <td><a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WOTEX"]}</a></td>
-    <td><a href="about?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["ABOUT"]}</a></td>
-    <td>
-      <form action="" method="GET">
-	<select name="lg" onchange="this.form.submit()">
-	  <option name="lg" value="fr" ${MENU_LANG['LG'] == 'fr' ? 'selected' : ''}>FR
-	  <option name="lg" value="en" ${MENU_LANG['LG'] == 'en' ? 'selected' : ''}>EN
-	</select>
-    </td>
-</tr>
-</table>
-<hr> -->
 
 <!-- Afficher le formulaire -->
 <input type="number" name="d" value="${days}"/>${LANG["FORM1"]} <select name="sort_by">
@@ -92,7 +73,7 @@ ${(USE_WOTB6) ? `
 <!-- Afficher le currentBlockchainTimestamp -->
 <i>${LANG["CURRENT_BLOCKCHAIN_TIME"]} : ${timestampToDatetime(currentBlockchainTimestamp)}.<br>
 <!-- Afficher le nombre de membres et de membres référents -->
-<b>${membersListFiltered.length}</b> ${LANG["MEMBERS"]} ${LANG["OF_WHICH"]} <b>${countSentries}</b> ${LANG['REFERRING_MEMBERS']} (<b>${((countSentries/membersListFiltered.length)*100).toFixed(2)}%</b>).</i><br>
+<b>${membersListFiltered.length}</b> ${LANG["MEMBERS"]} ${LANG["OF_WHICH"]} <b>${countSentries}</b> ${LANG['ARE_REFERRING_MEMBERS']} (<b>${((countSentries/membersListFiltered.length)*100).toFixed(2)}%</b>).</i><br>
 <br>
 
 <!-- On parcour tout les membres pour afficher ceux dont la date d'expiration est dans moins de 'd' jours -->

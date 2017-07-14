@@ -41,7 +41,7 @@ CURRENT_BLOCKCHAIN_TIME Temps Blockchain actuel
 TABLE_TITLE Membres dont le statut de membre va expirer dans moins de
 DAYS jours
 OF_WHICH dont
-REFERRING_MEMBERS référents
+ARE_REFERRING_MEMBERS sont référents
 COL_UID uid
 COL_IDTY_WRITTEN_TIME obtention statut membre
 COL_LAST_RENEWAL dernier renouvellement
