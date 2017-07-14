@@ -4,7 +4,8 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 <body>
 
 <!-- Afficher le menu -->
-<table align="center" width="100%">
+${printMenu(MENU_LANG, help)}
+<!-- <table align="center" width="100%">
   <tr>
     <td><a href="willMembers?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
     <td><a href="members?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS"]}</a></td>
@@ -22,7 +23,7 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
     </td>
 </tr>
 </table>
-<hr>
+<hr> -->
 
 <!-- Afficher le formulaire -->
 <input type="number" name="d" value="${days}"/>${LANG["FORM1"]} <select name="sort_by">
