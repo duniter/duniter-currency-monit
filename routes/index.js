@@ -1,5 +1,7 @@
 const fs = require('fs')
 const express = require('express')
+
+const constants = require(__dirname + '/../lib/constants')
 const getLang = require(__dirname + '/../lib/getLang')
 const printMenu = require(__dirname + '/../views/printMenu')
 
@@ -31,7 +33,7 @@ app.get('/', // chemin (endpoint)
     host: req.headers.host.toString(),
     printMenu,
 	  help: req.query.help,
-	  MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`)
+	  MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`)
   })
 )
 
@@ -43,7 +45,7 @@ app.get('/about', // chemin (endpoint)
     host: req.headers.host.toString(),
     printMenu,
     help: req.query.help,
-    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`)
+    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`)
   })
 )
 
@@ -55,8 +57,8 @@ app.get('/willMembers', // chemin (endpoint)
   (req, res)=> res.render('willMembers.html', { // rendu (template)
     printMenu,
 	  help: req.query.help,
-	  MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
-    LANG: getLang(`${__dirname}/../lg/willMembers_${req.query.lg||'fr'}.txt`)
+	  MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`),
+    LANG: getLang(`${__dirname}/../lg/willMembers_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`)
   })
 )
 
@@ -68,8 +70,8 @@ app.get('/members',
   (req, res)=> res.render('members.html', {
     printMenu,
 		help: req.query.help,
-		MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
-    LANG: getLang(`${__dirname}/../lg/members_${req.query.lg||'fr'}.txt`)
+		MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`),
+    LANG: getLang(`${__dirname}/../lg/members_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`)
   })
 )
 
@@ -81,7 +83,7 @@ app.get('/members',
   (req, res)=> res.render('wasMembers.html', {
     printMenu,
     help: req.query.help,
-    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
+    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`),
     LANG: getLang(`${__dirname}/../lg/wasMembers_${lg}.txt`)
   })
 )*/
@@ -95,8 +97,8 @@ app.get('/membersCount',
     printMenu,
     pageName: 'MEMBERS_COUNT',
     help: req.query.help,
-    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
-    LANG: getLang(`${__dirname}/../lg/membersCount_${req.query.lg||'fr'}.txt`)
+    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`),
+    LANG: getLang(`${__dirname}/../lg/membersCount_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`)
   })
 )
 
@@ -108,8 +110,8 @@ app.get('/wotex',
   (req, res)=> res.render('wotex.html', {
     printMenu,
     help: req.query.help,
-    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
-    LANG: getLang(`${__dirname}/../lg/wotex_${req.query.lg||'fr'}.txt`)
+    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`),
+    LANG: getLang(`${__dirname}/../lg/wotex_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`)
   })
 )
 
@@ -122,8 +124,8 @@ app.get('/gaussianWotQuality',
     printMenu,
     pageName: 'GAUSSIAN_WOT_QUALITY',
     help: req.query.help,
-    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
-    LANG: getLang(`${__dirname}/../lg/gaussianWotQuality_${req.query.lg||'fr'}.txt`)
+    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`),
+    LANG: getLang(`${__dirname}/../lg/gaussianWotQuality_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`)
   })
 )
 
@@ -136,8 +138,8 @@ app.get('/blockCount',
     printMenu,
     pageName: 'BLOCK_COUNT',
     help: req.query.help,
-    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
-    LANG: getLang(`${__dirname}/../lg/blockCount_${req.query.lg||'fr'}.txt`)
+    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`),
+    LANG: getLang(`${__dirname}/../lg/blockCount_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`)
   })
 )
 
@@ -150,8 +152,8 @@ app.get('/monetaryMass',
     printMenu,
     pageName: 'MONETARY_MASS',
     help: req.query.help,
-    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
-    LANG: getLang(`${__dirname}/../lg/monetaryMass_${req.query.lg||'fr'}.txt`)
+    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`),
+    LANG: getLang(`${__dirname}/../lg/monetaryMass_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`)
   })
 )
 

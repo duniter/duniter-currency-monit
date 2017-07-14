@@ -16,7 +16,7 @@ module.exports = (req, res, next) => co(function *() {
 		var pow = req.query.pow || 'no';
     
     // get lg file
-    const LANG = getLang(`${__dirname}/../lg/membersCount_${req.query.lg||'fr'}.txt`); //
+    const LANG = getLang(`${__dirname}/../lg/membersCount_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`);
     
     // get medianTime of beginBlock
     var beginBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`hash` FROM block WHERE `fork`=0 AND `number` = '+cache.beginBlock[0].number+' LIMIT 1');
