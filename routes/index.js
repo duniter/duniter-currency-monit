@@ -1,6 +1,7 @@
 const fs = require('fs')
 const express = require('express')
 const getLang = require(__dirname + '/../lib/getLang')
+const printMenu = require(__dirname + '/../views/printMenu')
 
 var app = express.Router()
 
@@ -25,96 +26,116 @@ Par exemple, home et about n'ont pas besoin de controleur
 /***************************************
 * Home Page
 ***************************************/
-app.get('/', (req, res)=> res.render('about.html', {
-            host: req.headers.host.toString(),
-	    help: req.query.help,
-	    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`)
-         })
- )
+app.get('/', // chemin (endpoint)
+  (req, res)=> res.render('about.html', { // rendu (template)
+    host: req.headers.host.toString(),
+    printMenu,
+	  help: req.query.help,
+	  MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`)
+  })
+)
 
 /***************************************
 * About Page
 ***************************************/
-app.get('/about', (req, res)=> res.render('about.html', {
-	    host: req.headers.host.toString(),
-	    help: req.query.help,
-            MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`)
-         })
- )
+app.get('/about', // chemin (endpoint)
+  (req, res)=> res.render('about.html', { // rendu (template)
+    host: req.headers.host.toString(),
+    printMenu,
+    help: req.query.help,
+    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`)
+  })
+)
 
 /***************************************
 * Lister les futurs membres
 ***************************************/
-app.get('/willMembers', 
-  require(__dirname + '/willMembers.js'), // the route controler
-  (req, res)=> // Send html page
-      res.status(200) // 200 n'est pas obligatoire, si on renvoie une réponse
-         .render('willMembers.html', {
-	    help: req.query.help,
-	    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
-            LANG: getLang(`${__dirname}/../lg/willMembers_${req.query.lg||'fr'}.txt`)
-         })
+app.get('/willMembers', // chemin (endpoint)
+  require(__dirname + '/willMembers.js'), // controleur (route)
+  (req, res)=> res.render('willMembers.html', { // rendu (template)
+    printMenu,
+	  help: req.query.help,
+	  MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
+    LANG: getLang(`${__dirname}/../lg/willMembers_${req.query.lg||'fr'}.txt`)
+  })
 )
 
 /***************************************
 * Lister les membres
 ***************************************/
-app.get('/members', /*require('../lib/updateCache.js'),*/ require(__dirname + '/members.js'),
+app.get('/members',
+  require(__dirname + '/members.js'),
   (req, res)=> res.render('members.html', {
-		    help: req.query.help,
-		    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
-                    LANG: getLang(`${__dirname}/../lg/members_${req.query.lg||'fr'}.txt`)
-                  })
+    printMenu,
+		help: req.query.help,
+		MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
+    LANG: getLang(`${__dirname}/../lg/members_${req.query.lg||'fr'}.txt`)
+  })
 )
 
 /***************************************
 * Lister les anciens membres
 ***************************************/
-/*app.get('/wasMembers', require(__dirname + '/wasMembers.js'), (req, res)=> res.render('wasMembers.html', {
-	    help: req.query.help,
-            MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
-            LANG: getLang(`${__dirname}/../lg/wasMembers_${lg}.txt`)
-         })
- )*/
+/*app.get('/wasMembers',
+  require(__dirname + '/wasMembers.js'),
+  (req, res)=> res.render('wasMembers.html', {
+    printMenu,
+    help: req.query.help,
+    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
+    LANG: getLang(`${__dirname}/../lg/wasMembers_${lg}.txt`)
+  })
+)*/
 
 /***************************************
 * Évolution du nombre de membres
 ***************************************/
-app.get('/membersCount', require(__dirname + '/../lib/updateCache.js'), require(__dirname + '/membersCount.js'), (req, res)=> res.render('Chart.html', {
-	    help: req.query.help,
-            MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
-            LANG: getLang(`${__dirname}/../lg/membersCount_${req.query.lg||'fr'}.txt`)
-         })
- )
+app.get('/membersCount',
+  require(__dirname + '/../lib/updateCache.js'), require(__dirname + '/membersCount.js'),
+  (req, res)=> res.render('Chart.html', {
+    printMenu,
+    help: req.query.help,
+    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
+    LANG: getLang(`${__dirname}/../lg/membersCount_${req.query.lg||'fr'}.txt`)
+  })
+)
 
 /***************************************
 * Lister les block en graph
 ***************************************/
-app.get('/blockCount', /*require('${__dirname}/../lib/updateCache.js'),*/ require(__dirname + '/blockCount.js'), (req, res)=> res.render('Chart.html', {
-	    help: req.query.help,
-            MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
-            LANG: getLang(`${__dirname}/../lg/blockCount_${req.query.lg||'fr'}.txt`)
-         })
- )
+app.get('/blockCount', 
+  require(__dirname + '/blockCount.js'),
+  (req, res)=> res.render('Chart.html', {
+    printMenu,
+    help: req.query.help,
+    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
+    LANG: getLang(`${__dirname}/../lg/blockCount_${req.query.lg||'fr'}.txt`)
+  })
+)
 
 /***************************************
 * Évolution de la masse monétaire totale
 ***************************************/
-app.get('/monetaryMass', require(__dirname + '/monetaryMass.js'), (req, res)=> res.render('Chart.html', {
-	    help: req.query.help,
-            MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
-            LANG: getLang(`${__dirname}/../lg/monetaryMass_${req.query.lg||'fr'}.txt`)
-         })
- )
+app.get('/monetaryMass',
+  require(__dirname + '/monetaryMass.js'),
+  (req, res)=> res.render('Chart.html', {
+    printMenu,
+    help: req.query.help,
+    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
+    LANG: getLang(`${__dirname}/../lg/monetaryMass_${req.query.lg||'fr'}.txt`)
+  })
+)
 
 /***************************************
 * Wotex
 ***************************************/
-app.get('/wotex', require(__dirname + '/wotex.js'), (req, res)=> res.render('wotex.html', {
-	    help: req.query.help,
-            MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
-            LANG: getLang(`${__dirname}/../lg/wotex_${req.query.lg||'fr'}.txt`)
-         })
- )
+app.get('/wotex',
+  require(__dirname + '/wotex.js'),
+  (req, res)=> res.render('wotex.html', {
+    printMenu,
+    help: req.query.help,
+    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
+    LANG: getLang(`${__dirname}/../lg/wotex_${req.query.lg||'fr'}.txt`)
+  })
+)
 
 module.exports = app
