@@ -113,8 +113,22 @@ app.get('/wotex',
   })
 )
 
+/*******************************************
+* Graphe gaussien de la qualité des membres
+********************************************/
+app.get('/gaussianWotQuality', 
+  require(__dirname + '/gaussianWotQuality.js'),
+  (req, res)=> res.render('Chart.html', {
+    printMenu,
+    pageName: 'GAUSSIAN_WOT_QUALITY',
+    help: req.query.help,
+    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||'fr'}.txt`),
+    LANG: getLang(`${__dirname}/../lg/gaussianWotQuality_${req.query.lg||'fr'}.txt`)
+  })
+)
+
 /***************************************
-* Lister les block en graph
+* Lister les block en graphe
 ***************************************/
 app.get('/blockCount', 
   require(__dirname + '/blockCount.js'),
