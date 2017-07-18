@@ -9,9 +9,13 @@ module.exports = (req, res, next) => co(function *() {
   
   try {
     // get GET parameters
-    var begin = req.query.begin >= 2 && req.query.begin || 2;// Default Value
-    var end = req.query.end || -1;// Default Value is current timestamp
+    var begin = req.query.begin >= 2 && req.query.begin || 2; // Default Value
+    var end = req.query.end || -1; // Default Value is current timestamp
+    var unit = req.query.unit || 'relative';
     var format = req.query.format || 'HTML';
+
+    // define constants
+    const meanMonetaryMassAtFullCurrency = Math.ceil((1/duniterServer.conf.c)*(duniterServer.conf.dtReeval / duniterServer.conf.dt));
     
     // get beginBlock and endBlock
     var beginBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime` FROM block WHERE `number` = '+begin+' LIMIT 1');
@@ -60,8 +64,7 @@ module.exports = (req, res, next) => co(function *() {
           membersCount: blockchain[b].membersCount,
           monetaryMass: parseInt(blockchain[b].monetaryMass / 100),
           monetaryMassPerMembers: parseFloat(((blockchain[b].monetaryMass / 100) / blockchain[b].membersCount).toFixed(2)),
-          relativeMonetaryMass: 0,
-          relativeMonetaryMassPerMembers: 0
+          derivedChoiceMonetaryMass: 0
         });
       
         if ( blockchain[b].dividend > 0 )
@@ -72,11 +75,20 @@ module.exports = (req, res, next) => co(function *() {
       }
     }
     
-    // calculate relativMonetaryMass
+    // calculate choiceMonetaryMass and derivedChoiceMonetaryMass
     for (let i=0;i<tabCurrency.length;i++)
     {
-      tabCurrency[i].relativeMonetaryMass = parseFloat(((tabCurrency[i].monetaryMass / currentDividend) * 100).toFixed(2));
-      tabCurrency[i].relativeMonetaryMassPerMembers = parseFloat(((tabCurrency[i].monetaryMassPerMembers / currentDividend) * 100).toFixed(2));
+      if (unit == "relative")
+      {
+        tabCurrency[i].monetaryMass = parseFloat(((tabCurrency[i].monetaryMass / currentDividend) * 100).toFixed(2));
+        tabCurrency[i].monetaryMassPerMembers = parseFloat(((tabCurrency[i].monetaryMassPerMembers / currentDividend) * 100).toFixed(2));
+      }
+      else if  (unit == "percentOfFullCurrency")
+      {
+        tabCurrency[i].monetaryMass = parseFloat((((tabCurrency[i].monetaryMassPerMembers / currentDividend) / meanMonetaryMassAtFullCurrency) * 10000).toFixed(2));
+        tabCurrency[i].monetaryMassPerMembers = tabCurrency[i].monetaryMass;
+      }
+      if (i>0) { tabCurrency[i].derivedChoiceMonetaryMass = parseFloat((((tabCurrency[i].monetaryMass / tabCurrency[i-1].monetaryMass) - 1.0) * 100).toFixed(2)); }
     }
     
     // Si le client demande la réponse au format JSON, le faire
@@ -85,14 +97,12 @@ module.exports = (req, res, next) => co(function *() {
     else
     {
       // GET parameters
-      var unit = req.query.unit == 'quantitative' ? 'quantitative' : 'relative';
-      var massByMembers = req.query.massByMembers == 'no' ? 'no' : 'yes';
-      var type = req.query.type == 'linear' ? 'linear' : 'logarithmic';
-      
-      
+      var massByMembers = req.query.massByMembers == 'no' && unit != "percentOfFullCurrency" ? 'no' : 'yes';
+      var type = req.query.type || 'logarithmic';
+      if (unit == "percentOfFullCurrency") { type = 'linear'; }
+      if (type != 'linear') { type = 'logarithmic'; }
     
       // Define full currency description
-      let meanMonetaryMassAtFullCurrency = Math.ceil((1/duniterServer.conf.c)*(duniterServer.conf.dtReeval / duniterServer.conf.dt));
       var fullCurrency = "The currency will be full when the money supply by member will be worth <b>"+meanMonetaryMassAtFullCurrency
 	  +" DU</b> (because 1/c * dtReeval/dt = <b>"+meanMonetaryMassAtFullCurrency+" DU</b>)<br>"
 	  +"Currently, 1 DU<sub>"+duniterServer.conf.currency+"</sub> = <b>"+(currentDividend/100)+"</b> "+duniterServer.conf.currency+" and we have <b>"
@@ -102,47 +112,57 @@ module.exports = (req, res, next) => co(function *() {
 	  
       // Define max yAxes
       var maxYAxes = meanMonetaryMassAtFullCurrency;
+      let indexEnd = tabCurrency.length-1;
       if (unit == "quantitative") { maxYAxes = maxYAxes*currentDividend/100; }
-      if (massByMembers == "no") { maxYAxes = maxYAxes*endBlock[0].membersCount; }
+      if (unit == "percentOfFullCurrency") { maxYAxes = 100; }
+      else if (massByMembers == "no") { maxYAxes = maxYAxes*endBlock[0].membersCount; }
       
       res.locals = {
-	 host: req.headers.host.toString(),
-         tabCurrency,
-	 currentDividend,
-         begin, 
-         end,
-         unit,
-         massByMembers,
-	 type,
-         form: `Begin #<input type="number" name="begin" value="${begin}"> - End #<input type="number" name="end" value="${end}"> <select name="unit">
-  <option name="unit" value ="quantitative">quantitative
-  <option name="unit" value ="relative" ${unit == 'relative' ? 'selected' : ''}>relative
-</select> <select name="massByMembers">
-  <option name="massByMembers" value ="yes">mass by members
-  <option name="massByMembers" value ="no" ${massByMembers == 'no' ? 'selected' : ''}>total mass
-</select> <select name="type">
-  <option name="type" value ="logarithmic">logarithmic
-  <option name="type" value ="linear" ${type == 'linear' ? 'selected' : ''}>linear
-</select>`,
-	description: `${fullCurrency}`,
+	      host: req.headers.host.toString(),
+        tabCurrency,
+	      currentDividend,
+        begin, 
+        end,
+        unit,
+        massByMembers,
+	      type,
+        form: `Begin #<input type="number" name="begin" value="${begin}"> - End #<input type="number" name="end" value="${end}"> <select name="unit">
+            <option name="unit" value ="quantitative">quantitative
+            <option name="unit" value ="relative" ${unit == 'relative' ? 'selected' : ''}>relative
+            <option name="unit" value ="percentOfFullCurrency" ${unit == 'percentOfFullCurrency' ? 'selected' : ''}>percentOfFullCurrency
+          </select> <select name="massByMembers">
+            <option name="massByMembers" value ="yes">mass by members
+            <option name="massByMembers" value ="no" ${massByMembers == 'no' ? 'selected' : ''}>total mass
+          </select> <select name="type">
+            <option name="type" value ="logarithmic">logarithmic
+            <option name="type" value ="linear" ${type == 'linear' ? 'selected' : ''}>linear
+          </select>`,
+	      description: `${fullCurrency}`,
         chart: {
           type: 'bar',
           data: {
             labels: tabCurrency.map( item=> item.dateTime ),
+            //yLabels: tabCurrency.map( item=> item.monetaryMass, item=>derivedChoiceMonetaryMass),
             datasets: [{
-              label: `#${unit == "relative" ? "DUğ1" : 'Ğ1'}${massByMembers == "yes" ? '/member' : ''}`,
-              data: unit == 'quantitative' 
-                ? tabCurrency.map( item=>
+              //yAxisID: 1,
+              label: `${unit == "percentOfFullCurrency" ? `monetaryMass (in % of full currency)`:`#${unit == "relative" ? "DUğ1" : 'Ğ1'}${massByMembers == "yes" ? '/member' : ''}`}`,
+              data: tabCurrency.map( item=>
                     massByMembers == "no" 
                     ? item.monetaryMass 
-                    : item.monetaryMassPerMembers)
-                : tabCurrency.map( item=>
-                    massByMembers == "no" 
-                    ? item.relativeMonetaryMass 
-                    : item.relativeMonetaryMassPerMembers),
+                    : item.monetaryMassPerMembers),
               backgroundColor: 'rgba(54, 162, 235, 0.5)',
               borderColor: 'rgba(54, 162, 235, 1)',
               borderWidth: 1
+            },
+            {
+              //yAxisID: 2,
+              label: "% of variation of the monetary mass",
+              data: tabCurrency.map( item=> item.derivedChoiceMonetaryMass),
+              backgroundColor: 'rgba(0, 162, 0, 0.5)',
+              borderColor: 'rgba(0, 162, 0, 1)',
+              borderWidth: 1,
+              type: 'line',
+              fill: false
             }]
           },
           options: {
@@ -154,20 +174,33 @@ module.exports = (req, res, next) => co(function *() {
             // },
             title: {
               display: true,
-              text: `${unit == "relative" ? "DUğ1" : 'Ğ1'} Monetary Mass ${massByMembers == "yes" ? 'by members ' : ''}in the range #${begin}-#${end  }`
+              text: `${unit == "percentOfFullCurrency" ? `Monetary Mass in percent of full currency `:`${unit == "relative" ? "DUğ1" : 'Ğ1'} Monetary Mass ${massByMembers == "yes" ? 'by members ' : ''}`}in the range #${begin}-#${end  }`
             },
             legend: {
-              display: false
+              display: true
             },
             scales: {
               yAxes: [{
-		type: type,
+                //yAxisID: 1,
+		            type: type,
                 position: 'left',
                 ticks: {
-                    min: 1,
-                    max: maxYAxes
+                    callback: function(value, index, values) {//needed to change the scientific notation results from using logarithmic scale
+                            return Number(value.toString()); //pass tick values as a string into Number function
+                    },
+                    max: maxYAxes,
                 }
-              }]
+              }/*,
+              {
+                //yAxisID: 2,
+		            type: type,
+                position: 'right',
+                ticks: {
+                    callback: function(value, index, values) {//needed to change the scientific notation results from using logarithmic scale
+                            return Number(value.toString()); //pass tick values as a string into Number function
+                    }
+                }
+              }*/]
             }
           }
         }
