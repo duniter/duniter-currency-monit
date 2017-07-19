@@ -13,6 +13,7 @@ var conf = {
 var tabMembersQuality = [];
 var tabMembersQualityIfNoSentries = [];
 var tabMembersQualityDetailedDistance = [];
+var meansCalculate = false;
 var means = {
 	meanSentriesReachedBySentries: 0,
 	meanMembersReachedBySentries: 0,
@@ -58,16 +59,20 @@ module.exports = function membersQuality(wotb_id, dSen = 0, stepMax = 0, xpercen
 	}
 	else if (dSen < 0)
 	{
-		// Calculate mean Members/Sentries ReachedBy Members/Sentries
-		if (sentriesCount > 0)
+		if (!meansCalculate)
 		{
-			means.meanSentriesReachedBySentries = parseFloat((means.meanSentriesReachedBySentries/sentriesCount).toFixed(2));
-			means.meanMembersReachedBySentries = parseFloat((means.meanMembersReachedBySentries/sentriesCount).toFixed(2));
-		}
-		if (membersCount > 0)
-		{
-			means.meanSentriesReachedByMembers = parseFloat((means.meanSentriesReachedByMembers/membersCount).toFixed(2));
-			means.meanMembersReachedByMembers = parseFloat((means.meanMembersReachedByMembers/membersCount).toFixed(2));
+			// Calculate mean Members/Sentries ReachedBy Members/Sentries
+			if (sentriesCount > 0)
+			{
+				means.meanSentriesReachedBySentries = parseFloat((means.meanSentriesReachedBySentries/sentriesCount).toFixed(2));
+				means.meanMembersReachedBySentries = parseFloat((means.meanMembersReachedBySentries/sentriesCount).toFixed(2));
+			}
+			if (membersCount > 0)
+			{
+				means.meanSentriesReachedByMembers = parseFloat((means.meanSentriesReachedByMembers/membersCount).toFixed(2));
+				means.meanMembersReachedByMembers = parseFloat((means.meanMembersReachedByMembers/membersCount).toFixed(2));
+			}
+			meansCalculate = true;
 		}
 
 		return means;
@@ -90,6 +95,12 @@ module.exports = function membersQuality(wotb_id, dSen = 0, stepMax = 0, xpercen
 
 			tabMembersQuality = [];
 			tabMembersQualityIfNoSentries = [];
+
+			meansCalculate = false;
+			means.meanSentriesReachedBySentries = 0;
+			means.meanMembersReachedBySentries = 0;
+			means.meanSentriesReachedByMembers = 0;
+			means.meanMembersReachedByMembers = 0;
 		}
 
 		return lastUpgradeTime;
