@@ -2,6 +2,7 @@
 
 const co = require('co')
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
+const getLang = require(__dirname + '/../lib/getLang')
 
 module.exports = (req, res, next) => co(function *() {
   
@@ -14,7 +15,10 @@ module.exports = (req, res, next) => co(function *() {
     var unit = req.query.unit || 'relative';
     var format = req.query.format || 'HTML';
 
-    // define constants
+    // get lg file
+    const LANG = getLang(`${__dirname}/../lg/monetaryMass_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`);
+
+    // calculate meanMonetaryMassAtFullCurrency
     const meanMonetaryMassAtFullCurrency = Math.ceil((1/duniterServer.conf.c)*(duniterServer.conf.dtReeval / duniterServer.conf.dt));
     
     // get beginBlock and endBlock
@@ -103,12 +107,12 @@ module.exports = (req, res, next) => co(function *() {
       if (type != 'linear') { type = 'logarithmic'; }
     
       // Define full currency description
-      var fullCurrency = "The currency will be full when the money supply by member will be worth <b>"+meanMonetaryMassAtFullCurrency
-	  +" DU</b> (because 1/c * dtReeval/dt = <b>"+meanMonetaryMassAtFullCurrency+" DU</b>)<br>"
-	  +"Currently, 1 DU<sub>"+duniterServer.conf.currency+"</sub> = <b>"+(currentDividend/100)+"</b> "+duniterServer.conf.currency+" and we have <b>"
-	  +endBlock[0].membersCount+"</b> members. Thus in full currency we would have a total money supply of <b>"
+      var fullCurrency = LANG['DESC1']+" <b>"+meanMonetaryMassAtFullCurrency
+	  +" "+LANG['UD']+"</b> ("+LANG['FULL_CURRENCY_FORMULA']+" = <b>"+meanMonetaryMassAtFullCurrency+" "+LANG['UD']+"</b>)<br>"
+	  +LANG['CURRENTLY']+", 1 "+LANG['UD']+"<sub>"+duniterServer.conf.currency+"</sub> = <b>"+(currentDividend/100)+"</b> "+duniterServer.conf.currency+" "+LANG['AND_WE_HAVE']+" <b>"
+	  +endBlock[0].membersCount+"</b> "+LANG['DESC2']+" <b>"
 	  +(meanMonetaryMassAtFullCurrency*currentDividend*endBlock[0].membersCount/100)+"</b> "+duniterServer.conf.currency
-	  +" (<b>"+(meanMonetaryMassAtFullCurrency*currentDividend/100)+"</b> "+duniterServer.conf.currency+"/member)." ;
+	  +" (<b>"+(meanMonetaryMassAtFullCurrency*currentDividend/100)+"</b> "+duniterServer.conf.currency+"/"+LANG['MEMBER']+")." ;
 	  
       // Define max yAxes
       var maxYAxes = meanMonetaryMassAtFullCurrency;
@@ -126,16 +130,16 @@ module.exports = (req, res, next) => co(function *() {
         unit,
         massByMembers,
 	      type,
-        form: `Begin #<input type="number" name="begin" value="${begin}"> - End #<input type="number" name="end" value="${end}"> <select name="unit">
-            <option name="unit" value ="quantitative">quantitative
-            <option name="unit" value ="relative" ${unit == 'relative' ? 'selected' : ''}>relative
-            <option name="unit" value ="percentOfFullCurrency" ${unit == 'percentOfFullCurrency' ? 'selected' : ''}>percentOfFullCurrency
+        form: `${LANG['BEGIN']} #<input type="number" name="begin" value="${begin}"> - ${LANG['END']} #<input type="number" name="end" value="${end}"> <select name="unit">
+            <option name="unit" value ="quantitative">${LANG['QUANTITATIVE']}
+            <option name="unit" value ="relative" ${unit == 'relative' ? 'selected' : ''}>${LANG['RELATIVE']}
+            <option name="unit" value ="percentOfFullCurrency" ${unit == 'percentOfFullCurrency' ? 'selected' : ''}>${LANG['PERCENT_OF_FULL_CURRENCY']}
           </select> <select name="massByMembers">
-            <option name="massByMembers" value ="yes">mass by members
-            <option name="massByMembers" value ="no" ${massByMembers == 'no' ? 'selected' : ''}>total mass
+            <option name="massByMembers" value ="yes">${LANG['MASS_BY_MEMBERS']}
+            <option name="massByMembers" value ="no" ${massByMembers == 'no' ? 'selected' : ''}>${LANG['TOTAL_MASS']}
           </select> <select name="type">
-            <option name="type" value ="logarithmic">logarithmic
-            <option name="type" value ="linear" ${type == 'linear' ? 'selected' : ''}>linear
+            <option name="type" value ="logarithmic">${LANG['LOGARITHMIC']}
+            <option name="type" value ="linear" ${type == 'linear' ? 'selected' : ''}>${LANG['LINEAR']}
           </select>`,
 	      description: `${fullCurrency}`,
         chart: {
@@ -145,7 +149,7 @@ module.exports = (req, res, next) => co(function *() {
             //yLabels: tabCurrency.map( item=> item.monetaryMass, item=>derivedChoiceMonetaryMass),
             datasets: [{
               //yAxisID: 1,
-              label: `${unit == "percentOfFullCurrency" ? `monetaryMass (in % of full currency)`:`#${unit == "relative" ? "DUğ1" : 'Ğ1'}${massByMembers == "yes" ? '/member' : ''}`}`,
+              label: `${unit == "percentOfFullCurrency" ? `${LANG['MONETARY_MASS']} (${LANG['IN_PERCENT_OF_FULL_CURRENCY']})`:`#${unit == "relative" ? LANG['UD']+"ğ1" : 'Ğ1'}${massByMembers == "yes" ? '/'+LANG['MEMBER'] : ''}`}`,
               data: tabCurrency.map( item=>
                     massByMembers == "no" 
                     ? item.monetaryMass 
@@ -156,7 +160,7 @@ module.exports = (req, res, next) => co(function *() {
             },
             {
               //yAxisID: 2,
-              label: "% of variation of the monetary mass",
+              label: LANG['PERCENT_VARIATION_MONETARY_MASS'],
               data: tabCurrency.map( item=> item.derivedChoiceMonetaryMass),
               backgroundColor: 'rgba(0, 162, 0, 0.5)',
               borderColor: 'rgba(0, 162, 0, 1)',
@@ -174,7 +178,7 @@ module.exports = (req, res, next) => co(function *() {
             // },
             title: {
               display: true,
-              text: `${unit == "percentOfFullCurrency" ? `Monetary Mass in percent of full currency `:`${unit == "relative" ? "DUğ1" : 'Ğ1'} Monetary Mass ${massByMembers == "yes" ? 'by members ' : ''}`}in the range #${begin}-#${end  }`
+              text: `${unit == "percentOfFullCurrency" ? LANG['MONETARY_MASS']+' '+LANG['IN_PERCENT_OF_FULL_CURRENCY']:`${unit == "relative" ? LANG['UD']+"ğ1 " : 'Ğ1 '} ${massByMembers == "yes" ? LANG['BY_MEMBER']: ''}`} ${LANG['IN_THE_RANGE']} #${begin}-#${end  }`
             },
             legend: {
               display: true
