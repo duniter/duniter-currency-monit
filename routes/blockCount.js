@@ -3,6 +3,7 @@
 const co = require('co')
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 const colorScale = require(__dirname + '/../lib/colorScale')
+const getLang = require(__dirname + '/../lib/getLang')
 
 // Garder l'index des blocs en mémoire vive
 var blockchain = [];
@@ -22,6 +23,9 @@ module.exports = (req, res, next) => co(function *() {
     var data = req.query.data || 'nbBlocks';
     var perNode = (req.query.perNode == 'yes') ? 'yes':'no';
     var significantPercent = req.query.significantPercent || 3;
+
+    // get lg file
+    const LANG = getLang(`${__dirname}/../lg/blockCount_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`);
     
     // detect fork
     if ( blockchain.length > 0 )
@@ -239,10 +243,10 @@ module.exports = (req, res, next) => co(function *() {
     }
     
     //define dataLabel
-    var dataLabel = '#Written blocks';
-    if (data == 'writtenPercent') { dataLabel = "\% blockchain"; }
-    else if (data == 'writtenPercentSinceBecomeMember') { dataLabel = "\% blockchain (since become member)"; }
-    else if (data == 'meanNonce') { dataLabel = '#Mean nonce'; }
+    var dataLabel = '#'+LANG['WRITTEN_BLOCKS'];
+    if (data == 'writtenPercent') { dataLabel = "\% "+LANG['BLOCKCHAIN']; }
+    else if (data == 'writtenPercentSinceBecomeMember') { dataLabel = "\% "+LANG['BLOCKCHAIN']+" ("+LANG['SINCE_BECOME_MEMBER']+")"; }
+    else if (data == 'meanNonce') { dataLabel = '#'+LANG['MEAN_NONCE']; }
     
     // Si le client demande la réponse au format JSON, le faire
     if (format == 'JSON')
@@ -275,7 +279,7 @@ module.exports = (req, res, next) => co(function *() {
 	  }
 	  else
 	  {
-	    tabLabels.push(tabBlockMembersSort[m].uid/*+"("+tabBlockMembersSort[m].coreCount+"c)"*/);
+	    tabLabels.push(tabBlockMembersSort[m].uid);
 	    tabDataX.push(tabBlockMembersSort[m].data);
 	  }
 	  nbMembers++;
@@ -327,7 +331,7 @@ module.exports = (req, res, next) => co(function *() {
 	    options: {
 	      title: {
 		display: true,
-		text: nbMembers+' members have written blocks in the range #'+begin+'-#'+end
+		text: nbMembers+' '+LANG["RANGE"]+' #'+begin+'-#'+end
 	      },
 	      legend: {
 		display: false
@@ -343,15 +347,15 @@ module.exports = (req, res, next) => co(function *() {
 	      barPercentage: 1.0
 	    }
 	  },
-	  form: `Begin #<input type="number" name="begin" value="${begin}" size="7" style="width:60px;"> - End #<input type="number" name="end" value="${end}" size="7" style="width:60px;">
+	  form: `${LANG['BEGIN']} #<input type="number" name="begin" value="${begin}" size="7" style="width:60px;"> - ${LANG['END']} #<input type="number" name="end" value="${end}" size="7" style="width:60px;">
 	    <select name="data">
-	      <option name="data" value ="nbBlocks">Number of written Blocks
-	      <option name="data" value ="writtenPercent" ${data == 'writtenPercent' ? 'selected' : ''}>Percent of written Blocks
-	      <option name="data" value ="writtenPercentSinceBecomeMember" ${data == 'writtenPercentSinceBecomeMember' ? 'selected' : ''}>Percent of written Blocks since become member
-	      <option name="data" value ="meanNonce" ${data == 'meanNonce' ? 'selected' : ''}>mean nonce
+	      <option name="data" value ="nbBlocks">${LANG["NB_BLOCKS"]}
+	      <option name="data" value ="writtenPercent" ${data == 'writtenPercent' ? 'selected' : ''}>${LANG["PERCENT_OF_WRITTEN_BLOCKS"]}
+	      <option name="data" value ="writtenPercentSinceBecomeMember" ${data == 'writtenPercentSinceBecomeMember' ? 'selected' : ''}>${LANG["PERCENT_OF_WRITTEN_BLOCKS"]} ${LANG["SINCE_BECOME_MEMBER"]}
+	      <option name="data" value ="meanNonce" ${data == 'meanNonce' ? 'selected' : ''}>${LANG['MEAN_NONCE']}
 	    </select>
-	    <input type="checkbox" name="perNode" value="yes" ${perNode == 'yes' ? 'checked' : ''}>detail by node - 
-	    significant limit <input type="number" name="significantPercent" value="${significantPercent}" size="2" style="width:30px;">% of blocks`
+	    <input type="checkbox" name="perNode" value="yes" ${perNode == 'yes' ? 'checked' : ''}>${LANG['DETAIL_BY_NODE']} - 
+	    ${LANG['SIGNIFICANT_LIMIT']} <input type="number" name="significantPercent" value="${significantPercent}" size="2" style="width:30px;">${LANG['PERCENT_OF_BLOCKS']}`
       }
       next()
     }

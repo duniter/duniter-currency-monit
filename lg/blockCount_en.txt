@@ -1,1 +1,13 @@
 SUBMIT_BUTTON submit
+WRITTEN_BLOCKS Written blocks
+BLOCKCHAIN blockchain
+SINCE_BECOME_MEMBER since become member
+MEAN_NONCE Mean nonce
+RANGE members have written blocks in the range
+BEGIN Begin
+END End
+NB_BLOCKS Number of written Blocks
+PERCENT_OF_WRITTEN_BLOCKS Percent of written Blocks
+DETAIL_BY_NODE detail by node
+SIGNIFICANT_LIMIT significant limit
+PERCENT_OF_BLOCKS % of blocks
