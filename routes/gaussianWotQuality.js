@@ -4,6 +4,7 @@ const co = require('co')
 
 const constants = require(__dirname + '/../lib/constants')
 const membersQuality = require(__dirname + '/tools/membersQuality')
+const getLang = require(__dirname + '/../lib/getLang')
 
 const wotb = (constants.USE_WOTB6) ? require('wotb'):null;
 
@@ -27,7 +28,12 @@ module.exports = (req, res, next) => co(function *() {
     else
     {
       // get GET parameters
-      let format = req.query.format || 'HTML';
+      const format = req.query.format || 'HTML';
+      const sentries = req.query.sentries || 'yes';
+      const unit = req.query.unit || 'quality';
+
+      // get lg file
+      const LANG = getLang(`${__dirname}/../lg/gaussianWotQuality_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`);
 
       // Définition des contantes
       const conf = duniterServer.conf;
@@ -37,21 +43,13 @@ module.exports = (req, res, next) => co(function *() {
       let lastUpgradeTimeDatas = membersQuality(-1);
       let tabUidIndex = [];
       let tabMembersQuality= [];
-      let tabMembersQualityIfNoSentries = [];
       let tabMembersQualitySorted = [];
-      let tabMembersQualityIfNoSentriesSorted = [];
       let tabLabels = [];
       let tabColors = [];
       let tabLimit1 = [];
 
       // Récupérer la liste des identités ayant actuellement le statut de membre
       let membersList = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`wotb_id` FROM i_index WHERE `member`=1');
-
-      // Remplir le tableau tabUidIndex
-      for(const member of membersList)
-      {
-        tabUidIndex[member.wotb_id] = member.uid;
-      }
 
       // Si les données de qualité n'ont jamais été calculés, le faire
       if (lastUpgradeTimeDatas == 0)
@@ -66,35 +64,51 @@ module.exports = (req, res, next) => co(function *() {
         membersQuality(-1, dSen, conf.stepMax, conf.xpercent, wot.memCopy());
       }
 
-      // Récupérer les tableau de qualités des membres
-      tabMembersQuality= [];
-      tabMembersQualityIfNoSentries = [];
-      for (let i=0;membersQuality(i) >= 0;i++)
+      // Calculer nbSentries, limit1 and label
+      const nbSentries = (sentries=="no") ? membersList.length:membersQuality(-2);
+      let limit1 = 1;
+      let label = LANG['QUALITY'];
+      switch (unit)
       {
-        tabMembersQuality[i] = membersQuality(i);
-        tabMembersQualityIfNoSentries.push(membersQuality(i, -1));
-        //console.log("tabMembersQuality[%s] = %s", i, tabMembersQuality[i]);
-        //console.log("tabMembersQualityIfNoSentries[%s] = %s", i, tabMembersQualityIfNoSentries[i]);
+          case 'percentReached': limit1 = conf.xpercent*100; label = LANG['PERCENT_REACHED']; break;
+          case 'nbReached': limit1 = parseInt(conf.xpercent*nbSentries); label = LANG['NB_REACHED']; break;
+          default: break;
       }
 
-      // Initialisation des tableaux Sorted et Limit
+      // Remplir les tableaux tabUidIndex et tabLimit1
+      for(const member of membersList)
+      {
+        tabUidIndex[member.wotb_id] = member.uid;
+        tabLimit1.push(limit1);
+      }
+
+      // Récupérer le tableau de qualité des membres
+      tabMembersQuality= [];
+      for (let i=0;membersQuality(i) >= 0;i++)
+      {
+        if (sentries == "no")
+        {
+          tabMembersQuality[i] = membersQuality(i, -1);
+        }
+        else
+        {
+          tabMembersQuality[i] = membersQuality(i);
+        }
+      }
+
+      // Initialisation du tableau tabMembersQualitySorted
       for (let i=0;i<tabMembersQuality.length;i++)
       {
         tabMembersQualitySorted.push(0);
-        tabMembersQualityIfNoSentriesSorted.push(0);
-        tabLimit1.push(1);
       }
 
-      // Trier chaque tableau de façon gaussienne
+      // Trier le tableau de façon gaussienne
       let debut = true;
       let membersQualityAlreadyCounted = [];
-      let membersQualityIfNoSentriesAlreadyCounted = [];
       for (let i=0;i<tabMembersQuality.length;i++)
       {
         let min = qualityMax;
-        let minIfNoSentries = qualityMax;
         let idMin = 0;
-        let idMinIfNoSentries = 0;
 
         for (let j=0;j<tabMembersQuality.length;j++)
         {
@@ -102,11 +116,6 @@ module.exports = (req, res, next) => co(function *() {
           {
             min = tabMembersQuality[j];
             idMin = j;
-          }
-          if (tabMembersQualityIfNoSentries[j] < minIfNoSentries && typeof(membersQualityIfNoSentriesAlreadyCounted[j])=='undefined')
-          {
-            minIfNoSentries = tabMembersQuality[j];
-            idMinIfNoSentries = j;
           }
         }
 
@@ -118,36 +127,50 @@ module.exports = (req, res, next) => co(function *() {
         }
         debut = !debut;
         tabMembersQualitySorted[idGaussian] = tabMembersQuality[idMin];
-        tabMembersQualityIfNoSentriesSorted[idGaussian] = tabMembersQualityIfNoSentries[idMinIfNoSentries];
 
         // Exclure les membres déjà traités
         membersQualityAlreadyCounted[idMin] = true;
-        membersQualityIfNoSentriesAlreadyCounted[idMinIfNoSentries] = true;
 
         // Définir le label pour cet abscisse
-        tabLabels[idGaussian] = tabUidIndex[idMin]/*+" ("+tabUidIndex[idMinIfNoSentries]+")"*/;
+        tabLabels[idGaussian] = tabUidIndex[idMin];
 
         // Définir la couleur
-        //console.log("membersQuality(%s) = %s", idMin, membersQuality(idMin));
-        if (tabMembersQuality[idMin] > 1.1)
+        if (tabMembersQuality[idMin] >= 1.10)
+        {
+          tabColors[idGaussian] = 'rgba(128, 0, 128, 0.5)';
+        }
+        else if (tabMembersQuality[idMin] >= 1.05)
         {
           tabColors[idGaussian] = 'rgba(0, 0, 255, 0.5)';
         }
-        else if (tabMembersQuality[idMin] > 1.05)
+        else if (tabMembersQuality[idMin] >= 1.00)
         {
           tabColors[idGaussian] = 'rgba(0, 255, 0, 0.5)';
         }
-        else if (tabMembersQuality[idMin] > 1.00)
+        else if (tabMembersQuality[idMin] >= 0.95)
         {
           tabColors[idGaussian] = 'rgba(255, 128, 0, 0.5)';
         }
-        else if (tabMembersQuality[idMin] > 0.95)
+        else if (tabMembersQuality[idMin] >= 0.90)
         {
           tabColors[idGaussian] = 'rgba(255, 0, 0, 0.5)';
         }
         else
         {
           tabColors[idGaussian] = 'rgba(0, 0, 0, 0.5)';
+        }
+      }
+
+      // Si le client demande les données dans une autre unité, faire la transformation
+      let unitCoeff = 1.0;
+      if (unit=='percentReached' || unit=='nbReached')
+      {
+        unitCoeff = parseFloat(conf.xpercent);
+        if (unit=='nbReached') { unitCoeff *= parseFloat(nbSentries); }
+        else { unitCoeff *= 100.0; }
+        for (let i=0;i<tabMembersQualitySorted.length;i++)
+        {
+          tabMembersQualitySorted[i] = parseInt(tabMembersQualitySorted[i]*unitCoeff);
         }
       }
       
@@ -159,57 +182,58 @@ module.exports = (req, res, next) => co(function *() {
         {
           tabJson.push({
             label: tabLabels[i],
-            quality: tabMembersQualitySorted[i],
-            qualityIfNoSentries: tabMembersQualityIfNoSentriesSorted[i]
+            quality: tabMembersQualitySorted[i]
           });
         }
         res.status(200).jsonp( tabJson )
       }
       else
       {
-        // GET parameters
-        
         res.locals = {
         host: req.headers.host.toString(),
-          form: ``,
+          form: `
+            <select name="unit">
+              <option name="unit" value ="quality">${LANG['QUALITY']}
+              <option name="unit" value ="percentReached" ${unit == 'percentReached' ? 'selected' : ''}>${LANG['PERCENT_REACHED']}
+              <option name="unit" value ="nbReached" ${unit == 'nbReached' ? 'selected' : ''}>${LANG['NB_REACHED']}
+            </select>`,
+          form2: `<input type="checkbox" name="sentries" value="no" ${sentries == 'no' ? 'checked' : ''}> ${LANG["IF_NO_SENTRIES"]}`,
           chart: {
             type: 'bar',
             data: {
               labels: tabLabels,
               datasets: [{
-                label: 'quality',
+                label: label,
                 data: tabMembersQualitySorted,
                 backgroundColor: tabColors,
                 borderWidth: 0
               },
-              /*{
-                label: 'qualityIfNoSentries',
-                data: tabMembersQualityIfNoSentriesSorted,
-                steppedLine: true,
-                pointStyle: 'dash',
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                borderColor: 'rgba(0, 0, 0, 1)',
-                borderWidth: 1
-              },
               {
                 label: 'limit',
                 data: tabLimit1,
-                backgroundColor: 'rgba(255, 0, 0, 0.5)',
-                borderColor: 'rgba(255, 0, 0, 1)',
-                borderWidth: 0
-              }*/]
+                backgroundColor: 'rgba(0, 255, 0, 0.5)',
+                borderColor: 'rgba(0, 255, 0, 1)',
+                borderWidth: 2,
+                type: 'line',
+                fill: false,
+                pointStyle: 'dash'
+              }]
             },
             options: {
               title: {
                 display: true,
-                text: `fonction gaussienne de la qualité des membres`
+                text: LANG['DISTRIBUTION_QUALITY']
               },
               legend: {
                 display: false
               },
               scales: {
                 yAxes: [{
-                  position: 'left'
+                  position: 'left',
+                  ticks: {
+                    min: 0,
+                    max: parseFloat(((1/conf.xpercent)*unitCoeff).toFixed(2))
+                  }
                 }]
               }
             }
