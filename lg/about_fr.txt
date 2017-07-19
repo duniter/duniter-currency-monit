@@ -1,0 +1,9 @@
+LG fr
+VERSION Version
+AUTHOR Auteur
+CONTRIBUTORS Autres contributeurs
+LICENSE licence
+GIT_REPOSITORY dépôt github
+IF_YOU_WANT Si vous le souhaitez vous pouvez
+DISABLE_HELP désactiver l'aide
+DONATE Vous pouvez me soutenir en Ğ1

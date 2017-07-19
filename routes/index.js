@@ -33,7 +33,8 @@ app.get('/', // chemin (endpoint)
     host: req.headers.host.toString(),
     printMenu,
 	  help: req.query.help,
-	  MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`)
+	  MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`),
+    LANG: getLang(`${__dirname}/../lg/about_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`)
   })
 )
 
@@ -45,7 +46,8 @@ app.get('/about', // chemin (endpoint)
     host: req.headers.host.toString(),
     printMenu,
     help: req.query.help,
-    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`)
+    MENU_LANG: getLang(`${__dirname}/../lg/menu_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`),
+    LANG: getLang(`${__dirname}/../lg/about_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`)
   })
 )
 
