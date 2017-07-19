@@ -587,6 +587,8 @@ module.exports = (req, res, next) => co(function *() {
     // Sinon, printer le tableau html
     else
     {
+	  let meansMembersQuality = membersQuality(-1, -1);
+
       res.locals = {
 				host: req.headers.host.toString(),
 				USE_WOTB6: constants.USE_WOTB6,
@@ -613,12 +615,9 @@ module.exports = (req, res, next) => co(function *() {
 				// members cache data
 				membersLastUptime,
 				membersQuality,
-				/*meanSentriesReachedBySentriesInSingleExtCert,
-				meanMembersReachedBySentriesInSingleExtCert,
-				meanSentriesReachedByMembersInSingleExtCert,
-				meanMembersReachedByMembersInSingleExtCert,*/
 				proportionMembersWithQualityUpper1,
 				proportionMembersWithQualityUpper1IfNoSentries,
+				meansMembersQuality,
 				
 				// centrality cache data
 				lockCentralityCalc,

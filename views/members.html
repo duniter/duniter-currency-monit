@@ -61,10 +61,10 @@ ${(membersLastCentralityCalcTime==0) ? `
 ${(USE_WOTB6) ? `
 	<table border="1">
 		<tr><td align='center' colspan='3'>${LANG["DATA_AT"]} ${timestampToDatetime(membersLastUptime)}</td></tr>
-		<!-- <tr><td align='center'>${LANG["meanMembersReachedByMembers"]}</td><td align='center'>${LANG["SENTRIES_REACHED"]}</td><td align='center'>${LANG["MEMBERS_REACHED"]}</td></tr>
-		<tr><td align='center'>${LANG["SENTRY_CERT"]}</td><td align='center'>${(membersQuality(-1, -1).meanSentriesReachedBySentries).toFixed(2)}%</td><td align='center'>${(membersQuality(-1, -1).meanMembersReachedBySentries).toFixed(2)}%</td></tr>
-		<tr><td align='center'>${LANG["MEMBER_CERT"]}</td><td align='center'><font color="${(membersQuality(-1, -1).meanSentriesReachedByMembers<xpercent) ? 'DarkRed' : 'blue' }"><b>${membersQuality(-1, -1).meanSentriesReachedByMembers}%</b></font></td><td align='center'><b>${membersQuality(-1, -1).meanMembersReachedByMembers}%</b></td></tr>
-		<tr><td align='center'><b>${LANG["MEAN_QUALITY"]}</b></td><td align='center'><font color="red"><b>${(membersQuality(-1, -1).meanSentriesReachedByMembers/(xpercent*100)).toFixed(2)}</b></font></td><td align='center'><b>${(membersQuality(-1, -1).meanMembersReachedByMembers/(xpercent*100)).toFixed(2)}</b></td></tr> -->
+		<tr><td align='center'>${LANG["meanMembersReachedByMembers"]}</td><td align='center'>${LANG["SENTRIES_REACHED"]}</td><td align='center'>${LANG["MEMBERS_REACHED"]}</td></tr>
+		<tr><td align='center'>${LANG["SENTRY_CERT"]}</td><td align='center'>${(meansMembersQuality.meanSentriesReachedBySentries).toFixed(2)}%</td><td align='center'>${(meansMembersQuality.meanMembersReachedBySentries).toFixed(2)}%</td></tr>
+		<tr><td align='center'>${LANG["MEMBER_CERT"]}</td><td align='center'><font ${(meansMembersQuality.meanSentriesReachedByMembers<xpercent) ? 'color="DarkRed"' : 'color="blue"' }><b>${meansMembersQuality.meanSentriesReachedByMembers}%</b></font></td><td align='center'><b>${meansMembersQuality.meanMembersReachedByMembers}%</b></td></tr>
+		<tr><td align='center'><b>${LANG["MEAN_QUALITY"]}</b></td><td align='center'><font color="red"><b>${(meansMembersQuality.meanSentriesReachedByMembers/(xpercent*100)).toFixed(2)}</b></font></td><td align='center'><b>${(meansMembersQuality.meanMembersReachedByMembers/(xpercent*100)).toFixed(2)}</b></td></tr>
 		<tr><td align='center'><b>${LANG["PROPORTION_MEMBERS_WITH_QUALITY_UPPER_1"]}</b></td><td align='center'><font color="red"><b>${(proportionMembersWithQualityUpper1*100).toFixed(2)}%</b></font></td><td align='center'><b>${(proportionMembersWithQualityUpper1IfNoSentries*100).toFixed(2)}%</b></td></tr>
 	</table>
 	<br>

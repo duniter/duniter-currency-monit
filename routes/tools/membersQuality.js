@@ -22,8 +22,8 @@ var means = {
 
 module.exports = function membersQuality(wotb_id, dSen = 0, stepMax = 0, xpercent = 0, wotCopy = null) {
 
-  if (wotb_id >= 0)
-  {
+  	if (wotb_id >= 0)
+  	{
 		if (typeof(tabMembersQuality[wotb_id])=='undefined')
 		{
 			// Si le wotb_id n'existe pas, renvoyer -1
@@ -72,8 +72,8 @@ module.exports = function membersQuality(wotb_id, dSen = 0, stepMax = 0, xpercen
 
 		return means;
 	}
-	else
-  {
+	else if (wotb_id == -1)
+  	{
 		if (wotCopy != null)
 		{
 			lastUpgradeTime = Math.floor(Date.now() / 1000);
@@ -93,5 +93,9 @@ module.exports = function membersQuality(wotb_id, dSen = 0, stepMax = 0, xpercen
 		}
 
 		return lastUpgradeTime;
-  }
+	}
+	else if (wotb_id == -2)
+  	{
+	  return sentriesCount;
+	}
 }
