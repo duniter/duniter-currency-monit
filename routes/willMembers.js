@@ -101,12 +101,12 @@ module.exports = (req, res, next) => co(function *() {
 				let idtyBlockNumber = idtyBlockStamp[0];
 	
 				// récupérer le medianTime et le hash du bloc d'émission de l'identité
-				let idtyEmittedBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`hash` FROM block WHERE `number`=\''+idtyBlockNumber+'\' LIMIT 1');
+				let idtyEmittedBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`hash` FROM block WHERE `number`=\''+idtyBlockNumber+'\' AND fork=0 LIMIT 1');
 				
 				// Récupérer l'identifiant wotex de l'identité (en cas d'identité multiple)
 				let idties = yield duniterServer.dal.idtyDAL.query('' +
-					'SELECT hash, uid, pub, wotb_id FROM i_index WHERE (uid = ? or pub = ?) ' +
-					'UNION ALL ' + 'SELECT hash, uid, pubkey as pub, (SELECT NULL) AS wotb_id FROM idty WHERE (uid = ? or pubkey = ?)', [resultQueryIdtys[i].uid, resultQueryIdtys[i].uid, resultQueryIdtys[i].uid, resultQueryIdtys[i].uid]);
+					'SELECT hash, uid, pub, wotb_id FROM i_index WHERE uid = ? ' +
+					'UNION ALL ' + 'SELECT hash, uid, pubkey as pub, (SELECT NULL) AS wotb_id FROM idty WHERE uid = ?', [resultQueryIdtys[i].uid, resultQueryIdtys[i].uid]);
 				let wotexId = '';
 				if (idties.length > 1)
 				{
@@ -122,6 +122,10 @@ module.exports = (req, res, next) => co(function *() {
 				let validIdtyBlockStamp = false;
 				if (typeof(idtyEmittedBlock[0]) == 'undefined' || idtyEmittedBlock[0].hash == idtyBlockStamp[1])
 				{ validIdtyBlockStamp = true; }
+
+				// TMP DEBUG
+				if (resultQueryIdtys[i].uid == "JenniferVincart") { console.log("JenniferVincart%s = %s", wotexId, validIdtyBlockStamp); }
+				
 
 				// Stocker les informations de l'identité
 				identitiesList.push({
