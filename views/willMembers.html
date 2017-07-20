@@ -157,7 +157,7 @@ ${ (USE_WOTB6) ? `
           <br><font color="DarkRed">[${LANG['INVALID_BLOCKSTAMP']}]</font>
         `:``}
         </td>
-        ${(idty.expires_on > 0) ? `
+        ${(idty.expires_on && !idty.idtyRevoked > 0) ? `
 					<td align='center' style="background:${idty.colorPending}">
 						${(idty.membership && !idty.detailedDistance.isOutdistanced && idty.nbValidPendingCert >= sigQty) ? `<font color="green">${LANG['OK']}` : `<font color="DarkRed">${LANG['KO']}` }</font><br>
 						${LANG['MEMBERSHIP_ASKED']} : ${idty.membership? `<font color="green">${LANG['YES']}` : `<font color="DarkRed">${LANG['NO']}` }</font><br>

@@ -91,7 +91,7 @@ module.exports = (req, res, next) => co(function *() {
       sentries = wotbInstance.getSentries(dSen);
       
       // Récupérer la liste des identités en piscine
-      const resultQueryIdtys = yield duniterServer.dal.peerDAL.query('SELECT `buid`,`pubkey`,`uid`,`hash`,`expires_on` FROM identities_pending WHERE `member`=0');
+      const resultQueryIdtys = yield duniterServer.dal.peerDAL.query('SELECT `buid`,`pubkey`,`uid`,`hash`,`expires_on`,`revocation_sig` FROM identities_pending WHERE `member`=0');
 	
       // Récupérer pour chaque identité, l'ensemble des certifications qu'elle à reçue.
       for (let i=0;i<resultQueryIdtys.length;i++)
@@ -123,9 +123,12 @@ module.exports = (req, res, next) => co(function *() {
 				if (typeof(idtyEmittedBlock[0]) == 'undefined' || idtyEmittedBlock[0].hash == idtyBlockStamp[1])
 				{ validIdtyBlockStamp = true; }
 
-				// TMP DEBUG
-				if (resultQueryIdtys[i].uid == "JenniferVincart") { console.log("JenniferVincart%s = %s", wotexId, validIdtyBlockStamp); }
-				
+				// vérifier si l'identité a été révoquée ou non
+				let idtyRevoked = false;
+				if (resultQueryIdtys[i].revocation_sig != null)
+				{
+				  idtyRevoked = true;
+				}	
 
 				// Stocker les informations de l'identité
 				identitiesList.push({
@@ -139,7 +142,8 @@ module.exports = (req, res, next) => co(function *() {
 						nbCert: 0,
 						nbValidPendingCert: 0,
 						registrationAvailability: 0,
-						validBlockStamp: validIdtyBlockStamp
+						validBlockStamp: validIdtyBlockStamp,
+						idtyRevoked: idtyRevoked
 				});
 				idtysPendingCertifsList.push(new Array());
 	
@@ -419,7 +423,8 @@ module.exports = (req, res, next) => co(function *() {
 							percentMembersReached: percentMembersReached,
 							membership: membership,
 							pendingCertifications: idtysPendingCertifsList[idMax],
-							validBlockStamp: identitiesList[idMax].validBlockStamp
+							validBlockStamp: identitiesList[idMax].validBlockStamp,
+							idtyRevoked: identitiesList[idMax].idtyRevoked
 						});
 						
 						// Si le cache a été réinitialiser, recalculer les sommes meanSentriesReachedByIdtyPerCert et meanMembersReachedByIdtyPerCert
