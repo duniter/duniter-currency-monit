@@ -30,25 +30,26 @@ MEAN_SENTRIES_REACHED mean sentries reached
 MEAN_QUALITY_CERTS Quality averages of the set of certifications
 MEAN_MEMBERS_REACHED mean members reached
 IDENTITY Identity
-MEMBERSHIP_CASE membership case
+MEMBERSHIP_CASE_FULL complete case ?
+DISTANCE_RULE distance
 COL_4 List of received certifications (recent -> old)
 COL_4_WITH_AVAIlABILITY_SORT List of received certifications (by availability time)
+PUBKEY_PART pubkey (first 16 characters)
+EMITTE emitted
 EMITTED_ON emitted on
-AT_BLOCK at block
-EXPIRE_ON expire on 
+EXPIRE_TIME expiration datetime
 KO KO
 OK OK
-MEMBERSHIP_ASKED Membership asked
+MEMBERSHIP_NOT_ASKED Membership not asked
 YES yes
 NO no
-QUALITY_CERTIFIERS quality certifiers
+QUALITY_CERTIFIERS package quality
 DISTANCE Distance
-CERTIFIERS_COUNT certifiers count
+CERTS certs
 QUALITY quality
 SIG_PERIOD_OK available
 IDTY_REVOKED [identity revoked]
 INVALID_BLOCKSTAMP invalid blockstamp
 LAST_TR1  total
 LAST_TR2  identities
-LICENSE licence GPL-3.0
-SRC source code
+WOTEX_LINK wotex view

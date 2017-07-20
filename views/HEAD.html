@@ -35,5 +35,31 @@
       .active {
           background-color: #4CAF50;
       }
-      
+      [data-tip]{
+        position: relative;
+      }
+      [data-tip]:hover:before {
+        content: attr(data-tip);
+        position: absolute;
+        padding: 0 8px;
+        height: 28px;
+        line-height: 28px;
+        background-color: rgba(0, 0, 0, 0.8);
+        left: -10px;
+        top: -38px;
+        font-size: 14px;
+        border-radius: 3px;
+        white-space: nowrap;
+        color: #fff;
+        font-size: 11px;
+      }
+      [data-tip]:hover:after {
+        content: "";
+        position: absolute;
+        border-top: 8px solid rgba(0, 0, 0, 0.8);
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        left: 0;
+        top: -10px;
+      }
     </style>

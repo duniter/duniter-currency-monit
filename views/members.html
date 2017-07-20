@@ -7,7 +7,7 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 ${printMenu(MENU_LANG, help, "MEMBERS")}
 
 <!-- Afficher le formulaire -->
-<input type="number" name="d" value="${days}"/>${LANG["FORM1"]} <select name="sort_by">
+<input type="number" name="d" value="${days}"/> ${LANG["FORM1"]} <select name="sort_by">
 <option name="sort_by" value ="idtyWritten">${LANG["SORT_BY_IDTY_WRITTEN"]}
 <option name="sort_by" value ="expireMembership" ${sort_by == 'expireMembership' ? 'selected' : ''}>${LANG["SORT_BY_EXPIRE_MEMBERSHIP"]}
 <option name="sort_by" value ="lastRenewal" ${sort_by == 'lastRenewal' ? 'selected' : ''}>${LANG["SORT_LAST_RENEWAL"]}

@@ -30,25 +30,26 @@ MEAN_SENTRIES_REACHED Taux moyen de membres référents joiniables
 MEAN_QUALITY_CERTS Qualité moyenne par groupe de certifications reçues
 MEAN_MEMBERS_REACHED Taux moyen de membres joiniables
 IDENTITY Identité
-MEMBERSHIP_CASE dossier d'adhésion
+MEMBERSHIP_CASE_FULL dossier complet ?
+DISTANCE_RULE distance
 COL_4 liste des certifications reçues (récentes -> anciennes)
 COL_4_WITH_AVAIlABILITY_SORT liste des certifications reçues (par date de disponibilité)
+PUBKEY_PART clé publique (16 premiers caractères)
+EMITTED émise
 EMITTED_ON émise le
-AT_BLOCK au bloc
-EXPIRE_ON expire le
+EXPIRE_TIME date et heure d'expiration
 KO KO
 OK OK
-MEMBERSHIP_ASKED Adhésion demandée
+MEMBERSHIP_NOT_ASKED Adhésion non demandée
 YES oui
 NO non
-QUALITY_CERTIFIERS qualité certificateurs
+QUALITY_CERTIFIERS qualité dossier
 DISTANCE Distance
-CERTIFIERS_COUNT Nombre de certificateurs
+CERTS certs
 QUALITY qualité
 SIG_PERIOD_OK disponible
 IDTY_REVOKED [identité revoquée]
 INVALID_BLOCKSTAMP blockstamp incorrect
 LAST_TR1  total
 LAST_TR2  identités
-LICENSE licence GPL-3.0
-SRC code source
+WOTEX_LINK voir sur wotex

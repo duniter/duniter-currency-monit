@@ -223,6 +223,7 @@ module.exports = (req, res, next) => co(function *() {
 										wotb_id: wotb_id,
 										issuerIsSentry: issuerIsSentry,
 										blockNumber: tmpQueryPendingCertifsList[j].block_number,
+										creationTimestamp: emittedBlock[0].medianTime,
 										timestampExpire: tmpQueryPendingCertifsList[j].expires_on,
 										timestampWritable: certTimestampWritable,
 										validBlockStamp: validBlockStamp
@@ -281,6 +282,7 @@ module.exports = (req, res, next) => co(function *() {
 							wotb_id: idtysPendingCertifsList[i][idMin].wotb_id,
 							issuerIsSentry: idtysPendingCertifsList[i][idMin].issuerIsSentry,
 							blockNumber: idtysPendingCertifsList[i][idMin].blockNumber,
+							creationTimestamp: idtysPendingCertifsList[i][idMin].creationTimestamp,
 							timestampExpire: idtysPendingCertifsList[i][idMin].timestampExpire,
 							timestampWritable: idtysPendingCertifsList[i][idMin].timestampWritable,
 							validBlockStamp: idtysPendingCertifsList[i][idMin].validBlockStamp
