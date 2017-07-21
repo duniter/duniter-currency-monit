@@ -170,7 +170,7 @@ ${ (USE_WOTB6) ? `
       <tr>
         <td align="center" style="background:${(idty.validBlockStamp) ? ((idty.expires_on > 0) ? idty.colorPending=color(idty.expires_on,idtyWindow,250):idty.colorPending='#FF0000'): idty.colorPending='#FF8000'}">${idty['uid'].substring(0, 25)}
 					<br><span data-tip="${LANG['PUBKEY_PART']} ">${idty['pubkey'].substring(0, 16)}</span>
-					<br><a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${idty['uid']}${idty['wotexId']}&pending=on&mode=undefined">${LANG['WOTEX_LINK']}</a>
+					<br><a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${idty['uid']}${idty['wotexId']}&pending=on&mode=undefined">${idty['uid']}${idty['wotexId']} ${LANG['ON_WOTEX']}</a>
           <br><b><span data-tip="${LANG['EMITTED_ON']} ${timestampToDatetime(idty['creationTimestamp'])}">#${idty['BlockNumber']}</span></b>
           ${(idty.expires_on > 0) ? '<br><b><span data-tip="'+LANG['EXPIRE_TIME']+'">'+timestampToDatetime(idty.expires_on)+'</span></b>':``}
         ${(!idty.validBlockStamp) ? `

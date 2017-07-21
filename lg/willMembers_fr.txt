@@ -52,4 +52,4 @@ IDTY_REVOKED [identité revoquée]
 INVALID_BLOCKSTAMP blockstamp incorrect
 LAST_TR1  total
 LAST_TR2  identités
-WOTEX_LINK voir sur wotex
+ON_WOTEX sur wotex
