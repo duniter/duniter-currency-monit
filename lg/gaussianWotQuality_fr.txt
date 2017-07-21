@@ -1,6 +1,7 @@
 SUBMIT_BUTTON recharger
 DISTRIBUTION_QUALITY distribution gaussienne de la qualité des membres
 IF_NO_SENTRIES si le concept de membre référent n'existait pas
+NEXT_YN Simuler le palier Y[n] suivant
 QUALITY qualité
 PERCENT_REACHED % de nombres référents atteints
 NB_REACHED nombre de membres référents atteints

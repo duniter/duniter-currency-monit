@@ -109,4 +109,8 @@ module.exports = function membersQuality(wotb_id, dSen = 0, stepMax = 0, xpercen
   	{
 	  return sentriesCount;
 	}
+	else if (wotb_id == -3)
+  	{
+	  return conf.dSen;
+	}
 }

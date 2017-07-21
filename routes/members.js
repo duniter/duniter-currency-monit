@@ -14,6 +14,7 @@ var lockMembers = false;
 var membersLastUptime = 0;
 var previousMode = null;
 var previousCentrality = null;
+var previousNextYn = "no";
 var membersList = [];
 var membersIdentity = [];
 var membersFirstCertifExpire = [];
@@ -52,7 +53,7 @@ module.exports = (req, res, next) => co(function *() {
     const head = yield duniterServer.dal.getCurrentBlockOrNull();
     const currentBlockchainTimestamp =  head ? head.medianTime : 0;
     const membersCount = head ? head.membersCount : 0;
-    const dSen = Math.ceil(Math.pow(membersCount, 1 / conf.stepMax));
+    var dSen = Math.ceil(Math.pow(membersCount, 1 / conf.stepMax));
     
     // Initaliser les variables
 		let membersListOrdered = [];
@@ -65,9 +66,14 @@ module.exports = (req, res, next) => co(function *() {
     var mode = req.query.mode || 'received' // Valeur par défaut
     var order = req.query.d && req.query.order || 'desc' // Valeur par défaut
     var sort_by = req.query.sort_by || "idtyWritten" // Valeur par défaut
-		var pendingSigs = req.query.pendingSigs || "no"; // Valeur par défaut
-		var centrality = req.query.centrality || "no"; // Valeur par défaut
-		var format = req.query.format || 'HTML'; // Valeur par défaut
+	var pendingSigs = req.query.pendingSigs || "no"; // Valeur par défaut
+	var centrality = req.query.centrality || "no"; // Valeur par défaut
+	var format = req.query.format || 'HTML'; // Valeur par défaut
+	const nextYn = (req.query.nextYn=="yes") ? "yes":"no";
+
+	// Vérifier la valeur de nextYn dans le cache
+	let lastUpgradeTimeDatas = membersQuality(-1);
+	if (lastUpgradeTimeDatas > 0 && membersQuality(-3) > dSen) { nextYn=="yes" }
     
     // Alimenter wotb avec la toile actuelle
 		const wotbInstance = (constants.USE_WOTB6) ? wotb.newFileInstance(duniterServer.home + '/wotb.bin'):duniterServer.dal.wotb;
@@ -76,7 +82,7 @@ module.exports = (req, res, next) => co(function *() {
 		let reinitCache = (Math.floor(Date.now() / 1000) > (membersLastUptime + constants.MIN_MEMBERS_UPDATE_FREQ));
 		
 		// Si changement de conditions, alors forcer le rechargement du cache s'il n'est pas, vérouillé, sinon forcer les conditions à celles en mémoire
-		if (previousMode != mode || previousCentrality != centrality)
+		if (previousMode != mode || previousCentrality != centrality || previousNextYn != nextYn)
 		{
 			if (!lockMembers)
 			{
@@ -106,6 +112,7 @@ module.exports = (req, res, next) => co(function *() {
 			membersLastUptime = Math.floor(Date.now() / 1000);
 			previousMode = mode;
 			previousCentrality = centrality;
+			previousNextYn = nextYn;
 			membersList = [];
 			membersIdentity = [];
 			membersFirstCertifExpire = [];
@@ -124,6 +131,9 @@ module.exports = (req, res, next) => co(function *() {
 			meanMembersReachedByMembersInSingleExtCert = 0;*/
 			proportionMembersWithQualityUpper1 = 0;
 			proportionMembersWithQualityUpper1IfNoSentries = 0;
+
+			// Appliquer le paramètre nextYn
+			if (nextYn=="yes") { dSen++; }
 
 			// réinitialiser le cache des données de qualité
 			membersQuality(-1, dSen, conf.stepMax, conf.xpercent, wotbInstance.memCopy());
@@ -594,7 +604,7 @@ module.exports = (req, res, next) => co(function *() {
 				USE_WOTB6: constants.USE_WOTB6,
 				// get parameters
         		days, mode, sort_by, order,
-				pendingSigs, centrality,
+				pendingSigs, centrality, nextYn,
 				
 				// page data
         		currentBlockchainTimestamp,

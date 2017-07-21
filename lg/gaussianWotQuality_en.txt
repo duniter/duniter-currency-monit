@@ -1,6 +1,7 @@
 SUBMIT_BUTTON submit
 DISTRIBUTION_QUALITY gaussian distribution of quality members
 IF_NO_SENTRIES If the concept of referring members didn't exist
+NEXT_YN Feign the following Y[n] landing
 QUALITY quality
 PERCENT_REACHED % of referring members reached
 NB_REACHED number of referring members reached

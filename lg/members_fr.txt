@@ -63,3 +63,4 @@ WRITTEN écrite
 INVALID_BLOCKSTAMP blockstamp incorrect
 CERT_AVAILABLE disponible
 MEMBERS membres
+NEXT_YN Simuler le palier Y[n] suivant

@@ -9,7 +9,7 @@ const getLang = require(__dirname + '/../lib/getLang')
 const wotb = (constants.USE_WOTB6) ? require('wotb'):null;
 
 // gaussianWotQuality cache
-
+var previousNextYn = "no";
 
 module.exports = (req, res, next) => co(function *() {
   
@@ -31,6 +31,7 @@ module.exports = (req, res, next) => co(function *() {
       const format = req.query.format || 'HTML';
       const sentries = req.query.sentries || 'yes';
       const unit = req.query.unit || 'quality';
+      const nextYn = (req.query.nextYn=="yes") ? "yes":"no";
 
       // get lg file
       const LANG = getLang(`${__dirname}/../lg/gaussianWotQuality_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`);
@@ -52,10 +53,11 @@ module.exports = (req, res, next) => co(function *() {
       let membersList = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`wotb_id` FROM i_index WHERE `member`=1');
 
       // Si les données de qualité n'ont jamais été calculés, le faire
-      if (lastUpgradeTimeDatas == 0)
+      if (lastUpgradeTimeDatas == 0 || (lastUpgradeTimeDatas+constants.MIN_WOT_QUALITY_CACHE_UPDATE_FREQ) < (Math.floor(Date.now() / 1000)) || (previousNextYn != nextYn))
       {
         // Calculer dSen
-        const dSen = Math.ceil(Math.pow(membersList.length, 1 / conf.stepMax));
+        var dSen = Math.ceil(Math.pow(membersList.length, 1 / conf.stepMax));
+        if (nextYn == "yes") { dSen++; }
 
         // récupérer la wot
         const wot = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
@@ -63,6 +65,9 @@ module.exports = (req, res, next) => co(function *() {
         // Initialiser le cache des données de qualité
         membersQuality(-1, dSen, conf.stepMax, conf.xpercent, wot.memCopy());
       }
+
+      // Mettre a jour previousNextYn
+      previousNextYn = (nextYn=="yes") ? "yes":"no";
 
       // Calculer nbSentries, limit1 and label
       const nbSentries = (sentries=="no") ? membersList.length:membersQuality(-2);
@@ -197,7 +202,8 @@ module.exports = (req, res, next) => co(function *() {
               <option name="unit" value ="percentReached" ${unit == 'percentReached' ? 'selected' : ''}>${LANG['PERCENT_REACHED']}
               <option name="unit" value ="nbReached" ${unit == 'nbReached' ? 'selected' : ''}>${LANG['NB_REACHED']}
             </select>`,
-          form2: `<input type="checkbox" name="sentries" value="no" ${sentries == 'no' ? 'checked' : ''}> ${LANG["IF_NO_SENTRIES"]}`,
+          form2: `<input type="checkbox" name="sentries" value="no" ${sentries == 'no' ? 'checked' : ''}> ${LANG["IF_NO_SENTRIES"]}<br>
+            <input type="checkbox" name="nextYn" value="yes" ${nextYn == 'yes' ? 'checked' : ''}> ${LANG["NEXT_YN"]}`,
           chart: {
             type: 'bar',
             data: {
