@@ -45,7 +45,7 @@ YES yes
 NO no
 QUALITY_CERTIFIERS package quality
 DISTANCE Distance
-CERTS certs
+CERTS certifications
 QUALITY quality
 SIG_PERIOD_OK available
 IDTY_REVOKED [identity revoked]
@@ -54,3 +54,4 @@ LAST_TR1  total
 LAST_TR2  identities
 ON_WOTEX on wotex
 IDTY_FILTER filter identities
+MISS it's missing

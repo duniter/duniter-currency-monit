@@ -182,12 +182,12 @@ ${ (USE_WOTB6) ? `
         ${(idty.expires_on && !idty.idtyRevoked > 0) ? `
 					<td align='center' style="background:${idty.colorPending}">
 						${(idty.membership && !idty.detailedDistance.isOutdistanced && idty.nbValidPendingCert >= sigQty) ? `
-							<font color="green">${LANG['OK']}
+							<font color="green">${LANG['YES']}
 						`:`
-							<font color="DarkRed">${LANG['KO']} <br>
-								${!idty.membership? `${LANG['MEMBERSHIP_NOT_ASKED']}<br>`:``}
-								${LANG['CERTS']} : ${(idty.nbValidPendingCert < sigQty) ? `${idty.nbValidPendingCert}/${sigQty}`:``}
-								${idty.detailedDistance.isOutdistanced? `${LANG['DISTANCE']} ${LANG['KO']}`:``}
+							<font color="DarkRed">${LANG['NO']}
+								${!idty.membership? `<br>${LANG['MEMBERSHIP_NOT_ASKED']}`:``}
+								${(idty.nbValidPendingCert < sigQty) ? `<br>${LANG['MISS']} <b>${(sigQty-idty.nbValidPendingCert)}</b> ${LANG['CERTS']}`:``}
+								${idty.detailedDistance.isOutdistanced? `<br>${LANG['DISTANCE']} ${LANG['KO']}`:``}
 							</font>
 						`}
 					</td>

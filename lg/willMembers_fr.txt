@@ -45,7 +45,7 @@ YES oui
 NO non
 QUALITY_CERTIFIERS qualité dossier
 DISTANCE Distance
-CERTS certs
+CERTS certifications
 QUALITY qualité
 SIG_PERIOD_OK disponible
 IDTY_REVOKED [identité revoquée]
@@ -54,3 +54,4 @@ LAST_TR1  total
 LAST_TR2  identités
 ON_WOTEX sur wotex
 IDTY_FILTER filtrer les identités
+MISS il manque
