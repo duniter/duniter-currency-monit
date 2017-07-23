@@ -73,7 +73,8 @@ module.exports = (req, res, next) => co(function *() {
 
 	// Vérifier la valeur de nextYn dans le cache
 	let lastUpgradeTimeDatas = membersQuality(-1);
-	if (lastUpgradeTimeDatas > 0 && membersQuality(-3) > dSen) { nextYn=="yes" }
+	let dSenCache = membersQuality(-3);
+	if (lastUpgradeTimeDatas > 0 && dSenCache > dSen) { previousNextYn=="yes"; }
     
     // Alimenter wotb avec la toile actuelle
 		const wotbInstance = (constants.USE_WOTB6) ? wotb.newFileInstance(duniterServer.home + '/wotb.bin'):duniterServer.dal.wotb;
@@ -93,6 +94,7 @@ module.exports = (req, res, next) => co(function *() {
 			{
 				mode = previousMode;
 				centrality = previousCentrality;
+				nextYn =previousNextYn;
 			}
 		}
 		// Sinon, si les conditions sont identiques :
