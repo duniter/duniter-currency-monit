@@ -1,5 +1,28 @@
 ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
   <title>${currencyName}-monit : ${MENU_LANG['MEMBERS']}</title>
+  <script type="text/javascript">// <![CDATA[
+	var table = document.getElementById('table')
+	var filter = document.getElementById('filter')
+
+	/*filter.onchange = function() {
+		return filterRows(table, 1, 0, this.value);
+  }*/
+
+	// tableElem : HTMLElement
+	// rowIndex  : index du row pour commencer le filtrage (0 indexed)
+	// tableElem : index du col à prendre en compte (0 indexed)
+	// tableElem : lettre pour la comparaison
+	function filterRows(tableElem, rowIndex, colIndex, filterString) {
+		for (var i = rowIndex, val; i < tableElem.rows.length; ++i) {
+			val = tableElem.rows[i].cells[colIndex].firstChild.nodeValue;
+			if (val.substr(0,filterString.length).toLowerCase() != filterString.toLowerCase())
+				tableElem.rows[i].style.display = 'none';
+			else
+				tableElem.rows[i].style.display = '';
+		}  
+		return false;
+	}
+// ]]></script>
 </head>
 <body>
 
@@ -24,7 +47,6 @@ ${(USE_WOTB6) ? `<option name="sort_by" value ="quality" ${sort_by == 'quality' 
 <input type="checkbox" name="pendingSigs" value="yes" ${pendingSigs == 'yes' ? 'checked' : ''}>${LANG["CHECKBOX_PENDING_SIGS"]}.<br>
 <input type="checkbox" name="mode" value="emitted" ${mode == 'emitted' ? 'checked' : ''}>${LANG["CHECKBOX_MODE_SIG"]}.<br>
 <input type="checkbox" name="nextYn" value="yes" ${nextYn == 'yes' ? 'checked' : ''}> ${LANG["NEXT_YN"]}<br>
-</form>
 <hr>
 
 <!-- Afficher la légende et l'aide -->
@@ -76,12 +98,16 @@ ${(USE_WOTB6) ? `
 <!-- Afficher le nombre de membres et de membres référents -->
 <b>${membersListFiltered.length}</b> ${LANG["MEMBERS"]} ${LANG["OF_WHICH"]} <b>${countSentries}</b> ${LANG['ARE_REFERRING_MEMBERS']} (<b>${((countSentries/membersListFiltered.length)*100).toFixed(2)}%</b>).</i><br>
 <br>
+<!-- Afficher le filtre des membres -->
+${LANG["MEMBER_FILTER"]} : <input type="text" name="filter" id="filter" value="" maxlength="20" onchange="filterRows(document.getElementById('table'),1,0,this.value);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/><br>
+</form>
 
 <!-- On parcour tout les membres pour afficher ceux dont la date d'expiration est dans moins de 'd' jours -->
 <b>${LANG["TABLE_TITLE"]} ${days} ${LANG["DAYS"]} :</b>
-<table border="1">
+<table id="table" border="1">
   <!-- Printer les nom des colonnes -->
   <tr>
+    <td align="center" style="display :none"></td>
     <td align="center">${LANG["COL_UID"]}</td>
     <td align="center">${LANG["COL_IDTY_WRITTEN_TIME"]}</td>
     <td align="center">${LANG["COL_LAST_RENEWAL"]}</td>
@@ -95,8 +121,8 @@ ${(USE_WOTB6) ? `
       <!-- Printer la ligne -->
       <tr>
         ${(member.proportion = proportion(member.expireMembershipTimestamp,msValidity,0,120),'')}
-        <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)">
-          <b>${member.uid}</b><br>
+        <td align="center" style="display :none">${member.uid}</td>
+        <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)"><b>${member.uid}</b><br>
           
           ${(member.isSentry) ? `<font color="blue">${LANG['REFERRING_MEMBER']} : ${LANG['YES']}</font>`:`${LANG['REFERRING_MEMBER']} : ${LANG['NO']}`}<br>
           ${(USE_WOTB6) ? `
