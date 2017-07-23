@@ -65,3 +65,4 @@ CERT_AVAILABLE available
 MEMBERS members
 NEXT_YN Feign the following Y[n] landing
 MEMBER_FILTER search a member
+EXPIRE_TIME expiration datetime

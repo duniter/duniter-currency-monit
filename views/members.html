@@ -137,12 +137,10 @@ ${LANG["MEMBER_FILTER"]} : <input type="text" name="filter" id="filter" value=""
             : ''}
         </td>
         <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)">
-          ${timestampToDatetime(member.idtyWrittenTimestamp)}<br>
-          #${member.idtyWrittenBloc}
+          <span data-tip="${timestampToDatetime(member.idtyWrittenTimestamp)}">#${member.idtyWrittenBloc}</span>
         </td>
         <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)">
-          ${timestampToDatetime(member.lastRenewalTimestamp)}<br>
-          #${member.lastRenewalWrittenBloc}
+          <span data-tip="${timestampToDatetime(member.lastRenewalTimestamp)}">#${member.lastRenewalWrittenBloc}</span>
         </td>
         <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)">
           ${timestampToDatetime(member.expireMembershipTimestamp)}</td>
@@ -163,7 +161,8 @@ ${LANG["MEMBER_FILTER"]} : <input type="text" name="filter" id="filter" value=""
               <!-- Printer la certification -->
               <td align="center" style="background:${(cert.validBlockStamp) ? cert.colorPending=color(cert.expires_on,idtyWindow,250) : cert.colorPending='#FF8000'}">
 								<b>${cert.protagonist}</b><br>
-                ${timestampToDatetime(cert.timestampExpire)}<br>
+                <span data-tip="${LANG['EXPIRE_TIME']}">${timestampToDatetime(cert.timestampExpire)}</span><br>
+                
                 ${LANG["EMITTED"]} #${cert.blockNumber}<br>
                 ${ ( !cert.validBlockStamp || cert.timestampWritable > currentBlockchainTimestamp ) ? `
 									<font color="DarkRed">[${ (cert.validBlockStamp) ? timestampToDatetime(cert.timestampWritable):LANG['INVALID_BLOCKSTAMP']}]</font>
@@ -180,7 +179,7 @@ ${LANG["MEMBER_FILTER"]} : <input type="text" name="filter" id="filter" value=""
           <!-- Printer la certification -->
           <td align="center" style="background:hsla(${proportion(cert.timestampExpire,sigValidity,0,120)}, 100%, 50%, 1 )">
             <b>${(mode=='emitted') ? cert.receiver:cert.issuer}</b><br>
-            ${timestampToDatetime(cert.timestampExpire)}<br>
+            <span data-tip="${LANG['EXPIRE_TIME']}">${timestampToDatetime(cert.timestampExpire)}</span><br>
             ${LANG["WRITTEN"]} #${cert.writtenBloc}
           </td>
         `).join('')}
