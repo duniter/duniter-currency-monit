@@ -53,3 +53,4 @@ INVALID_BLOCKSTAMP blockstamp incorrect
 LAST_TR1  total
 LAST_TR2  identités
 ON_WOTEX sur wotex
+IDTY_FILTER filtrer les identités

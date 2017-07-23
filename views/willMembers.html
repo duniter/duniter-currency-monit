@@ -56,7 +56,7 @@ ${printMenu(MENU_LANG, help, "WILL_MEMBERS")}
 	</select> <input type="submit" value="${LANG["SUBMIT_TXT"]}"><br>
 	<input type="checkbox" name="showIdtyWithZeroCert" value="yes" ${showIdtyWithZeroCert == 'yes' ? 'checked' : ''}>${LANG["CHECKBOX_SHOW_IDTY_WITH_ZERO_CERT"]}<br>
 	<input type="checkbox" name="sortSig" value="Availability" ${sortSig == 'Availability' ? 'checked' : ''}>${LANG["CHECKBOX_SORT_SIG"]}<br>
-	filtrer les identités : <input type="text" name="filter" id="filter" value="" maxlength="20" onchange="filterRows(document.getElementById('table'),2,0,this.value);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+	${LANG["IDTY_FILTER"]} : <input type="text" name="filter" id="filter" value="" maxlength="20" onchange="filterRows(document.getElementById('table'),2,0,this.value);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
 </form>
 <br>
 <hr>
@@ -156,6 +156,7 @@ ${ (USE_WOTB6) ? `
   <tr><td colspan="${nbMaxCertifs+4}" align='center'>${LANG["TABLE_TITLE1"]} <b>${days}</b> ${LANG["TABLE_TITLE2"]}</td></tr>
   <!-- Printer les nom des colonnes -->
   <tr>
+		<td align="center" style="display :none"></td>
     <td align='center'>${LANG['IDENTITY']}</td><td align='center'>${LANG['MEMBERSHIP_CASE_FULL']}</td><td align='center'>${LANG['DISTANCE_RULE']}</td>
     <td style="background:#000000">-</td>
     <td align='center' colspan="${nbMaxCertifs}">${sortSig == "Availability" 
@@ -168,9 +169,10 @@ ${ (USE_WOTB6) ? `
       
       <!--Printer la ligne-->
       <tr>
-        <td align="center" style="background:${(idty.validBlockStamp) ? ((idty.expires_on > 0) ? idty.colorPending=color(idty.expires_on,idtyWindow,250):idty.colorPending='#FF0000'): idty.colorPending='#FF8000'}">${idty['uid'].substring(0, 25)}
+				<td align="center" style="display :none">${idty['uid']}</td>
+        <td align="center" style="background:${(idty.validBlockStamp) ? ((idty.expires_on > 0) ? idty.colorPending=color(idty.expires_on,idtyWindow,250):idty.colorPending='#FF0000'): idty.colorPending='#FF8000'}">
+					<a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${idty['uid']}${idty['wotexId']}&pending=on&mode=undefined">${idty['uid'].substring(0, 25)}</a>
 					<br><span data-tip="${LANG['PUBKEY_PART']} ">${idty['pubkey'].substring(0, 16)}</span>
-					<br><a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${idty['uid']}${idty['wotexId']}&pending=on&mode=undefined">${idty['uid']}${idty['wotexId']} ${LANG['ON_WOTEX']}</a>
           <br><b><span data-tip="${LANG['EMITTED_ON']} ${timestampToDatetime(idty['creationTimestamp'])}">#${idty['BlockNumber']}</span></b>
           ${(idty.expires_on > 0) ? '<br><b><span data-tip="'+LANG['EXPIRE_TIME']+'">'+timestampToDatetime(idty.expires_on)+'</span></b>':``}
         ${(!idty.validBlockStamp) ? `
