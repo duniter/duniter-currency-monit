@@ -86,7 +86,6 @@ ${(help != 'no') ? `
 `:''}
 
 <!-- Afficher l'état de tension de la toile de confiance -->
-${ (USE_WOTB6) ? `
 	<div id="zone2" style="width: 100%; height: 20px; background: White; border: 1px solid DimGrey; transition: height 1s; -moz-transition: height 1s;-webkit-transition: height 1s;-o-transition: height 1s; overflow: hidden;">
 		<div id="bandeau2" style="height: 20px; width: 100%; font-size: medium; color: white; background-color: darkgrey;" onmouseover="deroule(2,150);" onmouseout="deroule(2,20);"><b>${LANG["WOT_TENSION_STATE"]}</b>
 		</div>
@@ -145,7 +144,6 @@ ${ (USE_WOTB6) ? `
 			</table>
 		</div>
 	</div>
-`:``}
 
 <!-- Afficher le currentBlockchainTimestamp et le nombre d'identités au dossier complet -->
   ${LANG["BLOCKCHAIN_TIME"]} : <b>${timestampToDatetime(currentBlockchainTimestamp)}</b> (#<b>${currentBlockNumber}</b>).<br>
@@ -192,12 +190,8 @@ ${ (USE_WOTB6) ? `
 						`}
 					</td>
 					<td align='center' style="background:${idty.colorPending}">
-						${ (USE_WOTB6) ? `
 							<font color="${idty.detailedDistance.isOutdistanced ? 'DarkRed' : 'blue' }">${idty.percentSentriesReached}% (${idty.detailedDistance.nbSuccess}/${idty.detailedDistance.nbSentries})
 							<br>${LANG['QUALITY_CERTIFIERS']} : <b>${(idty.validBlockStamp) ? ((idty.detailedDistance.nbSuccess/idty.detailedDistance.nbSentries)/xpercent).toFixed(2):`0.00`}</b></font>
-						`:`
-						  <font color="${idty.detailedDistance ? 'DarkRed' : 'blue' }">${LANG['DISTANCE']} : ${idty.detailedDistance ? LANG['KO']:LANG['OK'] }</font>
-						`}
 					</td>
 				`:`
 					<td align='center' colspan=2 style="background:#FF0000"><b>${LANG['IDTY_REVOKED']}</b></td>
@@ -211,9 +205,7 @@ ${ (USE_WOTB6) ? `
 							${cert.issuerIsSentry ? '<b>':''}
 								<a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${cert['from']}&pending=on&mode=undefined">${cert['from']}</a>
 							${cert.issuerIsSentry ? '</b>':''}
-							${ (USE_WOTB6) ? `
 								<br>${LANG['QUALITY']} : <b>${(typeof(membersQualityExt[cert.from])=='undefined' || !cert.validBlockStamp) ? `0.00`:membersQualityExt[cert.from]}</b>
-							`:''}
 							<br><b><span data-tip="${LANG['EMITTED_ON']}  ${timestampToDatetime(cert['creationTimestamp'])}">#${cert['blockNumber']}</span></b>
 							<br><span data-tip="${LANG['EXPIRE_TIME']}">${timestampToDatetime(cert.timestampExpire)}</span>
 							${j==(4+idty.pendingCertifications.length-idty.nbValidPendingCert)?'<b>':''}

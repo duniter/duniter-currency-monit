@@ -6,8 +6,6 @@ const constants = require(__dirname + '/../lib/constants')
 const membersQuality = require(__dirname + '/tools/membersQuality')
 const getLang = require(__dirname + '/../lib/getLang')
 
-const wotb = (constants.USE_WOTB6) ? require('wotb'):null;
-
 // gaussianWotQuality cache
 var previousNextYn = "no";
 
@@ -16,17 +14,6 @@ module.exports = (req, res, next) => co(function *() {
   var { duniterServer  } = req.app.locals
   
   try {
-    if (!constants.USE_WOTB6)
-    {
-      res.locals = {
-	      host: req.headers.host.toString(),
-        form: `gaussianWotQuality page require wotb 0.6.2 or superior, but this version of wotb will be integrated only into duniter 1.4, be patient !`,
-        chart: '[]'
-      }
-      next()
-    }
-    else
-    {
       // get GET parameters
       const format = req.query.format || 'HTML';
       const sentries = req.query.sentries || 'yes';
@@ -60,7 +47,7 @@ module.exports = (req, res, next) => co(function *() {
         if (nextYn == "yes") { dSen++; }
 
         // récupérer la wot
-        const wot = wotb.newFileInstance(duniterServer.home + '/wotb.bin');
+        const wot = duniterServer.dal.wotb;
 
         // Initialiser le cache des données de qualité
         membersQuality(-1, dSen, conf.stepMax, conf.xpercent, wot.memCopy());
@@ -247,7 +234,6 @@ module.exports = (req, res, next) => co(function *() {
         }
         next()
       }
-    }
   } catch (e) {
     // En cas d'exception, afficher le message
     res.status(500).send(`<pre>${e.stack || e.message}</pre>`);
