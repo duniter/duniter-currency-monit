@@ -22,7 +22,7 @@ module.exports = (req, res, next) => co(function *() {
     var beginBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`hash` FROM block WHERE `fork`=0 AND `number` = '+cache.beginBlock[0].number+' LIMIT 1');
     
     // get blockchain
-    var blockchain = yield duniterServer.dal.peerDAL.query('SELECT `hash`,`membersCount`,`medianTime`,`number`,`certifications`,`issuersCount`,`powMin` FROM block WHERE `fork`=0 AND `medianTime` <= '+cache.endBlock[0].medianTime+' AND `medianTime` >= '+beginBlock[0].medianTime+' ORDER BY `medianTime` ASC');
+    var blockchain = yield duniterServer.dal.peerDAL.query('SELECT `hash`,`membersCount`,`medianTime`,`number`,`certifications`,`issuersCount`,`powMin` FROM block WHERE `fork`=0 AND `medianTime` <= '+cache.endBlock[0].medianTime+' ORDER BY `medianTime` ASC');
 
     
     // Get blockchain timestamp
@@ -36,7 +36,7 @@ module.exports = (req, res, next) => co(function *() {
     }
     
     // Initialize nextStepTime, stepIssuerCount and bStep
-    var nextStepTime = blockchain[0].medianTime;
+    var nextStepTime = cache.beginBlock[0].medianTime;
     let stepIssuerCount = 0;
 		let stepPowMin = 0;
     let bStep = 0;
@@ -44,25 +44,32 @@ module.exports = (req, res, next) => co(function *() {
     // Adapt nextStepTime initial value
     switch (cache.stepUnit)
     {
-	  case "hours": nextStepTime -= (blockchain[0].medianTime % 3600); break;
-	  case "days":case "weeks":case "months":case "years": nextStepTime -= (blockchain[0].medianTime % 86400); break;
-	  default: break;
-    }
+			case "hours": nextStepTime -= (cache.beginBlock[0].medianTime % 3600); break;
+			case "days":case "weeks":case "months":case "years": nextStepTime -= (cache.beginBlock[0].medianTime % 86400); break;
+			default: break;
+		}
+
+		// Calculate initial cacheIndex value
+		let cacheIndex = 0;
+		while (cache.blockchain[cacheIndex].number <= cache.beginBlock[0].number && (cache.blockchain.length-1) > cacheIndex) { cacheIndex++; }
+		console.log("cache.blockchain[cacheIndex].number = %s", cache.blockchain[cacheIndex].number); // DEBUG
 
     // fill tabMembersCount
     var tabMembersCount = [];
-    let cacheIndex = 0;
-    for (let b=0;b<blockchain.length;b++)
+    for (let b=cache.beginBlock[0].number;b<blockchain.length;b++)
     {
       stepIssuerCount += blockchain[b].issuersCount;
 			stepPowMin += blockchain[b].powMin;
-      bStep++;
+			bStep++;
       
-      while (cacheIndex < (cache.blockchain.length-1) && cache.blockchain[cacheIndex+1].number <= b) { cacheIndex++; }
-
       // If achieve next step
-      if ( (cache.stepUnit == "blocks" && bStep == cache.step) || (cache.stepUnit != "blocks" && blockchain[b].medianTime >= nextStepTime))
+		if ( b==cache.beginBlock[0].number || (cache.stepUnit == "blocks" && bStep == cache.step) || (cache.stepUnit != "blocks" && blockchain[b].medianTime >= nextStepTime/*(tabMembersCount[tabMembersCount.length-1].timestamp+cache.stepTime)*/))
       {
+				let blockIndex = b;//-cache.beginBlock[0].number;//b-blockchain[0].number;
+
+				// Calculate if increment cacheIndex
+				while ((cache.blockchain.length-1) > cacheIndex && cache.blockchain[cacheIndex].number <= b) { cacheIndex++; }
+
 				let previousDateTime = "";
 				if(tabMembersCount.length > 0)
 				{
@@ -70,7 +77,7 @@ module.exports = (req, res, next) => co(function *() {
 				}
 				else
 				{
-					previousDateTime = timestampToDatetime(blockchain[0].medianTime);
+					previousDateTime = timestampToDatetime(cache.beginBlock[0].medianTime);
 				}
 				let dateTime = "";
 				if (cache.stepUnit != "blocks")
@@ -79,11 +86,11 @@ module.exports = (req, res, next) => co(function *() {
 					{
 						switch (cache.stepUnit)
 						{
-							case "hours": dateTime = previousDateTime+" - "+timestampToDatetime(blockchain[b].medianTime, cache.onlyDate); break;
-							case "days": dateTime = previousDateTime+" - "+timestampToDatetime(blockchain[b].medianTime-(cache.stepTime/cache.step), cache.onlyDate); break;
-							case "weeks": dateTime = previousDateTime+" - "+timestampToDatetime(blockchain[b].medianTime, cache.onlyDate); break;
-							case "months": dateTime = previousDateTime+" - "+timestampToDatetime(blockchain[b].medianTime, cache.onlyDate); break;
-							case "years": dateTime = previousDateTime+" - "+timestampToDatetime(blockchain[b].medianTime, cache.onlyDate); break;
+							case "hours": dateTime = previousDateTime+" - "+timestampToDatetime(blockchain[blockIndex].medianTime, cache.onlyDate); break;
+							case "days": dateTime = previousDateTime+" - "+timestampToDatetime(blockchain[blockIndex].medianTime-(cache.stepTime/cache.step), cache.onlyDate); break;
+							case "weeks": dateTime = previousDateTime+" - "+timestampToDatetime(blockchain[blockIndex].medianTime, cache.onlyDate); break;
+							case "months": dateTime = previousDateTime+" - "+timestampToDatetime(blockchain[blockIndex].medianTime, cache.onlyDate); break;
+							case "years": dateTime = previousDateTime+" - "+timestampToDatetime(blockchain[blockIndex].medianTime, cache.onlyDate); break;
 						}
 					}
 					else
@@ -94,10 +101,10 @@ module.exports = (req, res, next) => co(function *() {
 				
 				// push tabMembersCount
 				tabMembersCount.push({
-						blockNumber: blockchain[b].number,
-						timestamp: blockchain[b].medianTime,
+						blockNumber: blockchain[blockIndex].number,
+						timestamp: blockchain[blockIndex].medianTime,
 						dateTime: dateTime,
-						membersCount: blockchain[b].membersCount,
+						membersCount: blockchain[blockIndex].membersCount,
 						sentriesCount: cache.blockchain[cacheIndex].sentries,
 						issuersCount: parseInt(stepIssuerCount/bStep),
 						powMin: parseInt(stepPowMin/bStep)
