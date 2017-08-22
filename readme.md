@@ -1,6 +1,6 @@
 # Currency-Monit Module
 
-Requires Duniter 1.4.15 or higher
+Requires Duniter 1.5.4 or higher
 
 ## Installation
 
@@ -11,7 +11,7 @@ Requires Duniter 1.4.15 or higher
 1. go to localhost:9220/#/main/settings/modules
 and at the foot of page enter:
 ```bash
-https://github.com/duniter/duniter-currency-monit/archive/0.4.x.tar.gz
+duniter-currency-monit@0.4.5
 ```
 
 then clik to button INSTALL THIS MODULE
@@ -24,7 +24,7 @@ then clik to button INSTALL THIS MODULE
 2. plug the plugin to your duniter node:
 
 ```bash
-duniter plug https://github.com/duniter/duniter-currency-monit/archive/0.4.x.tar.gz
+duniter plug duniter-currency-monit@0.4.5
 ```
 
 3. Stop your duniter node and restart it in the following method:

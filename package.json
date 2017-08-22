@@ -1,6 +1,6 @@
 {
   "name": "duniter-currency-monit",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "main": "index.js",
   "license": "AGPLv3",
   "dependencies": {
@@ -16,10 +16,10 @@
     "request-promise": "4.2.0"
   },
   "devDependencies": {
-    "duniter": "1.4.15",
+    "duniter": "1.5.4",
     "duniter-prover": "1.4.x"
   },
   "peerDependencies": {
-    "duniter": "1.4.15"
+    "duniter": "1.5.4"
   }
 }

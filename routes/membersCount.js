@@ -194,7 +194,7 @@ module.exports = (req, res, next) => co(function *() {
 						<option name="stepUnit" value ="weeks" ${cache.stepUnit == 'weeks' ? 'selected' : ''}>${LANG["WEEKS"]}
 						<option name="stepUnit" value ="months" ${cache.stepUnit == 'months' ? 'selected' : ''}>${LANG["MONTHS"]}
 						<option name="stepUnit" value ="years" ${cache.stepUnit == 'years' ? 'selected' : ''}>${LANG["YEARS"]}
-					</select> - max <input type="number" name="nbMaxPoints" value="${cache.nbMaxPoints}" min="1" size="4" style="width:50px;"> points (réguler en adaptant
+					</select> - ${LANG["MAX"]} <input type="number" name="nbMaxPoints" value="${cache.nbMaxPoints}" min="1" size="4" style="width:50px;"> ${LANG["POINTS"]} (${LANG["REGULATE_BY_ADAPTING"]} 
 					<select name="adaptMaxPoints">
 						<option name="adaptMaxPoints" value ="begin"> ${LANG["BEGIN"]}
 						<option name="adaptMaxPoints" value ="step" ${cache.adaptMaxPoints == 'step' ? 'selected' : ''}> ${LANG["STEP"]}
