@@ -3,7 +3,7 @@
 const co = require('co')
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 const getLang = require(__dirname + '/../lib/getLang')
-//const constants = require(__dirname + '/../lib/constants.js')
+const constants = require(__dirname + '/../lib/constants.js')
 
 //const STEP_COUNT_MAX = 150;
 
