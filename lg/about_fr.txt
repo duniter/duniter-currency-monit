@@ -6,4 +6,5 @@ LICENSE licence
 GIT_REPOSITORY dépôt git
 IF_YOU_WANT Si vous le souhaitez vous pouvez
 DISABLE_HELP désactiver l'aide
-DONATE Vous pouvez soutenir le développement de ce module par un don en Ğ1
+DONATE Vous pouvez soutenir le développement de ce module par un don en Ğ1 à la clé publique suivante
+DONATE_BUTTON faire un don (via Cesium)

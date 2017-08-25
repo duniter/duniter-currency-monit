@@ -6,4 +6,5 @@ LICENSE license
 GIT_REPOSITORY git repository
 IF_YOU_WANT If you want you can
 DISABLE_HELP disable help
-DONATE You can support the development of this module by a gift in Ğ1
+DONATE You can support the development of this module by a gift in Ğ1 at this pubkey
+DONATE_BUTTON make a donation (with Cesium)
