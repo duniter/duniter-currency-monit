@@ -546,7 +546,7 @@ module.exports = (req, res, next) => co(function *() {
     }
     
     if (reinitCache)
-		{
+	{
 			//Calculate proportionMembersWithQualityUpper1 and proportionMembersWithQualityUpper1IfNoSentries
 			proportionMembersWithQualityUpper1 /= membersList.length;
 			proportionMembersWithQualityUpper1IfNoSentries /= membersList.length;
@@ -564,7 +564,13 @@ module.exports = (req, res, next) => co(function *() {
 
 			// Dévérouiller le cache members
 			lockMembers = false;
-		}
+	}
+
+	/*// Log a csv Quality - certificationsCount
+	for (const member of membersListOrdered)
+	{
+		console.log("%s %s", membersQuality(member.wotb_id), member.certifications.length);
+	}*/
     
     // Si le client demande la réponse au format JSON =, le faire
     if (format == 'JSON')
