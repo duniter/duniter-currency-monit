@@ -30,12 +30,6 @@ module.exports = (req, res, next) => co(function *() {
     const currentBlockNumber = cache.beginBlock[0].number+blockchain.length-1;
     const currentBlockchainTimestamp = blockchain[blockchain.length-1].medianTime;
     
-    // Traiter le cas stepUnit == "blocks"
-    if (cache.stepUnit == "blocks")
-    {
-      if ( Math.ceil((cache.endBlock[0].number-cache.beginBlock[0].number)/cache.step) > constants.STEP_COUNT_MAX  ) { cache.step = Math.ceil((cache.endBlock[0].number-cache.beginBlock[0].number)/constants.STEP_COUNT_MAX); }
-    }
-    
     // Initialize nextStepTime, stepIssuerCount and bStep
     var nextStepTime = cache.beginBlock[0].medianTime;
     let stepIssuerCount = 0;
