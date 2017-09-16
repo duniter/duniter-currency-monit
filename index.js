@@ -13,6 +13,10 @@ const main = require(__dirname + '/lib/main.js');
 // Default Duniter node's database
 //const DEFAULT_DUNITER_DATA_FOLDER = 'currency-monit-dev';
 
+
+// host on which UI is available
+const DEFAULT_ACTION = 'start';
+
 // host on which UI is available
 const DEFAULT_HOST = 'localhost';
 
@@ -42,26 +46,48 @@ module.exports = {
       ],
 
       cli: [{
-        name: 'currency-monit [host] [port]',
-        desc: 'Start duniter with module currency-monit',
+        name: 'currency-monit [action=start] [host] [port]',
+        desc: 'Action start : Start duniter with module currency-monit\n'
+        +'Action indexing : indexing blockchain',
 
         // Disables Duniter node's logs
         logs: false,
 
         onDatabaseExecute: (server, conf, program, params, startServices) => co(function*() {
 	  
-	  // currency-monit parameters
-          const SERVER_HOST = params[0] || DEFAULT_HOST;
-          const SERVER_PORT = parseInt(params[1]) || DEFAULT_PORT;
+          // currency-monit parameters
+          const ACTION = params[0] || DEFAULT_ACTION;
+          const SERVER_HOST = params[1] || DEFAULT_HOST;
+          const SERVER_PORT = parseInt(params[2]) || DEFAULT_PORT;
 
-          // IMPORTANT: release Duniter services from "sleep" mode
-          yield startServices();
+          if (ACTION == "start")
+          {
+            // IMPORTANT: release Duniter services from "sleep" mode
+            yield startServices();
 
-          // Main Loop
-          yield main(server, SERVER_HOST, SERVER_PORT, null, program);
+            // Main Loop
+            yield main(server, SERVER_HOST, SERVER_PORT, null, program);
 
-          // Wait forever, this is a permanent program
-          yield new Promise(() => null);
+            // Wait forever, this is a permanent program
+            yield new Promise(() => null);
+          }
+          else if (ACTION == "indexing")
+          {
+            try {
+              console.log('sync...');
+              console.log('ok');
+            } catch (err) {
+              console.error('Error during blockchain indexing ', err);
+            }
+            // Close the DB connection properly
+            return server && server.disconnect()
+          }
+          else
+          {
+            console.error('Error unknow action "%s" !', ACTION);
+            // Close the DB connection properly
+            return server && server.disconnect()
+          }
         })
       }]
     },
