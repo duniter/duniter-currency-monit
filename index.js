@@ -4,7 +4,7 @@ const co = require('co');
 const fs = require('fs');
 const path = require('path');
 const main = require(__dirname + '/lib/main.js');
-//const duniter = require('duniter');
+const indexing = require(__dirname + '/lib/indexing.js');
 
 /****************************************
  * TECHNICAL CONFIGURATION
@@ -74,8 +74,7 @@ module.exports = {
           else if (ACTION == "indexing")
           {
             try {
-              console.log('sync...');
-              console.log('ok');
+              indexing(server, conf, program, params);
             } catch (err) {
               console.error('Error during blockchain indexing ', err);
             }
