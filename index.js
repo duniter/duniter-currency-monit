@@ -46,13 +46,10 @@ module.exports = {
       ],
 
       cli: [{
-        name: 'currency-monit [action=start] [host] [port]',
-        desc: 'Action start : Start duniter with module currency-monit\n'
-        +'Action indexing : indexing blockchain',
-
-        // Disables Duniter node's logs
+        name: 'currency-monit [start|indexing] [host] [port]',
+        desc: 'Start duniter with module currency-monit or Indexing blockchain history',
+        preventIfRunning: true,
         logs: false,
-
         onDatabaseExecute: (server, conf, program, params, startServices) => co(function*() {
 	  
           // currency-monit parameters
