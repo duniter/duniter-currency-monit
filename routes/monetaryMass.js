@@ -29,8 +29,8 @@ module.exports = (req, res, next) => co(function *() {
       endBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`membersCount` FROM block WHERE `number` = '+end+' LIMIT 1');
       if ( typeof(endBlock[0]) == 'undefined')
       {
-	endBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`membersCount`,`number` FROM block ORDER BY `medianTime` DESC LIMIT 1');
-	end = endBlock[0].number;
+        endBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`membersCount`,`number` FROM block ORDER BY `medianTime` DESC LIMIT 1');
+        end = endBlock[0].number;
       }
     }
     else
@@ -105,21 +105,6 @@ module.exports = (req, res, next) => co(function *() {
       var type = req.query.type || 'logarithmic';
       if (unit == "percentOfFullCurrency") { type = 'linear'; }
       if (type != 'linear') { type = 'logarithmic'; }
-    
-      // Define full currency description
-      var fullCurrency = LANG['DESC1']+" <b>"+meanMonetaryMassAtFullCurrency
-	  +" "+LANG['UD']+"</b> ("+LANG['FULL_CURRENCY_FORMULA']+" = <b>"+meanMonetaryMassAtFullCurrency+" "+LANG['UD']+"</b>)<br>"
-	  +LANG['CURRENTLY']+", 1 "+LANG['UD']+"<sub>"+duniterServer.conf.currency+"</sub> = <b>"+(currentDividend/100)+"</b> "+duniterServer.conf.currency+" "+LANG['AND_WE_HAVE']+" <b>"
-	  +endBlock[0].membersCount+"</b> "+LANG['DESC2']+" <b>"
-	  +(meanMonetaryMassAtFullCurrency*currentDividend*endBlock[0].membersCount/100)+"</b> "+duniterServer.conf.currency
-	  +" (<b>"+(meanMonetaryMassAtFullCurrency*currentDividend/100)+"</b> "+duniterServer.conf.currency+"/"+LANG['MEMBER']+")." ;
-	  
-      // Define max yAxes
-      var maxYAxes = meanMonetaryMassAtFullCurrency;
-      let indexEnd = tabCurrency.length-1;
-      if (unit == "quantitative") { maxYAxes = maxYAxes*currentDividend/100; }
-      if (unit == "percentOfFullCurrency") { maxYAxes = 100; }
-      else if (massByMembers == "no") { maxYAxes = maxYAxes*endBlock[0].membersCount; }
       
       res.locals = {
 	      host: req.headers.host.toString(),
@@ -141,14 +126,13 @@ module.exports = (req, res, next) => co(function *() {
             <option name="type" value ="logarithmic">${LANG['LOGARITHMIC']}
             <option name="type" value ="linear" ${type == 'linear' ? 'selected' : ''}>${LANG['LINEAR']}
           </select>`,
-	      description: `${fullCurrency}`,
+	      description: ``,
         chart: {
           type: 'bar',
           data: {
             labels: tabCurrency.map( item=> item.dateTime ),
             //yLabels: tabCurrency.map( item=> item.monetaryMass, item=>derivedChoiceMonetaryMass),
             datasets: [{
-              //yAxisID: 1,
               label: `${unit == "percentOfFullCurrency" ? `${LANG['MONETARY_MASS']} (${LANG['IN_PERCENT_OF_FULL_CURRENCY']})`:`#${unit == "relative" ? LANG['UD']+"ğ1" : 'Ğ1'}${massByMembers == "yes" ? '/'+LANG['MEMBER'] : ''}`}`,
               data: tabCurrency.map( item=>
                     massByMembers == "no" 
@@ -157,16 +141,6 @@ module.exports = (req, res, next) => co(function *() {
               backgroundColor: 'rgba(54, 162, 235, 0.5)',
               borderColor: 'rgba(54, 162, 235, 1)',
               borderWidth: 1
-            },
-            {
-              //yAxisID: 2,
-              label: LANG['PERCENT_VARIATION_MONETARY_MASS'],
-              data: tabCurrency.map( item=> item.derivedChoiceMonetaryMass),
-              backgroundColor: 'rgba(0, 162, 0, 0.5)',
-              borderColor: 'rgba(0, 162, 0, 1)',
-              borderWidth: 1,
-              type: 'line',
-              fill: false
             }]
           },
           options: {
@@ -185,26 +159,14 @@ module.exports = (req, res, next) => co(function *() {
             },
             scales: {
               yAxes: [{
-                //yAxisID: 1,
 		            type: type,
                 position: 'left',
                 ticks: {
                     callback: function(value, index, values) {//needed to change the scientific notation results from using logarithmic scale
                             return Number(value.toString()); //pass tick values as a string into Number function
-                    },
-                    max: maxYAxes,
-                }
-              }/*,
-              {
-                //yAxisID: 2,
-		            type: type,
-                position: 'right',
-                ticks: {
-                    callback: function(value, index, values) {//needed to change the scientific notation results from using logarithmic scale
-                            return Number(value.toString()); //pass tick values as a string into Number function
                     }
                 }
-              }*/]
+              }]
             }
           }
         }
