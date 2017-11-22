@@ -11,3 +11,4 @@ PERCENT_OF_WRITTEN_BLOCKS Percent of written Blocks
 DETAIL_BY_NODE detail by node
 SIGNIFICANT_LIMIT significant limit
 PERCENT_OF_BLOCKS % of blocks
+CURRENT_FRAME Current window

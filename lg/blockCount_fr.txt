@@ -11,3 +11,4 @@ PERCENT_OF_WRITTEN_BLOCKS % de blocs écrits
 DETAIL_BY_NODE detail par noeud
 SIGNIFICANT_LIMIT noeud significatif à partir de
 PERCENT_OF_BLOCKS % de blocs
+CURRENT_FRAME Fenêtre courante

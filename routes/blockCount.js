@@ -40,8 +40,8 @@ module.exports = (req, res, next) => co(function *() {
       }
     }
     
-    // get medianTime of endBlock 
-    var endBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`hash` FROM block WHERE `fork`=0 AND `number` = '+end+' LIMIT 1');
+    // get endBlock 
+    var endBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`hash`,`issuersFrame` FROM block WHERE `fork`=0 AND `number` = '+end+' LIMIT 1');
     
     // get new blocks
     var newBlocks = [];
@@ -109,6 +109,10 @@ module.exports = (req, res, next) => co(function *() {
           if (data == 'meanNonce') { tabDataPerNode[m].push(0); }
         }
       }
+      
+    // 
+    if (data == "currentFrame") {
+
     }
 
     // Open a write stream into a new calculators_rank file
@@ -352,6 +356,7 @@ module.exports = (req, res, next) => co(function *() {
       }
       
       res.locals = {
+<<<<<<< HEAD
 	      host: req.headers.host.toString(),
         tabBlockMembersSort, 
         begin, 
@@ -394,6 +399,51 @@ module.exports = (req, res, next) => co(function *() {
             </select>
             <input type="checkbox" name="perNode" value="yes" ${perNode == 'yes' ? 'checked' : ''}>${LANG['DETAIL_BY_NODE']} - 
             ${LANG['SIGNIFICANT_LIMIT']} <input type="number" name="significantPercent" value="${significantPercent}" size="2" style="width:30px;">${LANG['PERCENT_OF_BLOCKS']}`
+=======
+	 host: req.headers.host.toString(),
+         tabBlockMembersSort, 
+         begin, 
+         end,
+	 help,
+	 data,
+	 perNode,
+	 description: ``,
+	 chart: {
+	    type: 'bar',
+	    data: {
+	      labels: tabLabels,
+	      datasets: datasets
+	    },
+	    options: {
+	      title: {
+		display: true,
+		text: nbMembers+' '+LANG["RANGE"]+' #'+begin+'-#'+end
+	      },
+	      legend: {
+		display: false
+	      },
+	      scales: {
+		yAxes: [{
+		  ticks: {
+		      beginAtZero: true,
+		  }
+		}]
+	      },
+	      categoryPercentage: 1.0,
+	      barPercentage: 1.0
+	    }
+	  },
+	  form: `${LANG['BEGIN']} #<input type="number" name="begin" value="${begin}" size="7" style="width:60px;"> - ${LANG['END']} #<input type="number" name="end" value="${end}" size="7" style="width:60px;">
+	    <select name="data">
+	      <option name="data" value ="nbBlocks">${LANG["NB_BLOCKS"]}
+	      <option name="data" value ="writtenPercent" ${data == 'writtenPercent' ? 'selected' : ''}>${LANG["PERCENT_OF_WRITTEN_BLOCKS"]}
+	      <option name="data" value ="writtenPercentSinceBecomeMember" ${data == 'writtenPercentSinceBecomeMember' ? 'selected' : ''}>${LANG["PERCENT_OF_WRITTEN_BLOCKS"]} ${LANG["SINCE_BECOME_MEMBER"]}
+        <option name="data" value ="meanNonce" ${data == 'meanNonce' ? 'selected' : ''}>${LANG['MEAN_NONCE']}
+        <option name="data" value ="currentFrame" ${data == 'currentFrame' ? 'selected' : ''}>${LANG['CURRENT_FRAME']}
+	    </select>
+	    <input type="checkbox" name="perNode" value="yes" ${perNode == 'yes' ? 'checked' : ''}>${LANG['DETAIL_BY_NODE']} - 
+	    ${LANG['SIGNIFICANT_LIMIT']} <input type="number" name="significantPercent" value="${significantPercent}" size="2" style="width:30px;">${LANG['PERCENT_OF_BLOCKS']}`
+>>>>>>> 0d27718... begining currentFrame
       }
       next()
     }
