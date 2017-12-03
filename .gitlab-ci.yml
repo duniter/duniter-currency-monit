@@ -37,3 +37,12 @@ enforce_readme:
       - mv README.md.new README.md
       - git commit -am "Enforce github readme"
       - git push origin master
+      
+publish:  
+  stage: deploy
+  only:
+    - tags
+    - triggers
+  script:
+    - echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}'>.npmrc
+    - npm publish
