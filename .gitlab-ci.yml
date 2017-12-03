@@ -22,6 +22,8 @@ push_to_github:
       
 publish:  
   stage: deploy
+  tags:
+    - nodejs
   only:
     - tags
     - triggers
