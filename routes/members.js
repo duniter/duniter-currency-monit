@@ -14,6 +14,8 @@ var membersLastUptime = 0;
 var previousMode = null;
 var previousCentrality = null;
 var previousNextYn = "no";
+var previousRandomList = "no"
+var previousRandomCounts = 10
 var membersList = [];
 var membersIdentity = [];
 var membersFirstCertifExpire = [];
@@ -83,8 +85,8 @@ module.exports = (req, res, next) => co(function *() {
 	// Vérifier si le cache doit être Réinitialiser
 	let reinitCache = (Math.floor(Date.now() / 1000) > (membersLastUptime + constants.MIN_MEMBERS_UPDATE_FREQ));
 		
-		// Si changement de conditions, alors forcer le rechargement du cache s'il n'est pas, vérouillé, sinon forcer les conditions à celles en mémoire
-		if (previousMode != mode || previousCentrality != centrality || previousNextYn != nextYn)
+		// Si changement de conditions, alors forcer le rechargement du cache s'il n'est pas vérouillé, sinon forcer les conditions à celles en mémoire
+		if (previousMode != mode || previousCentrality != centrality || previousNextYn != nextYn || previousRandomList != randomList || numberOfRandomMembers != previousRandomCounts)
 		{
 			if (!lockMembers)
 			{
@@ -95,7 +97,9 @@ module.exports = (req, res, next) => co(function *() {
 			{
 				mode = previousMode;
 				centrality = previousCentrality;
-				nextYn =previousNextYn;
+				nextYn = previousNextYn;
+				randomList = previousRandomList;
+				numberOfRandomMembers = previousRandomCounts;
 			}
 		}
 		// Sinon, si les conditions sont identiques :
@@ -116,6 +120,8 @@ module.exports = (req, res, next) => co(function *() {
 			previousMode = mode;
 			previousCentrality = centrality;
 			previousNextYn = nextYn;
+			previousRandomList = randomList;
+			previousRandomCounts = numberOfRandomMembers;
 			membersList = [];
 			membersIdentity = [];
 			membersFirstCertifExpire = [];
