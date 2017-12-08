@@ -4,6 +4,7 @@ const co = require('co')
 
 const constants = require(__dirname + '/../lib/constants')
 
+const randomInt = require(__dirname + '/../lib/randomInt')
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 const membersQuality = require(__dirname + '/tools/membersQuality')
 
@@ -68,6 +69,8 @@ module.exports = (req, res, next) => co(function *() {
 	var centrality = req.query.centrality || "no"; // Valeur par défaut
 	var format = req.query.format || 'HTML'; // Valeur par défaut
 	const nextYn = (req.query.nextYn=="yes") ? "yes":"no";
+	const randomList = (req.query.randomList=="yes") ? "yes":"no";
+	const numberOfRandomMembers = req.query.randomCounts || 10
 
 	// Vérifier la valeur de nextYn dans le cache
 	let lastUpgradeTimeDatas = membersQuality(-1);
@@ -75,10 +78,10 @@ module.exports = (req, res, next) => co(function *() {
 	if (lastUpgradeTimeDatas > 0 && dSenCache > dSen) { previousNextYn=="yes"; }
     
     // Alimenter wotb avec la toile actuelle
-		const wotbInstance = duniterServer.dal.wotb;
+	const wotbInstance = duniterServer.dal.wotb;
 		
-		// Vérifier si le cache doit être Réinitialiser
-		let reinitCache = (Math.floor(Date.now() / 1000) > (membersLastUptime + constants.MIN_MEMBERS_UPDATE_FREQ));
+	// Vérifier si le cache doit être Réinitialiser
+	let reinitCache = (Math.floor(Date.now() / 1000) > (membersLastUptime + constants.MIN_MEMBERS_UPDATE_FREQ));
 		
 		// Si changement de conditions, alors forcer le rechargement du cache s'il n'est pas, vérouillé, sinon forcer les conditions à celles en mémoire
 		if (previousMode != mode || previousCentrality != centrality || previousNextYn != nextYn)
@@ -153,6 +156,19 @@ module.exports = (req, res, next) => co(function *() {
     
 			// Récupérer la liste des identités ayant actuellement le statut de membre
 			membersList = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`pub`,`member`,`written_on`,`wotb_id` FROM i_index WHERE `member`=1');
+
+			if (randomList == "yes") {
+				// Tirer au sort randomCounts membres
+				const maxLengthRandomMembers = Math.min(numberOfRandomMembers,membersList.length)
+				let randomMembers = []
+				while (randomMembers.length < maxLengthRandomMembers) {
+					const randomInt_ = randomInt(0, membersList.length)
+					if (randomMembers.indexOf(membersList[randomInt_].uid) == -1) {
+						randomMembers.push(membersList[randomInt_])
+					}
+				}
+				membersList = randomMembers
+			}
     
 			// Récupérer pour chaque identité, le numéro du block d'écriture du dernier membership
 			// Ainsi que la première ou dernière certification
@@ -560,6 +576,7 @@ module.exports = (req, res, next) => co(function *() {
 				// get parameters
         		days, mode, sort_by, order,
 				pendingSigs, centrality, nextYn,
+				numberOfRandomMembers, randomList,
 				
 				// page data
         		currentBlockchainTimestamp,

@@ -47,6 +47,8 @@ ${printMenu(MENU_LANG, help, "MEMBERS")}
 <input type="checkbox" name="pendingSigs" value="yes" ${pendingSigs == 'yes' ? 'checked' : ''}>${LANG["CHECKBOX_PENDING_SIGS"]}.<br>
 <input type="checkbox" name="mode" value="emitted" ${mode == 'emitted' ? 'checked' : ''}>${LANG["CHECKBOX_MODE_SIG"]}.<br>
 <input type="checkbox" name="nextYn" value="yes" ${nextYn == 'yes' ? 'checked' : ''}> ${LANG["NEXT_YN"]}<br>
+<input type="checkbox" name="randomList" value="yes" ${randomList == 'yes' ? 'checked' : ''}> ${LANG["RANDOM_LIST"]} 
+<input type="number" name="randomCounts" value="${numberOfRandomMembers}"/> ${LANG["MEMBERS"]}.<br>
 <hr>
 
 <!-- Afficher la légende et l'aide -->

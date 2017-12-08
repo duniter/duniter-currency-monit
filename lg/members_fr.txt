@@ -66,3 +66,5 @@ MEMBERS membres
 NEXT_YN Simuler le palier Y[n] suivant
 MEMBER_FILTER rechercher un membre
 EXPIRE_TIME date et heure d'expiration
+RANDOM_LIST Tirer au sort
+MEMBERS membres
