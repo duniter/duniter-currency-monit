@@ -28,7 +28,7 @@ module.exports = (req, res, next) => co(function *() {
       const qualityMax = (1/conf.xpercent);
 
       // Définition des variables
-      let lastUpgradeTimeDatas = membersQuality(-1);
+      let lastUpgradeTimeDatas = membersQuality(constants.QUALITY_CACHE_ACTION.INIT);
       let tabUidIndex = [];
       let tabMembersQuality= [];
       let tabMembersQualitySorted = [];
@@ -50,14 +50,14 @@ module.exports = (req, res, next) => co(function *() {
         const wot = duniterServer.dal.wotb;
 
         // Initialiser le cache des données de qualité
-        membersQuality(-1, dSen, conf.stepMax, conf.xpercent, wot.memCopy());
+        membersQuality(constants.QUALITY_CACHE_ACTION.INIT, 0, dSen, conf.stepMax, conf.xpercent, wot.memCopy());
       }
 
       // Mettre a jour previousNextYn
       previousNextYn = (nextYn=="yes") ? "yes":"no";
 
       // Calculer nbSentries, limit1 and label
-      const nbSentries = (sentries=="no") ? membersList.length:membersQuality(-2);
+      const nbSentries = (sentries=="no") ? membersList.length:membersQuality(constants.QUALITY_CACHE_ACTION.GET_SENTRIES_COUNT);
       let limit1 = 1;
       let label = LANG['QUALITY'];
       switch (unit)
@@ -76,15 +76,15 @@ module.exports = (req, res, next) => co(function *() {
 
       // Récupérer le tableau de qualité des membres
       tabMembersQuality= [];
-      for (let i=0;membersQuality(i) >= 0;i++)
+      for (let i=0;membersQuality(constants.QUALITY_CACHE_ACTION.GET_QUALITY, i) >= 0;i++)
       {
         if (sentries == "no")
         {
-          tabMembersQuality[i] = membersQuality(i, -1);
+          tabMembersQuality[i] = membersQuality(constants.QUALITY_CACHE_ACTION.GET_QUALITY, i, -1);
         }
         else
         {
-          tabMembersQuality[i] = membersQuality(i);
+          tabMembersQuality[i] = membersQuality(constants.QUALITY_CACHE_ACTION.GET_QUALITY, i);
         }
       }
 

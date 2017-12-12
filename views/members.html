@@ -125,7 +125,7 @@ ${LANG["MEMBER_FILTER"]} : <input type="text" name="filter" id="filter" value=""
         <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)"><b>${member.uid}</b><br>
           
           ${(member.isSentry) ? `<font color="blue">${LANG['REFERRING_MEMBER']} : ${LANG['YES']}</font>`:`${LANG['REFERRING_MEMBER']} : ${LANG['NO']}`}<br>
-            ${LANG['QUALITY_EXT']} : <b>${(typeof(membersQuality(member.wotb_id))=='undefined') ? `0.00`:membersQuality(member.wotb_id)}</b><br>
+            ${LANG['QUALITY_EXT']} : <b>${(typeof(membersQuality(0, member.wotb_id))=='undefined') ? `0.00`:membersQuality(0, member.wotb_id)}</b><br>
           <b>${(membersLastCentralityCalcTime==0) ? `${LANG['CENTRALITY']} : ?`:`
 						${LANG['CENTRALITY']} : <b>${(typeof(membersCentrality[member.wotb_id])=='undefined') ? `0`:membersCentrality[member.wotb_id]}
 					`}</b><br>

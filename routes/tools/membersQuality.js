@@ -1,4 +1,4 @@
-
+const constants = require(__dirname + '/../../lib/constants')
 
 // membersQuality cache
 var lastUpgradeTime = 0;
@@ -21,10 +21,9 @@ var means = {
 	meanMembersReachedByMembers: 0
 };
 
-module.exports = function membersQuality(wotb_id, dSen = 0, stepMax = 0, xpercent = 0, wotCopy = null) {
+module.exports = function membersQuality(action, wotb_id = 0, dSen = 0, stepMax = 0, xpercent = 0, wotCopy = null) {
 
-  	if (wotb_id >= 0)
-  	{
+  	if (action == constants.QUALITY_CACHE_ACTION.GET_QUALITY) {
 		if (typeof(tabMembersQuality[wotb_id])=='undefined')
 		{
 			// Si le wotb_id n'existe pas, renvoyer -1
@@ -57,8 +56,7 @@ module.exports = function membersQuality(wotb_id, dSen = 0, stepMax = 0, xpercen
 			return tabMembersQuality[wotb_id];
 		}
 	}
-	else if (dSen < 0)
-	{
+	else if (action == constants.QUALITY_CACHE_ACTION.GET_MEANS) {
 		if (!meansCalculate)
 		{
 			// Calculate mean Members/Sentries ReachedBy Members/Sentries
@@ -77,15 +75,16 @@ module.exports = function membersQuality(wotb_id, dSen = 0, stepMax = 0, xpercen
 
 		return means;
 	}
-	else if (wotb_id == -1)
-  	{
+	else if (action == constants.QUALITY_CACHE_ACTION.INIT) {
+		if (wot != null)
+		{
+			wot.clear();
+			wot = null
+		}
 		if (wotCopy != null)
 		{
 			lastUpgradeTime = Math.floor(Date.now() / 1000);
-			if (wot != null)
-			{
-				wot.clear();
-			}
+			
 			wot = wotCopy;
 			membersCount = wot.getWoTSize()-wot.getDisabled().length;
 			sentriesCount = wot.getSentries(dSen).length;
@@ -105,12 +104,10 @@ module.exports = function membersQuality(wotb_id, dSen = 0, stepMax = 0, xpercen
 
 		return lastUpgradeTime;
 	}
-	else if (wotb_id == -2)
-  	{
+	else if (action == constants.QUALITY_CACHE_ACTION.GET_SENTRIES_COUNT) {
 	  return sentriesCount;
 	}
-	else if (wotb_id == -3)
-  	{
+	else if (action == constants.QUALITY_CACHE_ACTION.GET_D_SEN) {
 	  return conf.dSen;
 	}
 }

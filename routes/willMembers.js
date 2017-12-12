@@ -56,34 +56,31 @@ module.exports = (req, res, next) => co(function *() {
     let limitTimestamp = currentBlockchainTimestamp + (days*86400);
     
     // Alimenter wotb avec la toile de confiance 
-		const wotbInstance = duniterServer.dal.wotb;
+	const wotbInstance = duniterServer.dal.wotb;
 		
 		
-		// Vérifier si le cache doit être Réinitialiser
-		let reinitCache = (Math.floor(Date.now() / 1000) > (willMembersLastUptime + constants.MIN_WILLMEMBERS_UPDATE_FREQ));
+	// Vérifier si le cache doit être Réinitialiser
+	let reinitCache = (Math.floor(Date.now() / 1000) > (willMembersLastUptime + constants.MIN_WILLMEMBERS_UPDATE_FREQ));
 		
-		// Si le cache willMembers est dévérouillé, le vérouiller, sinon ne pas réinitialiser le cache
-		if (reinitCache && !lockWillMembers)
-		{
-			lockWillMembers = true;
-		}
-		else if(lockWillMembers)
-		{
-			reinitCache = false;
-		}
+	// Si le cache willMembers est dévérouillé, le vérouiller, sinon ne pas réinitialiser le cache
+	if (reinitCache && !lockWillMembers) {
+		lockWillMembers = true;
+	} else if(lockWillMembers) {
+		reinitCache = false;
+	}
 
-		if (reinitCache)
+	if (reinitCache)
     {
-      // Réinitialiser le cache
-      identitiesList = [];
-			idtysPendingCertifsList = [];
-      nbMaxCertifs = 0;
-      countMembersWithSigQtyValidCert = 0;
-      sentries = [];
-      sentriesIndex = [];
-      wotbIdIndex = [];
-			membersQualityExt = [];
-      willMembersLastUptime = Math.floor(Date.now() / 1000);
+      	// Réinitialiser le cache
+      	identitiesList = [];
+		idtysPendingCertifsList = [];
+      	nbMaxCertifs = 0;
+      	countMembersWithSigQtyValidCert = 0;
+      	sentries = [];
+      	sentriesIndex = [];
+      	wotbIdIndex = [];
+		membersQualityExt = [];
+      	willMembersLastUptime = Math.floor(Date.now() / 1000);
       
       // Récupérer la liste des membres référents
       sentries = wotbInstance.getSentries(dSen);

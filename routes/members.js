@@ -75,9 +75,9 @@ module.exports = (req, res, next) => co(function *() {
 	const numberOfRandomMembers = req.query.randomCounts || 10
 
 	// Vérifier la valeur de nextYn dans le cache
-	let lastUpgradeTimeDatas = membersQuality(-1);
-	let dSenCache = membersQuality(-3);
-	if (lastUpgradeTimeDatas > 0 && dSenCache > dSen) { previousNextYn=="yes"; }
+	let lastUpgradeTimeDatas = membersQuality(constants.QUALITY_CACHE_ACTION.INIT);
+	let dSenCache = membersQuality(constants.QUALITY_CACHE_ACTION.GET_D_SEN);
+	if (lastUpgradeTimeDatas > 0 && dSenCache > dSen) { previousNextYn == "yes"; }
     
     // Alimenter wotb avec la toile actuelle
 	const wotbInstance = duniterServer.dal.wotb;
@@ -145,7 +145,7 @@ module.exports = (req, res, next) => co(function *() {
 			if (nextYn=="yes") { dSen++; }
 
 			// réinitialiser le cache des données de qualité
-			membersQuality(-1, dSen, conf.stepMax, conf.xpercent, wotbInstance.memCopy());
+			membersQuality(constants.QUALITY_CACHE_ACTION.INIT, 0, dSen, conf.stepMax, conf.xpercent, wotbInstance.memCopy());
 			
 			// Réinitialiser le cache des données de centralité
 			if (centrality=='yes')
@@ -231,14 +231,14 @@ module.exports = (req, res, next) => co(function *() {
 				membersNbSentriesUnreached[membersList[m].uid] = parseInt(detailedDistance.nbSentries) - parseInt(detailedDistance.nbSuccess);
 
 				// Calculer la qualité du membre courant
-				if (membersQuality(membersList[m].wotb_id, (currentMemberIsSentry) ? 1 : 0) >= 1.0) {
+				if (membersQuality(constants.QUALITY_CACHE_ACTION.GET_QUALITY, membersList[m].wotb_id, (currentMemberIsSentry) ? 1 : 0) >= 1.0) {
 					proportionMembersWithQualityUpper1++;
 				}
 
 				// Calculer la qualité du membre courant s'il n'y avait pas de référents (autrement di si tout les membres était référents)
 				//let membersQualityIfNoSentries = ((detailedDistanceQualityExt.nbReached/membersList.length)/conf.xpercent).toFixed(2);
 				//console.log("membersQualityIfNoSentries[%s] = %s", membersList[m].uid, membersQualityIfNoSentries);
-				if (membersQuality(membersList[m].wotb_id, -1) >= 1.0) {
+				if (membersQuality(constants.QUALITY_CACHE_ACTION.GET_QUALITY, membersList[m].wotb_id, -1) >= 1.0) {
 					proportionMembersWithQualityUpper1IfNoSentries++;
 				}
 				
@@ -481,7 +481,7 @@ module.exports = (req, res, next) => co(function *() {
 		{ 
 			for (const member of membersList)
 			{
-				tabSort.push(membersQuality(member.wotb_id));
+				tabSort.push(membersQuality(constants.QUALITY_CACHE_ACTION.GET_QUALITY, member.wotb_id));
 			}
 		}
     else if (sort_by == "sigCount")
@@ -575,7 +575,7 @@ module.exports = (req, res, next) => co(function *() {
     // Sinon, printer le tableau html
     else
     {
-	  let meansMembersQuality = membersQuality(-1, -1);
+	  let meansMembersQuality = membersQuality(constants.QUALITY_CACHE_ACTION.GET_MEANS);
 
       res.locals = {
 				host: req.headers.host.toString(),
