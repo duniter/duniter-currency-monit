@@ -1,6 +1,7 @@
 "use strict";
 
 const co = require('co')
+const fs = require('fs')
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 const colorScale = require(__dirname + '/../lib/colorScale')
 const getLang = require(__dirname + '/../lib/getLang')
@@ -12,7 +13,7 @@ var previousBlockchainTime= 0;
 
 module.exports = (req, res, next) => co(function *() {
   
-  var { duniterServer  } = req.app.locals
+  var { duniterServer, monitDatasPath } = req.app.locals
   
   try {
     // get GET parameters
@@ -101,22 +102,41 @@ module.exports = (req, res, next) => co(function *() {
     {
       for (let m=0;m<tabBlockMembers.length;m++)
       {
-	for (let n=0;n<9;n++)
-	{
-	  tabCoreCountPerNode[m].push(0);
-	  tabBlockCountPerNode[m].push(0);
-	  if (data == 'meanNonce') { tabDataPerNode[m].push(0); }
-	}
+        for (let n=0;n<9;n++)
+        {
+          tabCoreCountPerNode[m].push(0);
+          tabBlockCountPerNode[m].push(0);
+          if (data == 'meanNonce') { tabDataPerNode[m].push(0); }
+        }
       }
     }
+
+    // Open a write stream into a new calculators_rank file
+    let pathToCalculatorsRankFile = monitDatasPath + 'calculators_rank/'
+    let calculatorsRankFilename = 'calculators_rank_' + Date.now() + '.csv'
+    if (!fs.existsSync(pathToCalculatorsRankFile)) { fs.mkdirSync(pathToCalculatorsRankFile) }
+    var ws = fs.createWriteStream(pathToCalculatorsRankFile + calculatorsRankFilename, {
+      flags: 'a',
+      encoding: 'utf8',
+      fd: null,
+      mode: 0o666,
+      autoClose: true
+    });
     
     // Calculate the sum of blocks and their nonce and number of core
+    let calculatorsCount = 1;
     for (let b=begin;b<blockchain.length;b++)
     {
       for (let m=0;m<tabBlockMembers.length;m++)
       {
         if (tabBlockMembers[m].pubkey == blockchain[b].issuer)
         {
+          if (tabBlockMembers[m].blockCount == 0) {
+            //console.log("%s, %s, #%s, %s", calculatorsCount, tabBlockMembers[m].uid, b, timestampToDatetime(blockchain[b].medianTime));
+            ws.write(calculatorsCount + ', ' + tabBlockMembers[m].uid + ', #' + b + ', ' + timestampToDatetime(blockchain[b].medianTime) + '\r\n');
+            calculatorsCount++;
+          }
+          
           tabBlockMembers[m].blockCount++;
           let nonce = parseInt((blockchain[b].nonce).toString().substr(3));
           if (data == 'meanNonce') { tabBlockMembers[m].data += nonce; }
@@ -134,6 +154,24 @@ module.exports = (req, res, next) => co(function *() {
           }
         }
       }
+    }
+
+    // Close write stream into calculators_rank file
+    ws.end(); 
+
+    // Remove oldest calculators_rank file
+    let files = fs.readdirSync(pathToCalculatorsRankFile);
+    if (files.length > 10) {
+      let minTimestamp = parseInt(Date.now())
+      for (let file of files) {
+        let fileTimestamp = parseInt(file.split('_')[2])
+        if (fileTimestamp < minTimestamp) {
+          minTimestamp = fileTimestamp;
+        }
+      }
+      fs.unlink(pathToCalculatorsRankFile + 'calculators_rank_' + minTimestamp + '.csv',function(err){
+        if(err) return console.log(err);
+      });  
     }
     
     // Delete non-significant nodes
