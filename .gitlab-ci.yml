@@ -22,7 +22,7 @@ push_to_github:
       
 publish:  
   stage: deploy
-  image: node:6.12-alpine
+  image: node:9.6-alpine
   tags:
     - nodejs
   only:
