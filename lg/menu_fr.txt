@@ -2,6 +2,8 @@ LG fr
 WILL_MEMBERS futurs membres
 MEMBERS listes des membres
 MEMBERS_COUNT nombre de membres
+WOTEX wotex
+GAUSSIAN_WOT_QUALITY qualité toile
 BLOCK_COUNT nombre de blocs
 MONETARY_MASS masse monétaire
 WOTEX wotex

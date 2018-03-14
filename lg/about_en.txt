@@ -1,0 +1,9 @@
+LG en
+VERSION Version
+AUTHOR Author
+CONTRIBUTORS Others Contributors
+LICENSE license
+GIT_REPOSITORY git repository
+IF_YOU_WANT If you want you can
+DISABLE_HELP disable help
+DONATE You can support the development of this module by a gift in Ğ1

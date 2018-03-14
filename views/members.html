@@ -1,38 +1,43 @@
 ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
-  <title>${currencyName}-monit</title>
+  <title>${currencyName}-monit : ${MENU_LANG['MEMBERS']}</title>
+  <script type="text/javascript">// <![CDATA[
+	var table = document.getElementById('table')
+	var filter = document.getElementById('filter')
+
+	/*filter.onchange = function() {
+		return filterRows(table, 1, 0, this.value);
+  }*/
+
+	// tableElem : HTMLElement
+	// rowIndex  : index du row pour commencer le filtrage (0 indexed)
+	// tableElem : index du col à prendre en compte (0 indexed)
+	// tableElem : lettre pour la comparaison
+	function filterRows(tableElem, rowIndex, colIndex, filterString) {
+		for (var i = rowIndex, val; i < tableElem.rows.length; ++i) {
+			val = tableElem.rows[i].cells[colIndex].firstChild.nodeValue;
+			if (val.substr(0,filterString.length).toLowerCase() != filterString.toLowerCase())
+				tableElem.rows[i].style.display = 'none';
+			else
+				tableElem.rows[i].style.display = '';
+		}  
+		return false;
+	}
+// ]]></script>
 </head>
 <body>
 
 <!-- Afficher le menu -->
-<table align="center" width="100%">
-  <tr>
-    <td><a href="willMembers?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
-    <td><a href="members?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS"]}</a></td>
-    <td><a href="membersCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS_COUNT"]}</a></td>
-    <td><a href="blockCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
-    <td><a href="monetaryMass?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MONETARY_MASS"]}</a></td>
-    <td><a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WOTEX"]}</a></td>
-    <td><a href="about?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["ABOUT"]}</a></td>
-    <td>
-      <form action="" method="GET">
-	<select name="lg" onchange="this.form.submit()">
-	  <option name="lg" value="fr" ${MENU_LANG['LG'] == 'fr' ? 'selected' : ''}>FR
-	  <option name="lg" value="en" ${MENU_LANG['LG'] == 'en' ? 'selected' : ''}>EN
-	</select>
-    </td>
-</tr>
-</table>
-<hr>
+${printMenu(MENU_LANG, help, "MEMBERS")}
 
 <!-- Afficher le formulaire -->
-<input type="number" name="d" value="${days}"/>${LANG["FORM1"]} <select name="sort_by">
+<input type="number" name="d" value="${days}"/> ${LANG["FORM1"]} <select name="sort_by">
 <option name="sort_by" value ="idtyWritten">${LANG["SORT_BY_IDTY_WRITTEN"]}
 <option name="sort_by" value ="expireMembership" ${sort_by == 'expireMembership' ? 'selected' : ''}>${LANG["SORT_BY_EXPIRE_MEMBERSHIP"]}
 <option name="sort_by" value ="lastRenewal" ${sort_by == 'lastRenewal' ? 'selected' : ''}>${LANG["SORT_LAST_RENEWAL"]}
 <option name="sort_by" value ="oldestSig" ${sort_by == 'oldestSig' ? 'selected' : ''}>${LANG["SORT_BY_OLDEST_SIG"]}
 <option name="sort_by" value ="lastSig" ${sort_by == 'lastSig' ? 'selected' : ''}>${LANG["SORT_BY_LAST_SIG"]}
 <option name="sort_by" value ="centrality" ${sort_by == 'centrality' ? 'selected' : ''}>${LANG["SORT_BY_CENTRALITY"]}
-${(USE_WOTB6) ? `<option name="sort_by" value ="quality" ${sort_by == 'quality' ? 'selected' : ''}>${LANG["SORT_BY_QUALITY"]}`:``}
+<option name="sort_by" value ="quality" ${sort_by == 'quality' ? 'selected' : ''}>${LANG["SORT_BY_QUALITY"]}
 <option name="sort_by" value ="sigCount" ${sort_by == 'sigCount' ? 'selected' : ''}>${LANG["SORT_BY_SIG_COUNT"]}
 </select> ${LANG["ORDER_BY"]} <select name="order">
 <option name="order" value ="asc"> ${LANG["ASC"]}
@@ -41,7 +46,9 @@ ${(USE_WOTB6) ? `<option name="sort_by" value ="quality" ${sort_by == 'quality' 
 <input type="checkbox" name="centrality" value="yes">${LANG["CHECKBOX_CENTRALITY"]}.<br>
 <input type="checkbox" name="pendingSigs" value="yes" ${pendingSigs == 'yes' ? 'checked' : ''}>${LANG["CHECKBOX_PENDING_SIGS"]}.<br>
 <input type="checkbox" name="mode" value="emitted" ${mode == 'emitted' ? 'checked' : ''}>${LANG["CHECKBOX_MODE_SIG"]}.<br>
-</form>
+<input type="checkbox" name="nextYn" value="yes" ${nextYn == 'yes' ? 'checked' : ''}> ${LANG["NEXT_YN"]}<br>
+<input type="checkbox" name="randomList" value="yes" ${randomList == 'yes' ? 'checked' : ''}> ${LANG["RANDOM_LIST"]} 
+<input type="number" name="randomCounts" value="${numberOfRandomMembers}"/> ${LANG["MEMBERS"]}.<br>
 <hr>
 
 <!-- Afficher la légende et l'aide -->
@@ -76,27 +83,31 @@ ${(membersLastCentralityCalcTime==0) ? `
 	`}
 `}
 <br>
-${(USE_WOTB6) ? `
 	<table border="1">
 		<tr><td align='center' colspan='3'>${LANG["DATA_AT"]} ${timestampToDatetime(membersLastUptime)}</td></tr>
-		<tr><td align='center'>${LANG["meanMembersReachedByMembersInSingleExtCert"]}</td><td align='center'>${LANG["SENTRIES_REACHED"]}</td><td align='center'>${LANG["MEMBERS_REACHED"]}</td></tr>
-		<tr><td align='center'>${LANG["SENTRY_CERT"]}</td><td align='center'>${meanSentriesReachedBySentriesInSingleExtCert}%</td><td align='center'>${meanMembersReachedBySentriesInSingleExtCert}%</td></tr>
-		<tr><td align='center'>${LANG["MEMBER_CERT"]}</td><td align='center'><font color="${(meanSentriesReachedByMembersInSingleExtCert<xpercent) ? 'DarkRed' : 'blue' }"><b>${meanSentriesReachedByMembersInSingleExtCert}%</b></font></td><td align='center'><b>${meanMembersReachedByMembersInSingleExtCert}%</b></td></tr>
-		<tr><td align='center'><b>${LANG["MEAN_QUALITY"]}</b></td><td align='center'><font color="red"><b>${(meanSentriesReachedByMembersInSingleExtCert/(xpercent*100)).toFixed(2)}</b></font></td><td align='center'><b>${(meanMembersReachedByMembersInSingleExtCert/(xpercent*100)).toFixed(2)}</b></td></tr>
+		<tr><td align='center'>${LANG["meanMembersReachedByMembers"]}</td><td align='center'>${LANG["SENTRIES_REACHED"]}</td><td align='center'>${LANG["MEMBERS_REACHED"]}</td></tr>
+		<tr><td align='center'>${LANG["SENTRY_CERT"]}</td><td align='center'>${(meansMembersQuality.meanSentriesReachedBySentries).toFixed(2)}%</td><td align='center'>${(meansMembersQuality.meanMembersReachedBySentries).toFixed(2)}%</td></tr>
+		<tr><td align='center'>${LANG["MEMBER_CERT"]}</td><td align='center'><font ${(meansMembersQuality.meanSentriesReachedByMembers<xpercent) ? 'color="DarkRed"' : 'color="blue"' }><b>${meansMembersQuality.meanSentriesReachedByMembers}%</b></font></td><td align='center'><b>${meansMembersQuality.meanMembersReachedByMembers}%</b></td></tr>
+		<tr><td align='center'><b>${LANG["MEAN_QUALITY"]}</b></td><td align='center'><font color="red"><b>${(meansMembersQuality.meanSentriesReachedByMembers/(xpercent*100)).toFixed(2)}</b></font></td><td align='center'><b>${(meansMembersQuality.meanMembersReachedByMembers/(xpercent*100)).toFixed(2)}</b></td></tr>
 		<tr><td align='center'><b>${LANG["PROPORTION_MEMBERS_WITH_QUALITY_UPPER_1"]}</b></td><td align='center'><font color="red"><b>${(proportionMembersWithQualityUpper1*100).toFixed(2)}%</b></font></td><td align='center'><b>${(proportionMembersWithQualityUpper1IfNoSentries*100).toFixed(2)}%</b></td></tr>
 	</table>
 	<br>
-`:``}
 
 <!-- Afficher le currentBlockchainTimestamp -->
-<i>${LANG["CURRENT_BLOCKCHAIN_TIME"]} : ${timestampToDatetime(currentBlockchainTimestamp)}.</i><br>
+<i>${LANG["CURRENT_BLOCKCHAIN_TIME"]} : ${timestampToDatetime(currentBlockchainTimestamp)}.<br>
+<!-- Afficher le nombre de membres et de membres référents -->
+<b>${membersListFiltered.length}</b> ${LANG["MEMBERS"]} ${LANG["OF_WHICH"]} <b>${countSentries}</b> ${LANG['ARE_REFERRING_MEMBERS']} (<b>${((countSentries/membersListFiltered.length)*100).toFixed(2)}%</b>).</i><br>
 <br>
+<!-- Afficher le filtre des membres -->
+${LANG["MEMBER_FILTER"]} : <input type="text" name="filter" id="filter" value="" maxlength="20" onchange="filterRows(document.getElementById('table'),1,0,this.value);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/><br>
+</form>
 
 <!-- On parcour tout les membres pour afficher ceux dont la date d'expiration est dans moins de 'd' jours -->
 <b>${LANG["TABLE_TITLE"]} ${days} ${LANG["DAYS"]} :</b>
-<table border="1">
+<table id="table" border="1">
   <!-- Printer les nom des colonnes -->
   <tr>
+    <td align="center" style="display :none"></td>
     <td align="center">${LANG["COL_UID"]}</td>
     <td align="center">${LANG["COL_IDTY_WRITTEN_TIME"]}</td>
     <td align="center">${LANG["COL_LAST_RENEWAL"]}</td>
@@ -105,19 +116,16 @@ ${(USE_WOTB6) ? `
     <td style="background:#000000">-</td>
     <td align="left" colspan="${nbMaxCertifs}">${(mode=='emitted') ? LANG['COL_LIST_EMITTED_CERT']:LANG['COL_LIST_RECEIVED_CERT']} (${sort_by == 'lastSig' ? LANG["LAST2OLDEST"] : LANG["OLDEST2LAST"]})</td>
   </tr>
-  
   ${membersListFiltered
     .map( member=> `
       <!-- Printer la ligne -->
       <tr>
         ${(member.proportion = proportion(member.expireMembershipTimestamp,msValidity,0,120),'')}
-        <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)">
-          <b>${member.uid}</b><br>
+        <td align="center" style="display :none">${member.uid}</td>
+        <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)"><b>${member.uid}</b><br>
           
           ${(member.isSentry) ? `<font color="blue">${LANG['REFERRING_MEMBER']} : ${LANG['YES']}</font>`:`${LANG['REFERRING_MEMBER']} : ${LANG['NO']}`}<br>
-          ${(USE_WOTB6) ? `
-            ${LANG['QUALITY_EXT']} : <b>${(typeof(membersQualityExt[member.uid])=='undefined') ? `0.00`:membersQualityExt[member.uid]}</b><br>
-					`:``}
+            ${LANG['QUALITY_EXT']} : <b>${(typeof(membersQuality(0, member.wotb_id))=='undefined') ? `0.00`:membersQuality(0, member.wotb_id)}</b><br>
           <b>${(membersLastCentralityCalcTime==0) ? `${LANG['CENTRALITY']} : ?`:`
 						${LANG['CENTRALITY']} : <b>${(typeof(membersCentrality[member.wotb_id])=='undefined') ? `0`:membersCentrality[member.wotb_id]}
 					`}</b><br>
@@ -127,12 +135,10 @@ ${(USE_WOTB6) ? `
             : ''}
         </td>
         <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)">
-          ${timestampToDatetime(member.idtyWrittenTimestamp)}<br>
-          #${member.idtyWrittenBloc}
+          <span data-tip="${timestampToDatetime(member.idtyWrittenTimestamp)}">#${member.idtyWrittenBloc}</span>
         </td>
         <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)">
-          ${timestampToDatetime(member.lastRenewalTimestamp)}<br>
-          #${member.lastRenewalWrittenBloc}
+          <span data-tip="${timestampToDatetime(member.lastRenewalTimestamp)}">#${member.lastRenewalWrittenBloc}</span>
         </td>
         <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)">
           ${timestampToDatetime(member.expireMembershipTimestamp)}</td>
@@ -140,9 +146,7 @@ ${(USE_WOTB6) ? `
           
 						<font color="${member.detailedDistance.isOutdistanced ? 'red' : 'blue' }">
 							${member.detailedDistance.isOutdistanced ? LANG['COL_DISTANCE_isOutdistanced'] : LANG['COL_DISTANCE_isNotOutdistanced'] }
-							${(USE_WOTB6) ? `
 								<br>${member.percentSentriesReached}% (${member.detailedDistance.nbSuccess}/${member.detailedDistance.nbSentries})
-							`:``}
 						</font>
         </td>
         <td style="background:#000000">-</td>
@@ -153,7 +157,8 @@ ${(USE_WOTB6) ? `
               <!-- Printer la certification -->
               <td align="center" style="background:${(cert.validBlockStamp) ? cert.colorPending=color(cert.expires_on,idtyWindow,250) : cert.colorPending='#FF8000'}">
 								<b>${cert.protagonist}</b><br>
-                ${timestampToDatetime(cert.timestampExpire)}<br>
+                <span data-tip="${LANG['EXPIRE_TIME']}">${timestampToDatetime(cert.timestampExpire)}</span><br>
+                
                 ${LANG["EMITTED"]} #${cert.blockNumber}<br>
                 ${ ( !cert.validBlockStamp || cert.timestampWritable > currentBlockchainTimestamp ) ? `
 									<font color="DarkRed">[${ (cert.validBlockStamp) ? timestampToDatetime(cert.timestampWritable):LANG['INVALID_BLOCKSTAMP']}]</font>
@@ -170,16 +175,13 @@ ${(USE_WOTB6) ? `
           <!-- Printer la certification -->
           <td align="center" style="background:hsla(${proportion(cert.timestampExpire,sigValidity,0,120)}, 100%, 50%, 1 )">
             <b>${(mode=='emitted') ? cert.receiver:cert.issuer}</b><br>
-            ${timestampToDatetime(cert.timestampExpire)}<br>
+            <span data-tip="${LANG['EXPIRE_TIME']}">${timestampToDatetime(cert.timestampExpire)}</span><br>
             ${LANG["WRITTEN"]} #${cert.writtenBloc}
           </td>
         `).join('')}
       </tr>
     `).join('')
   }
-  <tr>
-    <td colspan="${4+nbMaxCertifs}" align="center"> ${LANG["OVERALL"]} : <b>${membersListFiltered.length}</b> ${LANG["MEMBERS"]}.</td>
-  </tr>
 </table><br>
 
 <hr>

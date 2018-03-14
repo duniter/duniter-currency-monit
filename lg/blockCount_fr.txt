@@ -1,1 +1,13 @@
 SUBMIT_BUTTON recharger
+WRITTEN_BLOCKS blocs écrits
+BLOCKCHAIN blockchain
+SINCE_BECOME_MEMBER par chaque membre depuis qu'il est devenu membre
+MEAN_NONCE Nonce moyen
+RANGE membres ayant écrit des blocs sur la période
+BEGIN Début
+END Fin
+NB_BLOCKS Nombre de blocs écrits
+PERCENT_OF_WRITTEN_BLOCKS % de blocs écrits
+DETAIL_BY_NODE detail par noeud
+SIGNIFICANT_LIMIT noeud significatif à partir de
+PERCENT_OF_BLOCKS % de blocs

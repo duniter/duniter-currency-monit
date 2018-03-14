@@ -30,7 +30,7 @@ PROPORTION_OF_EXIST_PATH Proportion de couples orientés pour lesquels il existe
 MEAN_LENGTH_PATH Longueur moyenne d'un plus court chemin
 WOT_TENSION_FACTOR Facteur de tension de la toile*
 DATA_AT Données au
-meanMembersReachedByMembersInSingleExtCert Taux moyen de membres joiniables via une seule certification
+meanMembersReachedByMembers Taux moyen de membres joiniables via une seule certification
 MEMBER_CERT certification d'un membre
 MEMBERS_REACHED membres joiniables
 SENTRY_CERT certification d'un membre référent
@@ -40,6 +40,8 @@ PROPORTION_MEMBERS_WITH_QUALITY_UPPER_1 Proportion de membre avec une qualité >
 CURRENT_BLOCKCHAIN_TIME Temps Blockchain actuel
 TABLE_TITLE Membres dont le statut de membre va expirer dans moins de
 DAYS jours
+OF_WHICH dont
+ARE_REFERRING_MEMBERS sont référents
 COL_UID uid
 COL_IDTY_WRITTEN_TIME obtention statut membre
 COL_LAST_RENEWAL dernier renouvellement
@@ -60,5 +62,9 @@ EMITTED émise
 WRITTEN écrite
 INVALID_BLOCKSTAMP blockstamp incorrect
 CERT_AVAILABLE disponible
-OVERALL Total
+MEMBERS membres
+NEXT_YN Simuler le palier Y[n] suivant
+MEMBER_FILTER rechercher un membre
+EXPIRE_TIME date et heure d'expiration
+RANDOM_LIST Tirer au sort
 MEMBERS membres

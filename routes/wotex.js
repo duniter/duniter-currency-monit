@@ -16,7 +16,7 @@ module.exports = (req, res, next) => co(function *() {
       var help = req.query.help || 'yes';
       
       // get lg file
-      const LANG = getLang(`${__dirname}/../lg/wotex_${req.query.lg||'fr'}.txt`);
+      const LANG = getLang(`${__dirname}/../lg/wotex_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`);
       
       // Trouve les points de contrôle efficacement grâce au module C (nommé "wotb")
       const wotb = duniterServer.dal.wotb.memCopy();

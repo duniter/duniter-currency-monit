@@ -2,7 +2,8 @@ LG en
 WILL_MEMBERS willMembers
 MEMBERS members
 MEMBERS_COUNT membersCount
+WOTEX wotex
+GAUSSIAN_WOT_QUALITY gaussianWotQuality
 BLOCK_COUNT blockCount
 MONETARY_MASS monetaryMass
-WOTEX wotex
 ABOUT about

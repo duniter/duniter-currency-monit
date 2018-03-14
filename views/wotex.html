@@ -1,6 +1,6 @@
 <!-- Inclure l'en-tête commun -->
 ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
-  <title>${currencyName}-monit</title>
+  <title>${currencyName}-monit : ${MENU_LANG['WOTEX']}</title>
 		<!-- Style css spécifique de wotex -->
                 <style>
                 .sentry {
@@ -117,25 +117,7 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
   <body onload="onLoadedPage()">
 
     <!-- Afficher le menu -->
-    <table align="center" width="100%">
-      <tr>
-	<td><a href="willMembers?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WILL_MEMBERS"]}</a></td>
-	<td><a href="members?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS"]}</a></td>
-	<td><a href="membersCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MEMBERS_COUNT"]}</a></td>
-	<td><a href="blockCount?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["BLOCK_COUNT"]}</a></td>
-	<td><a href="monetaryMass?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["MONETARY_MASS"]}</a></td>
-	<td><a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["WOTEX"]}</a></td>
-	<td><a href="about?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}">${MENU_LANG["ABOUT"]}</a></td>
-	<td>
-	  <form action="" method="GET">
-	    <select name="lg" onchange="this.form.submit()">
-	      <option name="lg" value="fr" ${MENU_LANG['LG'] == 'fr' ? 'selected' : ''}>FR
-	      <option name="lg" value="en" ${MENU_LANG['LG'] == 'en' ? 'selected' : ''}>EN
-	    </select>
-	</td>
-    </tr>
-    </table>
-    <hr/>
+    ${printMenu(MENU_LANG, help, "WOTEX")}
 
     <!-- Afficher le titre et le formulaire -->
     <h1>${LANG['TITLE']}</h1>
@@ -158,12 +140,12 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
       <!-- Afficher la légende -->
       ${(typeof(help) == 'undefined' || help != 'no') ? `
       <p>${LANG['LEGEND_TITLE']} :</p>
-      <ul>
-	<li><span class="isMember">${LANG['LEGEND_BLACK']}</span></li>
-	<li><span class="isSentry">${LANG['LEGEND_BLUE']}</span></li>
-	<li><span class="isPending">${LANG['LEGEND_ORANGE']}</span></li>
-	<li><span class="isNonMember">${LANG['LEGEND_RED']}</span></li>
-      </ul>
+
+  <span class="isMember">${LANG['LEGEND_BLACK']}</span></br>
+  <span class="isSentry">${LANG['LEGEND_BLUE']}</span></br>
+	<span class="isPending">${LANG['LEGEND_ORANGE']}</span></br>
+	<span class="isNonMember">${LANG['LEGEND_RED']}</span></br>
+
       <hr/>
       `:``}
     <!-- Afficher tout les plus courts chemins -->

@@ -1,1 +1,22 @@
 SUBMIT_BUTTON submit
+DESC1 The currency will be full when the money supply by member will be worth
+UD UD
+FULL_CURRENCY_FORMULA because 1/c * dtReeval/dt =
+CURRENTLY Currently
+AND_WE_HAVE and we have
+DESC2 members. Thus in full currency we would have a total money supply of
+MEMBER member
+BEGIN Begin
+END End
+QUANTITATIVE quantitative
+RELATIVE relative
+PERCENT_OF_FULL_CURRENCY percent of full currency
+MASS_BY_MEMBERS mass by members
+TOTAL_MASS total mass
+LOGARITHMIC logarithmic
+LINEAR linear
+MONETARY_MASS monetaryMass
+IN_PERCENT_OF_FULL_CURRENCY in % of full currency
+PERCENT_VARIATION_MONETARY_MASS % of variation of the monetary mass
+BY_MEMBERS by members
+IN_THE_RANGE in the range

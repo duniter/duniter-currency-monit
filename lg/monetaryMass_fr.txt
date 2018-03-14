@@ -1,1 +1,23 @@
 SUBMIT_BUTTON recharger
+DESC1 La monnaie sera pleine lorsque la masse monétaire par membre atteindra
+The currency will be full when the money supply by member will be worth
+UD DU
+FULL_CURRENCY_FORMULA car 1/c * dtReeval/dt
+CURRENTLY Actuellement
+AND_WE_HAVE et nous sommes
+DESC2 membres. Donc si la monnaie était pleine nous aurions une masse totale de
+MEMBER membre
+BEGIN Début
+END Fin
+QUANTITATIVE quantitatif
+RELATIVE relatif
+PERCENT_OF_FULL_CURRENCY pourcentage de monnaie pleine
+MASS_BY_MEMBERS masse par membre
+TOTAL_MASS masse totale
+LOGARITHMIC logarithmique
+LINEAR linéaire
+MONETARY_MASS masse monetaire
+IN_PERCENT_OF_FULL_CURRENCY en % de monnaie pleine
+PERCENT_VARIATION_MONETARY_MASS % de variation de la masse monétaire
+BY_MEMBER par membre
+IN_THE_RANGE dans la période

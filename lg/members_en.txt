@@ -30,7 +30,7 @@ PROPORTION_OF_EXIST_PATH Percent of pairs directed for which there is a path of 
 MEAN_LENGTH_PATH mean length shortest path
 WOT_TENSION_FACTOR Wot tension factor*
 DATA_AT Data at
-meanMembersReachedByMembersInSingleExtCert Mean members/sentries reached in single member/sentry certification
+meanMembersReachedByMembers Mean members/sentries reached in single member/sentry certification
 SENTRIES_REACHED sentries reached
 MEMBERS_REACHED members reached
 SENTRY_CERT sentry certification
@@ -40,6 +40,8 @@ PROPORTION_MEMBERS_WITH_QUALITY_UPPER_1 Proportion of members with an upper qual
 CURRENT_BLOCKCHAIN_TIME Current blockchain time
 TABLE_TITLE Members that will expire in less than
 DAYS days
+OF_WHICH of which
+ARE_REFERRING_MEMBERS are referrings
 COL_UID uid
 COL_IDTY_WRITTEN_TIME identity written time
 COL_LAST_RENEWAL last renewal
@@ -60,5 +62,9 @@ EMITTED emitted
 WRITTEN written
 INVALID_BLOCKSTAMP invalid blockstamp
 CERT_AVAILABLE available
-OVERALL Overall
+MEMBERS members
+NEXT_YN Feign the following Y[n] landing
+MEMBER_FILTER search a member
+EXPIRE_TIME expiration datetime
+RANDOM_LIST Draw lots
 MEMBERS members

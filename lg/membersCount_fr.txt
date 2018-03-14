@@ -17,3 +17,6 @@ MEMBERS_COUNT Membres
 SENTRIES_COUNT Membres référents*
 ISSUERS_COUNT Membres co-écrivains de la blockchain Ğ1
 POW_MIN Difficulté commune du réseau (preuve de travail)
+MAX max
+POINTS points
+REGULATE_BY_ADAPTING réguler en adaptant

@@ -4,15 +4,18 @@ const co = require('co')
 
 const constants = require(__dirname + '/../lib/constants')
 
-const wotb = (constants.USE_WOTB6) ? require('wotb'):null;
-
+const randomInt = require(__dirname + '/../lib/randomInt')
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
+const membersQuality = require(__dirname + '/tools/membersQuality')
 
 // Préserver les résultats en cache
 var lockMembers = false;
 var membersLastUptime = 0;
 var previousMode = null;
 var previousCentrality = null;
+var previousNextYn = "no";
+var previousRandomList = "no"
+var previousRandomCounts = 10
 var membersList = [];
 var membersIdentity = [];
 var membersFirstCertifExpire = [];
@@ -24,11 +27,11 @@ var membershipsExpireTimeList = [];
 var nbMaxCertifs = 0;
 var sentries = [];
 var sentriesIndex = [];
-var membersQualityExt = [];
-var meanSentriesReachedBySentriesInSingleExtCert = 0;
+var countSentries = 0;
+/*var meanSentriesReachedBySentriesInSingleExtCert = 0;
 var meanMembersReachedBySentriesInSingleExtCert = 0;
 var meanSentriesReachedByMembersInSingleExtCert = 0;
-var meanMembersReachedByMembersInSingleExtCert = 0;
+var meanMembersReachedByMembersInSingleExtCert = 0;*/
 var proportionMembersWithQualityUpper1 = 0;
 var proportionMembersWithQualityUpper1IfNoSentries = 0;
 
@@ -51,13 +54,12 @@ module.exports = (req, res, next) => co(function *() {
     const head = yield duniterServer.dal.getCurrentBlockOrNull();
     const currentBlockchainTimestamp =  head ? head.medianTime : 0;
     const membersCount = head ? head.membersCount : 0;
-    const dSen = Math.ceil(Math.pow(membersCount, 1 / conf.stepMax));
+    var dSen = Math.ceil(Math.pow(membersCount, 1 / conf.stepMax));
     
     // Initaliser les variables
 		let membersListOrdered = [];
 		let membersCertifsListSorted = [];
 		let tabSort = [];
-		let countSentries = 0;
 		let membersNbSentriesUnreached = [];
 
     // Récupéré les paramètres
@@ -65,18 +67,26 @@ module.exports = (req, res, next) => co(function *() {
     var mode = req.query.mode || 'received' // Valeur par défaut
     var order = req.query.d && req.query.order || 'desc' // Valeur par défaut
     var sort_by = req.query.sort_by || "idtyWritten" // Valeur par défaut
-		var pendingSigs = req.query.pendingSigs || "no"; // Valeur par défaut
-		var centrality = req.query.centrality || "no"; // Valeur par défaut
-		var format = req.query.format || 'HTML'; // Valeur par défaut
+	var pendingSigs = req.query.pendingSigs || "no"; // Valeur par défaut
+	var centrality = req.query.centrality || "no"; // Valeur par défaut
+	var format = req.query.format || 'HTML'; // Valeur par défaut
+	const nextYn = (req.query.nextYn=="yes") ? "yes":"no";
+	const randomList = (req.query.randomList=="yes") ? "yes":"no";
+	const numberOfRandomMembers = req.query.randomCounts || 10
+
+	// Vérifier la valeur de nextYn dans le cache
+	let lastUpgradeTimeDatas = membersQuality(constants.QUALITY_CACHE_ACTION.INIT);
+	let dSenCache = membersQuality(constants.QUALITY_CACHE_ACTION.GET_D_SEN);
+	if (lastUpgradeTimeDatas > 0 && dSenCache > dSen) { previousNextYn == "yes"; }
     
     // Alimenter wotb avec la toile actuelle
-		const wotbInstance = (constants.USE_WOTB6) ? wotb.newFileInstance(duniterServer.home + '/wotb.bin'):duniterServer.dal.wotb;
+	const wotbInstance = duniterServer.dal.wotb;
 		
-		// Vérifier si le cache doit être Réinitialiser
-		let reinitCache = (Math.floor(Date.now() / 1000) > (membersLastUptime + constants.MIN_MEMBERS_UPDATE_FREQ));
+	// Vérifier si le cache doit être Réinitialiser
+	let reinitCache = (Math.floor(Date.now() / 1000) > (membersLastUptime + constants.MIN_MEMBERS_UPDATE_FREQ));
 		
-		// Si changement de conditions, alors forcer le rechargement du cache s'il n'est pas, vérouillé, sinon forcer les conditions à celles en mémoire
-		if (previousMode != mode || previousCentrality != centrality)
+		// Si changement de conditions, alors forcer le rechargement du cache s'il n'est pas vérouillé, sinon forcer les conditions à celles en mémoire
+		if (previousMode != mode || previousCentrality != centrality || previousNextYn != nextYn || previousRandomList != randomList || numberOfRandomMembers != previousRandomCounts)
 		{
 			if (!lockMembers)
 			{
@@ -87,6 +97,9 @@ module.exports = (req, res, next) => co(function *() {
 			{
 				mode = previousMode;
 				centrality = previousCentrality;
+				nextYn = previousNextYn;
+				randomList = previousRandomList;
+				numberOfRandomMembers = previousRandomCounts;
 			}
 		}
 		// Sinon, si les conditions sont identiques :
@@ -106,6 +119,9 @@ module.exports = (req, res, next) => co(function *() {
 			membersLastUptime = Math.floor(Date.now() / 1000);
 			previousMode = mode;
 			previousCentrality = centrality;
+			previousNextYn = nextYn;
+			previousRandomList = randomList;
+			previousRandomCounts = numberOfRandomMembers;
 			membersList = [];
 			membersIdentity = [];
 			membersFirstCertifExpire = [];
@@ -117,13 +133,19 @@ module.exports = (req, res, next) => co(function *() {
 			nbMaxCertifs = 0;
 			sentries = [];
 			sentriesIndex = [];
-			membersQualityExt = [];
-			meanSentriesReachedBySentriesInSingleExtCert = 0;
+			countSentries = 0;
+			/*meanSentriesReachedBySentriesInSingleExtCert = 0;
 			meanMembersReachedBySentriesInSingleExtCert = 0;
 			meanSentriesReachedByMembersInSingleExtCert = 0;
-			meanMembersReachedByMembersInSingleExtCert = 0;
+			meanMembersReachedByMembersInSingleExtCert = 0;*/
 			proportionMembersWithQualityUpper1 = 0;
 			proportionMembersWithQualityUpper1IfNoSentries = 0;
+
+			// Appliquer le paramètre nextYn
+			if (nextYn=="yes") { dSen++; }
+
+			// réinitialiser le cache des données de qualité
+			membersQuality(constants.QUALITY_CACHE_ACTION.INIT, 0, dSen, conf.stepMax, conf.xpercent, wotbInstance.memCopy());
 			
 			// Réinitialiser le cache des données de centralité
 			if (centrality=='yes')
@@ -140,6 +162,19 @@ module.exports = (req, res, next) => co(function *() {
     
 			// Récupérer la liste des identités ayant actuellement le statut de membre
 			membersList = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`pub`,`member`,`written_on`,`wotb_id` FROM i_index WHERE `member`=1');
+
+			if (randomList == "yes") {
+				// Tirer au sort randomCounts membres
+				const maxLengthRandomMembers = Math.min(numberOfRandomMembers,membersList.length)
+				let randomMembers = []
+				while (randomMembers.length < maxLengthRandomMembers) {
+					const randomInt_ = randomInt(0, membersList.length)
+					if (randomMembers.indexOf(membersList[randomInt_].uid) == -1) {
+						randomMembers.push(membersList[randomInt_])
+					}
+				}
+				membersList = randomMembers
+			}
     
 			// Récupérer pour chaque identité, le numéro du block d'écriture du dernier membership
 			// Ainsi que la première ou dernière certification
@@ -184,51 +219,27 @@ module.exports = (req, res, next) => co(function *() {
 				let tmpWot = wotbInstance.memCopy();
 				
 				// Récupérer les informations détaillés de distance pour le membre courant
-				let detailedDistance = null;
-				if (constants.USE_WOTB6)
-				{
-					detailedDistance = tmpWot.detailedDistance(membersList[m].wotb_id, dSen, conf.stepMax, conf.xpercent);
-				}
-				else
-				{
-					detailedDistance = {
-						isOutdistanced: tmpWot.isOutdistanced(membersList[m].wotb_id, dSen, conf.stepMax, conf.xpercent)
-					};
-				}
+				let detailedDistance = tmpWot.detailedDistance(membersList[m].wotb_id, dSen, conf.stepMax, conf.xpercent);
 				
-				
-				if (constants.USE_WOTB6)
+				// Calculer le nombre de membres référents
+				if (currentMemberIsSentry)
 				{
-					// Calculate membersNbSentriesUnreached
-					membersNbSentriesUnreached[membersList[m].uid] =  parseInt(detailedDistance.nbSentries)-parseInt(detailedDistance.nbSuccess);
-					
-					// Récupérer les informations détaillés de distance pour une nouvelle identité qui ne serait certifiée que par le membre courant (ce qui équivaut à récupérer les informations de distance pour le membre courant en décrémentant stepMax de 1)
-					let detailedDistanceQualityExt = tmpWot.detailedDistance(membersList[m].wotb_id, dSen, conf.stepMax-1, conf.xpercent);
-					
-					// Calculer la qualité du membre courant
-					membersQualityExt[membersList[m].uid] = ((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)/conf.xpercent).toFixed(2);
-					if (membersQualityExt[membersList[m].uid] >= 1.0)
-					{
-						proportionMembersWithQualityUpper1++;
-					}
-					
-					// Calculer la qualité du membre courant s'il n'y avait pas de référents (autrement di si tout les membres était référents)
-					let membersQualityIfNoSentries = ((detailedDistanceQualityExt.nbReached/membersList.length)/conf.xpercent).toFixed(2);
-					//console.log("membersQualityIfNoSentries[%s] = %s", membersList[m].uid, membersQualityIfNoSentries);
-					if (membersQualityIfNoSentries >= 1.0)
-					{
-						proportionMembersWithQualityUpper1IfNoSentries++;
-					}
-					
-					// Calculate meanSentriesReachedBySentriesInSingleExtCert, meanMembersReachedBySentriesInSingleExtCert, meanSentriesReachedByMembersInSingleExtCert and meanMembersReachedByMembersInSingleExtCert
-					if (currentMemberIsSentry)
-					{
-						meanSentriesReachedBySentriesInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)*100).toFixed(2));
-						meanMembersReachedBySentriesInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbReached/membersList.length)*100).toFixed(2));
-						countSentries++;
-					}
-					meanSentriesReachedByMembersInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbSuccess/detailedDistanceQualityExt.nbSentries)*100).toFixed(2));
-					meanMembersReachedByMembersInSingleExtCert += parseFloat(((detailedDistanceQualityExt.nbReached/membersList.length)*100).toFixed(2));
+					countSentries++;
+				}
+
+				// Calculate membersNbSentriesUnreached
+				membersNbSentriesUnreached[membersList[m].uid] = parseInt(detailedDistance.nbSentries) - parseInt(detailedDistance.nbSuccess);
+
+				// Calculer la qualité du membre courant
+				if (membersQuality(constants.QUALITY_CACHE_ACTION.GET_QUALITY, membersList[m].wotb_id, (currentMemberIsSentry) ? 1 : 0) >= 1.0) {
+					proportionMembersWithQualityUpper1++;
+				}
+
+				// Calculer la qualité du membre courant s'il n'y avait pas de référents (autrement di si tout les membres était référents)
+				//let membersQualityIfNoSentries = ((detailedDistanceQualityExt.nbReached/membersList.length)/conf.xpercent).toFixed(2);
+				//console.log("membersQualityIfNoSentries[%s] = %s", membersList[m].uid, membersQualityIfNoSentries);
+				if (membersQuality(constants.QUALITY_CACHE_ACTION.GET_QUALITY, membersList[m].wotb_id, -1) >= 1.0) {
+					proportionMembersWithQualityUpper1IfNoSentries++;
 				}
 				
 				// Nettoyer la wot temporaire
@@ -470,14 +481,21 @@ module.exports = (req, res, next) => co(function *() {
 		{ 
 			for (const member of membersList)
 			{
-				tabSort.push(membersQualityExt[member.uid]);
+				tabSort.push(membersQuality(constants.QUALITY_CACHE_ACTION.GET_QUALITY, member.wotb_id));
 			}
 		}
     else if (sort_by == "sigCount")
     { 
       for (const memberCertifsList of membersCertifsList)
       {
-        tabSort.push(memberCertifsList.length);
+		if (memberCertifsList.length > 0)
+		{
+			tabSort.push(memberCertifsList.length+1);
+		}
+		else
+		{
+			tabSort.push(1);
+		}
       }
     }
     else { res.status(500).send(`<pre><p>ERREUR : param <i>sort_by</i> invalid !</p></pre>`) } //
@@ -529,24 +547,9 @@ module.exports = (req, res, next) => co(function *() {
     
     if (reinitCache)
 		{
-			if (constants.USE_WOTB6)
-			{
-				// Calculate mean Members/Sentries ReachedBy Members/Sentries InSingleExtCert
-				if (countSentries > 0)
-				{
-					meanSentriesReachedBySentriesInSingleExtCert = parseFloat((meanSentriesReachedBySentriesInSingleExtCert/countSentries).toFixed(2));
-					meanMembersReachedBySentriesInSingleExtCert = parseFloat((meanMembersReachedBySentriesInSingleExtCert/countSentries).toFixed(2));
-				}
-				if (membersList.length > 0)
-				{
-					meanSentriesReachedByMembersInSingleExtCert = parseFloat((meanSentriesReachedByMembersInSingleExtCert/membersList.length).toFixed(2));
-					meanMembersReachedByMembersInSingleExtCert = parseFloat((meanMembersReachedByMembersInSingleExtCert/membersList.length).toFixed(2));
-				}
-				
-				//Calculate proportionMembersWithQualityUpper1 and proportionMembersWithQualityUpper1IfNoSentries
-				proportionMembersWithQualityUpper1 /= membersList.length;
-				proportionMembersWithQualityUpper1IfNoSentries /= membersList.length;
-			}
+			//Calculate proportionMembersWithQualityUpper1 and proportionMembersWithQualityUpper1IfNoSentries
+			proportionMembersWithQualityUpper1 /= membersList.length;
+			proportionMembersWithQualityUpper1IfNoSentries /= membersList.length;
 			
 			// recalculate meanCentrality and meanShortestsPathLength
 			if (centrality=='yes')
@@ -572,21 +575,23 @@ module.exports = (req, res, next) => co(function *() {
     // Sinon, printer le tableau html
     else
     {
-      
+	  let meansMembersQuality = membersQuality(constants.QUALITY_CACHE_ACTION.GET_MEANS);
+
       res.locals = {
 				host: req.headers.host.toString(),
-				USE_WOTB6: constants.USE_WOTB6,
 				// get parameters
-        days, mode, sort_by, order,
-				pendingSigs, centrality,
+        		days, mode, sort_by, order,
+				pendingSigs, centrality, nextYn,
+				numberOfRandomMembers, randomList,
 				
 				// page data
-        currentBlockchainTimestamp,
+        		currentBlockchainTimestamp,
 				limitTimestamp, nbMaxCertifs,
 				membersListFiltered: membersListOrdered.filter( member=> 
-				member.expireMembershipTimestamp < limitTimestamp 
-				&& member.expireMembershipTimestamp > currentBlockchainTimestamp
+					member.expireMembershipTimestamp < limitTimestamp 
+					&& member.expireMembershipTimestamp > currentBlockchainTimestamp
 				),
+				countSentries,
 				// currency parameters
 				xpercent: conf.xpercent,
 				sigWindow: conf.sigWindow,
@@ -597,13 +602,10 @@ module.exports = (req, res, next) => co(function *() {
 				
 				// members cache data
 				membersLastUptime,
-				membersQualityExt,
-				meanSentriesReachedBySentriesInSingleExtCert,
-				meanMembersReachedBySentriesInSingleExtCert,
-				meanSentriesReachedByMembersInSingleExtCert,
-				meanMembersReachedByMembersInSingleExtCert,
+				membersQuality,
 				proportionMembersWithQualityUpper1,
 				proportionMembersWithQualityUpper1IfNoSentries,
+				meansMembersQuality,
 				
 				// centrality cache data
 				lockCentralityCalc,
