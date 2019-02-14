@@ -42,7 +42,7 @@ module.exports = {
       },
 
       cliOptions: [
-        //{ value: '--option-name <value_type>', desc: 'description for help command'}
+        { value: '--monitor', desc: 'Enable performance monitoring of DB access'}
       ],
 
       cli: [{
