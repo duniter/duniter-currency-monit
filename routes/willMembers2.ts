@@ -1,5 +1,6 @@
 import {Server} from 'duniter/server'
 import {DBMembership} from 'duniter/app/lib/dal/sqliteDAL/MembershipDAL'
+import {DBIdentity} from 'duniter/app/lib/dal/sqliteDAL/IdentityDAL'
 
 const constants = require(__dirname + '/../lib/constants')
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
@@ -24,10 +25,11 @@ module.exports = async (req: any, res: any, next: any) => {
   const locals: { duniterServer: Server } = req.app.locals
 
   const duniterServer = locals.duniterServer
-  
+  const dataFinder = new DataFinder(duniterServer)
+
   try {
     // get blockchain timestamp
-    let resultQueryCurrentBlock = await duniterServer.dal.peerDAL.query('SELECT `medianTime`,`number`,`hash`,`membersCount` FROM block ORDER BY `medianTime` DESC LIMIT 1 ');
+    let resultQueryCurrentBlock = await dataFinder.getCurrentBlockOrNull();
     const currentBlockchainTimestamp = resultQueryCurrentBlock[0].medianTime;
     const currentMembersCount = resultQueryCurrentBlock[0].membersCount;
     const currentBlockNumber = resultQueryCurrentBlock[0].number;
@@ -85,8 +87,8 @@ module.exports = async (req: any, res: any, next: any) => {
       sentries = wotbInstance.getSentries(dSen);
       
       // Récupérer la liste des identités en piscine
-      const resultQueryIdtys = await duniterServer.dal.peerDAL.query('SELECT `buid`,`pubkey`,`uid`,`hash`,`expires_on`,`revocation_sig` FROM identities_pending WHERE `member`=0');
-	
+      const resultQueryIdtys: DBIdentity[] = await dataFinder.findPendingMembers()
+
       // Récupérer pour chaque identité, l'ensemble des certifications qu'elle à reçue.
       for (let i=0;i<resultQueryIdtys.length;i++)
       {
@@ -95,12 +97,10 @@ module.exports = async (req: any, res: any, next: any) => {
 				let idtyBlockNumber = idtyBlockStamp[0];
 	
 				// récupérer le medianTime et le hash du bloc d'émission de l'identité
-				let idtyEmittedBlock = await duniterServer.dal.peerDAL.query('SELECT `medianTime`,`hash` FROM block WHERE `number`=\''+idtyBlockNumber+'\' AND fork=0 LIMIT 1');
-				
+				let idtyEmittedBlock = await dataFinder.getBlockMedianTimeAndHash(idtyBlockNumber);
+
 				// Récupérer l'identifiant wotex de l'identité (en cas d'identité multiple)
-				let idties = await duniterServer.dal.idtyDAL.query('' +
-					'SELECT hash, uid, pub, wotb_id FROM i_index WHERE uid = ? ' +
-					'UNION ALL ' + 'SELECT hash, uid, pubkey as pub, (SELECT NULL) AS wotb_id FROM idty WHERE uid = ?', [resultQueryIdtys[i].uid, resultQueryIdtys[i].uid]);
+				let idties = await dataFinder.getWotexInfos(resultQueryIdtys[i].uid);
 				let wotexId = '';
 				if (idties.length > 1)
 				{
@@ -126,13 +126,13 @@ module.exports = async (req: any, res: any, next: any) => {
 
 				// Stocker les informations de l'identité
 				identitiesList.push({
-						BlockNumber: idtyBlockNumber,
+						BlockNumber: parseInt(idtyBlockNumber),
 						creationTimestamp: (typeof(idtyEmittedBlock[0]) == 'undefined' ) ? currentBlockchainTimestamp:idtyEmittedBlock[0].medianTime,
 						pubkey: resultQueryIdtys[i].pubkey,
 						uid: resultQueryIdtys[i].uid,
 						hash: resultQueryIdtys[i].hash,
 						wotexId: wotexId,
-						expires_on: (resultQueryIdtys[i].expires_on=="") ? 0:resultQueryIdtys[i].expires_on,
+						expires_on: resultQueryIdtys[i].expires_on || 0,
 						nbCert: 0,
 						nbValidPendingCert: 0,
 						registrationAvailability: 0,
@@ -142,18 +142,17 @@ module.exports = async (req: any, res: any, next: any) => {
 				idtysPendingCertifsList.push([])
 	
 				// récupérer l'ensemble des certifications en attente destinées à l'identité courante
-				let tmpQueryPendingCertifsList = await duniterServer.dal.peerDAL.query(
-					'SELECT `from`,`block_number`,`block_hash`,`expires_on` FROM certifications_pending WHERE `to`=\''+resultQueryIdtys[i].pubkey+'\' AND `target`=\''+resultQueryIdtys[i].hash+'\' ORDER BY `expires_on` DESC');
+        let tmpQueryPendingCertifsList = await dataFinder.findPendingCertsToTarget(resultQueryIdtys[i].pubkey, resultQueryIdtys[i].hash);
 
 				// Récupérer les uid des émetteurs des certifications reçus par l'utilisateur
 				// Et stocker les uid et dates d'expiration dans un tableau
 				for (let j=0;j<tmpQueryPendingCertifsList.length;j++)
 				{
-					// Récupérer le medianTime et le hash du bloc d'émission de la certification 
-					let emittedBlock = await duniterServer.dal.peerDAL.query('SELECT `hash`,`medianTime` FROM block WHERE `number`=\''+tmpQueryPendingCertifsList[j].block_number+'\' AND `fork`=0 LIMIT 1');
-						
+					// Récupérer le medianTime et le hash du bloc d'émission de la certification
+					let emittedBlock = await dataFinder.getBlockMedianTimeAndHash2(tmpQueryPendingCertifsList[j].block_number)
+
 						// Vérifier que l'émetteur de la certification correspond à une identité inscrite en blockchain
-						let tmpQueryGetUidIssuerPendingCert = await duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `pub`=\''+tmpQueryPendingCertifsList[j].from+'\' LIMIT 1');
+						let tmpQueryGetUidIssuerPendingCert = await dataFinder.getUidByFrom(tmpQueryPendingCertifsList[j].from)
 						if ( tmpQueryGetUidIssuerPendingCert.length > 0 )
 						{
 							// Récupérer la pubkey de l'émetteur
@@ -163,7 +162,7 @@ module.exports = async (req: any, res: any, next: any) => {
 							let wotb_id = 0;
 							if (typeof(wotbIdIndex[issuerPubkey]) == 'undefined')
 							{
-								wotb_id = (await duniterServer.dal.iindexDAL.query('SELECT wotb_id FROM i_index WHERE pub = ? AND wotb_id IS NOT NULL', [issuerPubkey]))[0].wotb_id;
+								wotb_id = await dataFinder.getWotbIdByIssuerPubkey(issuerPubkey)
 								wotbIdIndex[issuerPubkey] = wotb_id;
 							}
 							else { wotb_id = wotbIdIndex[issuerPubkey]; }
@@ -191,12 +190,12 @@ module.exports = async (req: any, res: any, next: any) => {
 							{ validBlockStamp = true; }
 							
 							// récupérer le timestamp d'enchainement de la dernière certification écrite par l'émetteur
-							let tmpQueryLastIssuerCert = await duniterServer.dal.peerDAL.query('SELECT `chainable_on` FROM c_index WHERE `issuer`=\''+issuerPubkey+'\' ORDER BY `chainable_on` DESC LIMIT 1');
+							let tmpQueryLastIssuerCert = await dataFinder.getChainableOnByIssuerPubkey(issuerPubkey)
 							let certTimestampWritable = 0;
 							if ( typeof(tmpQueryLastIssuerCert[0]) != 'undefined' && typeof(tmpQueryLastIssuerCert[0].chainable_on) != 'undefined' )
 							{ certTimestampWritable = tmpQueryLastIssuerCert[0].chainable_on; }
 							//identitiesList[i].registrationAvailability = (certTimestampWritable > identitiesList[i].registrationAvailability) ? certTimestampWritable : identitiesList[i].registrationAvailability;
-							
+
 							// Vérifier que l'identité courant n'a pas déjà reçu d'autre(s) certification(s) de la part du même membre ET dans le même état de validité du blockstamp
 							let doubloonPendingCertif = false;
 							for (const pendingCert of idtysPendingCertifsList[i])
@@ -316,7 +315,7 @@ module.exports = async (req: any, res: any, next: any) => {
 					
 					// Trier les identités par date de disponibilité de leur dossier d'inscription (le signe moins est nécessaire car plus un dossier est disponible tôt
 					//  plus la valeur de registrationAvailabilityDelay sera petite, hors le nombre obtenu est classé de façon décroissante)
-					// Attribuer un malus de 2*sigValidity secondes par certification valide (plafonner à sigQty dans le cas de 'registrationPackage') 
+					// Attribuer un malus de 2*sigValidity secondes par certification valide (plafonner à sigQty dans le cas de 'registrationPackage')
 					if (sort_by == "registrationPackage" && idty.nbValidPendingCert > conf.sigQty)
 					{
 						tabSort.push(-registrationAvailabilityDelay + (2*conf.sigValidity*conf.sigQty));
@@ -561,4 +560,49 @@ interface WillMemberIdentity {
 
 interface WillMemberIdentityWithPendingCerts extends WillMemberIdentity {
   pendingCertifications: PendingCert[]
+}
+
+class DataFinder {
+
+  constructor(protected duniterServer: Server) {
+  }
+
+  findPendingMembers() {
+    return this.duniterServer.dal.peerDAL.query('SELECT `buid`,`pubkey`,`uid`,`hash`,`expires_on`,`revocation_sig` FROM identities_pending WHERE `member`=0')
+  }
+
+  findPendingCertsToTarget(toPubkey: string, hash: string) {
+    return this.duniterServer.dal.peerDAL.query(
+      'SELECT `from`,`block_number`,`block_hash`,`expires_on` FROM certifications_pending WHERE `to`=\''+toPubkey+'\' AND `target`=\''+hash+'\' ORDER BY `expires_on` DESC')
+  }
+
+  getBlockMedianTimeAndHash(idtyBlockNumber: string) {
+    return this.duniterServer.dal.peerDAL.query('SELECT `medianTime`,`hash` FROM block WHERE `number`=\''+idtyBlockNumber+'\' AND fork=0 LIMIT 1')
+  }
+
+  getWotexInfos(uid: string) {
+    return this.duniterServer.dal.idtyDAL.query('' +
+      'SELECT hash, uid, pub, wotb_id FROM i_index WHERE uid = ? ' +
+      'UNION ALL ' + 'SELECT hash, uid, pubkey as pub, (SELECT NULL) AS wotb_id FROM idty WHERE uid = ?', [uid, uid])
+  }
+
+  getBlockMedianTimeAndHash2(block_number: number) {
+    return this.duniterServer.dal.peerDAL.query('SELECT `hash`,`medianTime` FROM block WHERE `number`=\''+block_number+'\' AND `fork`=0 LIMIT 1')
+  }
+
+  getUidByFrom(from: string) {
+    return this.duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `pub`=\''+from+'\' LIMIT 1')
+  }
+
+  async getWotbIdByIssuerPubkey(issuerPubkey: string) {
+    return (await this.duniterServer.dal.iindexDAL.query('SELECT wotb_id FROM i_index WHERE pub = ? AND wotb_id IS NOT NULL', [issuerPubkey]))[0].wotb_id
+  }
+
+  getChainableOnByIssuerPubkey(issuerPubkey: string) {
+    return this.duniterServer.dal.peerDAL.query('SELECT `chainable_on` FROM c_index WHERE `issuer`=\''+issuerPubkey+'\' ORDER BY `chainable_on` DESC LIMIT 1')
+  }
+
+  getCurrentBlockOrNull() {
+    return this.duniterServer.dal.peerDAL.query('SELECT `medianTime`,`number`,`hash`,`membersCount` FROM block ORDER BY `medianTime` DESC LIMIT 1 ')
+  }
 }
