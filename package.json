@@ -3,6 +3,9 @@
   "version": "0.4.13",
   "main": "index.js",
   "license": "AGPLv3",
+  "scripts": {
+    "prepublish": "tsc"
+  },
   "dependencies": {
     "body-parser": "1.17.1",
     "co": "4.6.0",
@@ -16,7 +19,9 @@
     "request-promise": "4.2.0"
   },
   "devDependencies": {
-    "duniter": "^1.6.21"
+    "@types/node": "^11.9.3",
+    "duniter": "1.6.x",
+    "typescript": "^3.3.3"
   },
   "peerDependencies": {
     "duniter": "^1.6.21"

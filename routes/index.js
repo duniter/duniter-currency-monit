@@ -55,7 +55,7 @@ app.get('/about', // chemin (endpoint)
 * Lister les futurs membres
 ***************************************/
 app.get('/willMembers', // chemin (endpoint)
-  require(__dirname + '/willMembers.js'), // controleur (route)
+  require(__dirname + '/willMembers2.js'), // controleur (route)
   (req, res)=> res.render('willMembers.html', { // rendu (template)
     printMenu,
 	  help: req.query.help,
