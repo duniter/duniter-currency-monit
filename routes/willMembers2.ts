@@ -30,10 +30,9 @@ module.exports = async (req: any, res: any, next: any) => {
   try {
     // get blockchain timestamp
     let resultQueryCurrentBlock = await dataFinder.getCurrentBlockOrNull();
-    const currentBlockchainTimestamp = resultQueryCurrentBlock[0].medianTime;
-    const currentMembersCount = resultQueryCurrentBlock[0].membersCount;
-    const currentBlockNumber = resultQueryCurrentBlock[0].number;
-    const currentBlockHash = resultQueryCurrentBlock[0].hash;
+    const currentBlockchainTimestamp = resultQueryCurrentBlock.medianTime;
+    const currentMembersCount = resultQueryCurrentBlock.membersCount;
+    const currentBlockNumber = resultQueryCurrentBlock.number;
 
     // Initaliser les constantes
     const conf = duniterServer.conf;
@@ -42,8 +41,6 @@ module.exports = async (req: any, res: any, next: any) => {
     // Initaliser les variables
     let errors = "";
     let idtysListOrdered: WillMemberIdentityWithPendingCerts[]  = []
-    let sumPercentSentriesReached = 0;
-    let sumPercentMembersReached = 0;
 
     // Récupérer les paramètres
     let days = req.query.d || 65 // Valeur par défaut
@@ -73,6 +70,7 @@ module.exports = async (req: any, res: any, next: any) => {
     if (reinitCache)
     {
       // Réinitialiser le cache
+      dataFinder.invalidateCache()
       identitiesList = [];
       idtysPendingCertifsList = [];
       nbMaxCertifs = 0;
@@ -97,7 +95,7 @@ module.exports = async (req: any, res: any, next: any) => {
         let idtyBlockNumber = idtyBlockStamp[0];
 
         // récupérer le medianTime et le hash du bloc d'émission de l'identité
-        let idtyEmittedBlock = await dataFinder.getBlockMedianTimeAndHash(idtyBlockNumber);
+        let idtyEmittedBlock = await dataFinder.getBlockMedianTimeAndHash(parseInt(idtyBlockNumber));
 
         // Récupérer l'identifiant wotex de l'identité (en cas d'identité multiple)
         let idties = await dataFinder.getWotexInfos(resultQueryIdtys[i].uid);
@@ -114,7 +112,7 @@ module.exports = async (req: any, res: any, next: any) => {
 
         // vérifier la validité du blockstamp de l'identité
         let validIdtyBlockStamp = false;
-        if (typeof(idtyEmittedBlock[0]) == 'undefined' || idtyEmittedBlock[0].hash == idtyBlockStamp[1])
+        if (typeof(idtyEmittedBlock) == 'undefined' || idtyEmittedBlock.hash == idtyBlockStamp[1])
         { validIdtyBlockStamp = true; }
 
         // vérifier si l'identité a été révoquée ou non
@@ -127,7 +125,7 @@ module.exports = async (req: any, res: any, next: any) => {
         // Stocker les informations de l'identité
         identitiesList.push({
           BlockNumber: parseInt(idtyBlockNumber),
-          creationTimestamp: (typeof(idtyEmittedBlock[0]) == 'undefined' ) ? currentBlockchainTimestamp:idtyEmittedBlock[0].medianTime,
+          creationTimestamp: (typeof(idtyEmittedBlock) == 'undefined' ) ? currentBlockchainTimestamp:idtyEmittedBlock.medianTime,
           pubkey: resultQueryIdtys[i].pubkey,
           uid: resultQueryIdtys[i].uid,
           hash: resultQueryIdtys[i].hash,
@@ -149,11 +147,11 @@ module.exports = async (req: any, res: any, next: any) => {
         for (let j=0;j<tmpQueryPendingCertifsList.length;j++)
         {
           // Récupérer le medianTime et le hash du bloc d'émission de la certification
-          let emittedBlock = await dataFinder.getBlockMedianTimeAndHash2(tmpQueryPendingCertifsList[j].block_number)
+          let emittedBlock = await dataFinder.getBlockMedianTimeAndHash(tmpQueryPendingCertifsList[j].block_number)
 
           // Vérifier que l'émetteur de la certification correspond à une identité inscrite en blockchain
-          let tmpQueryGetUidIssuerPendingCert = await dataFinder.getUidByFrom(tmpQueryPendingCertifsList[j].from)
-          if ( tmpQueryGetUidIssuerPendingCert.length > 0 )
+          let tmpQueryGetUidIssuerPendingCert = await dataFinder.getUidOfPub(tmpQueryPendingCertifsList[j].from)
+          if (emittedBlock && tmpQueryGetUidIssuerPendingCert.length > 0)
           {
             // Récupérer la pubkey de l'émetteur
             let issuerPubkey = tmpQueryPendingCertifsList[j].from;
@@ -186,7 +184,7 @@ module.exports = async (req: any, res: any, next: any) => {
 
             // Vérifier si le blockstamp est correct
             var validBlockStamp = false;
-            if (typeof(emittedBlock[0]) != 'undefined' && emittedBlock[0].hash == tmpQueryPendingCertifsList[j].block_hash)
+            if (emittedBlock.hash == tmpQueryPendingCertifsList[j].block_hash)
             { validBlockStamp = true; }
 
             // récupérer le timestamp d'enchainement de la dernière certification écrite par l'émetteur
@@ -216,7 +214,7 @@ module.exports = async (req: any, res: any, next: any) => {
                   wotb_id: wotb_id,
                   issuerIsSentry: issuerIsSentry,
                   blockNumber: tmpQueryPendingCertifsList[j].block_number,
-                  creationTimestamp: emittedBlock[0].medianTime,
+                  creationTimestamp: emittedBlock.medianTime,
                   timestampExpire: tmpQueryPendingCertifsList[j].expires_on,
                   timestampWritable: certTimestampWritable,
                   validBlockStamp: validBlockStamp
@@ -564,20 +562,21 @@ interface WillMemberIdentityWithPendingCerts extends WillMemberIdentity {
 
 class DataFinder {
 
+  private memBlocks: { [k: number]: any } = {}
+  private memCertsToTarget: { [k: number]: any } = {}
+  private memUidFromPub: { [k: number]: any } = {}
+  private memWotbIdFromPub: { [k: number]: any } = {}
+
   constructor(protected duniterServer: Server) {
   }
 
   findPendingMembers() {
-    return this.duniterServer.dal.peerDAL.query('SELECT `buid`,`pubkey`,`uid`,`hash`,`expires_on`,`revocation_sig` FROM identities_pending WHERE `member`=0')
+    return this.query('SELECT `buid`,`pubkey`,`uid`,`hash`,`expires_on`,`revocation_sig` FROM identities_pending WHERE `member`=0')
   }
 
   findPendingCertsToTarget(toPubkey: string, hash: string) {
-    return this.duniterServer.dal.peerDAL.query(
-      'SELECT `from`,`block_number`,`block_hash`,`expires_on` FROM certifications_pending WHERE `to`=\''+toPubkey+'\' AND `target`=\''+hash+'\' ORDER BY `expires_on` DESC')
-  }
-
-  getBlockMedianTimeAndHash(idtyBlockNumber: string) {
-    return this.duniterServer.dal.peerDAL.query('SELECT `medianTime`,`hash` FROM block WHERE `number`=\''+idtyBlockNumber+'\' AND fork=0 LIMIT 1')
+    return DataFinder.getFromCacheOrDB(this.memCertsToTarget, [toPubkey, hash].join('-'), () => this.query(
+      'SELECT `from`,`block_number`,`block_hash`,`expires_on` FROM certifications_pending WHERE `to`=\''+toPubkey+'\' AND `target`=\''+hash+'\' ORDER BY `expires_on` DESC'))
   }
 
   getWotexInfos(uid: string) {
@@ -586,23 +585,41 @@ class DataFinder {
       'UNION ALL ' + 'SELECT hash, uid, pubkey as pub, (SELECT NULL) AS wotb_id FROM idty WHERE uid = ?', [uid, uid])
   }
 
-  getBlockMedianTimeAndHash2(block_number: number) {
-    return this.duniterServer.dal.peerDAL.query('SELECT `hash`,`medianTime` FROM block WHERE `number`=\''+block_number+'\' AND `fork`=0 LIMIT 1')
+  async getBlockMedianTimeAndHash(block_number: number): Promise<{ hash: string, medianTime: number }|undefined> {
+    return (await DataFinder.getFromCacheOrDB(this.memBlocks, String(block_number),() => this.duniterServer.dal.getBlock(block_number))) || undefined
   }
 
-  getUidByFrom(from: string) {
-    return this.duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `pub`=\''+from+'\' LIMIT 1')
+  getUidOfPub(pub: string): Promise<{ uid: string }[]> {
+    return DataFinder.getFromCacheOrDB(this.memUidFromPub, pub, () => this.query('SELECT `uid` FROM i_index WHERE `pub`=\''+pub+'\' LIMIT 1'))
   }
 
   async getWotbIdByIssuerPubkey(issuerPubkey: string) {
-    return (await this.duniterServer.dal.iindexDAL.query('SELECT wotb_id FROM i_index WHERE pub = ? AND wotb_id IS NOT NULL', [issuerPubkey]))[0].wotb_id
+    return DataFinder.getFromCacheOrDB(this.memWotbIdFromPub, issuerPubkey, async () => (await this.duniterServer.dal.iindexDAL.query('SELECT wotb_id FROM i_index WHERE pub = ? AND wotb_id IS NOT NULL', [issuerPubkey]))[0].wotb_id)
   }
 
   getChainableOnByIssuerPubkey(issuerPubkey: string) {
-    return this.duniterServer.dal.peerDAL.query('SELECT `chainable_on` FROM c_index WHERE `issuer`=\''+issuerPubkey+'\' ORDER BY `chainable_on` DESC LIMIT 1')
+    return this.query('SELECT `chainable_on` FROM c_index WHERE `issuer`=\''+issuerPubkey+'\' ORDER BY `chainable_on` DESC LIMIT 1')
   }
 
   getCurrentBlockOrNull() {
-    return this.duniterServer.dal.peerDAL.query('SELECT `medianTime`,`number`,`hash`,`membersCount` FROM block ORDER BY `medianTime` DESC LIMIT 1 ')
+    return this.duniterServer.dal.getCurrentBlockOrNull()
+  }
+
+  query(sql: string, params?: any[]) {
+    return this.duniterServer.dal.peerDAL.query(sql, params || [])
+  }
+
+  static async getFromCacheOrDB<T>(cache: { [k: string]: any }, key: string, fetcher: () => Promise<T>) {
+    if (cache[key]) {
+      return cache[key]
+    }
+    return cache[key] = await fetcher()
+  }
+
+  invalidateCache() {
+    this.memBlocks = {}
+    this.memCertsToTarget = {}
+    this.memUidFromPub = {}
+    this.memWotbIdFromPub = {}
   }
 }
