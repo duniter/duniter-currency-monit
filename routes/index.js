@@ -68,7 +68,7 @@ app.get('/willMembers', // chemin (endpoint)
 * Lister les membres
 ***************************************/
 app.get('/members',
-  require(__dirname + '/members.js'),
+  require(__dirname + '/members2.js'),
   (req, res)=> res.render('members.html', {
     printMenu,
 		help: req.query.help,

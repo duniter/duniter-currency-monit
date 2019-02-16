@@ -1,9 +1,6 @@
-"use strict";
-
-const co = require('co')
+import {DataFinder} from '../lib/DataFinder'
 
 const constants = require(__dirname + '/../lib/constants')
-
 const randomInt = require(__dirname + '/../lib/randomInt')
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 const membersQuality = require(__dirname + '/tools/membersQuality')
@@ -11,22 +8,22 @@ const membersQuality = require(__dirname + '/tools/membersQuality')
 // Préserver les résultats en cache
 var lockMembers = false;
 var membersLastUptime = 0;
-var previousMode = null;
-var previousCentrality = null;
+var previousMode: any = null;
+var previousCentrality: any = null;
 var previousNextYn = "no";
 var previousRandomList = "no"
 var previousRandomCounts = 10
-var membersList = [];
-var membersIdentity = [];
-var membersFirstCertifExpire = [];
-var membersCertifsList = [];
-var membersPendingCertifsList = [];
-var membershipsTimeList = [];
-var membershipsBlockNumberList = [];
-var membershipsExpireTimeList = [];
+var membersList: any[] = [];
+var membersIdentity: any[] = [];
+var membersFirstCertifExpire: any[] = [];
+var membersCertifsList: any[] = [];
+var membersPendingCertifsList: any[] = [];
+var membershipsTimeList: { medianTime: number }[] = [];
+var membershipsBlockNumberList: any[] = [];
+var membershipsExpireTimeList: any[] = [];
 var nbMaxCertifs = 0;
 var sentries = [];
-var sentriesIndex = [];
+var sentriesIndex: { [k: string]: boolean } = {};
 var countSentries = 0;
 /*var meanSentriesReachedBySentriesInSingleExtCert = 0;
 var meanMembersReachedBySentriesInSingleExtCert = 0;
@@ -38,20 +35,22 @@ var proportionMembersWithQualityUpper1IfNoSentries = 0;
 // wotCentrality cache
 var lockCentralityCalc = false;
 var membersLastCentralityCalcTime = 0;
-var membersCentrality = [];
+var membersCentrality: any[] = [];
 var meanCentrality = 0;
 var meanShortestsPathLength = 0;
 var nbShortestsPath = 0;
 
 
-module.exports = (req, res, next) => co(function *() {
+module.exports = async (req: any, res: any, next: any) => {
   
   var { duniterServer  } = req.app.locals
+
+  const dataFinder = new DataFinder(duniterServer)
   
   try {
     // Initaliser les constantes
     const conf = duniterServer.conf;
-    const head = yield duniterServer.dal.getCurrentBlockOrNull();
+    const head = await duniterServer.dal.getCurrentBlockOrNull();
     const currentBlockchainTimestamp =  head ? head.medianTime : 0;
     const membersCount = head ? head.membersCount : 0;
     var dSen = Math.ceil(Math.pow(membersCount, 1 / conf.stepMax));
@@ -70,9 +69,9 @@ module.exports = (req, res, next) => co(function *() {
 	var pendingSigs = req.query.pendingSigs || "no"; // Valeur par défaut
 	var centrality = req.query.centrality || "no"; // Valeur par défaut
 	var format = req.query.format || 'HTML'; // Valeur par défaut
-	const nextYn = (req.query.nextYn=="yes") ? "yes":"no";
-	const randomList = (req.query.randomList=="yes") ? "yes":"no";
-	const numberOfRandomMembers = req.query.randomCounts || 10
+	let nextYn = (req.query.nextYn=="yes") ? "yes":"no";
+	let randomList = (req.query.randomList=="yes") ? "yes":"no";
+	let numberOfRandomMembers = req.query.randomCounts || 10
 
 	// Vérifier la valeur de nextYn dans le cache
 	let lastUpgradeTimeDatas = membersQuality(constants.QUALITY_CACHE_ACTION.INIT);
@@ -116,6 +115,7 @@ module.exports = (req, res, next) => co(function *() {
 		if (reinitCache)
 		{
 			// Réinitialiser le cache
+      dataFinder.invalidateCache()
 			membersLastUptime = Math.floor(Date.now() / 1000);
 			previousMode = mode;
 			previousCentrality = centrality;
@@ -132,7 +132,7 @@ module.exports = (req, res, next) => co(function *() {
 			membershipsExpireTimeList = [];
 			nbMaxCertifs = 0;
 			sentries = [];
-			sentriesIndex = [];
+			sentriesIndex = {};
 			countSentries = 0;
 			/*meanSentriesReachedBySentriesInSingleExtCert = 0;
 			meanMembersReachedBySentriesInSingleExtCert = 0;
@@ -161,7 +161,7 @@ module.exports = (req, res, next) => co(function *() {
 			sentries = wotbInstance.getSentries(dSen);
     
 			// Récupérer la liste des identités ayant actuellement le statut de membre
-			membersList = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`pub`,`member`,`written_on`,`wotb_id` FROM i_index WHERE `member`=1');
+			membersList = await dataFinder.getMembers()
 
 			if (randomList == "yes") {
 				// Tirer au sort randomCounts membres
@@ -181,8 +181,7 @@ module.exports = (req, res, next) => co(function *() {
 			for (let m=0;m<membersList.length;m++)
 			{
 				// Récupérer les blockstamp d'écriture et date d'expiration du membership courant du membre m
-				let tmpQueryResult = yield duniterServer.dal.peerDAL.query(
-						'SELECT `written_on`,`expires_on` FROM m_index WHERE `pub`=\''+membersList[m].pub+'\' ORDER BY `expires_on` DESC LIMIT 1');
+				let tmpQueryResult = await dataFinder.membershipWrittenOnExpiresOn(membersList[m].pub);
 					membershipsExpireTimeList.push(tmpQueryResult[0].expires_on);
 					
 				// Extraire le numéro de bloc du blockstamp d'écriture du membership courant
@@ -193,8 +192,7 @@ module.exports = (req, res, next) => co(function *() {
 				let blockstampIdtyWritten = membersList[m].written_on.split("-"); // Separate blockNumber and blockHash
 				
 				// Récupérer le champ medianTime du bloc d'écriture de l'identité du membre
-				let resultQueryTimeWrittenIdty = yield duniterServer.dal.peerDAL.query(
-						'SELECT `medianTime` FROM block WHERE `number`=\''+blockstampIdtyWritten[0]+'\' LIMIT 1')
+				let resultQueryTimeWrittenIdty = await dataFinder.getBlockMedianTimeAndHash(blockstampIdtyWritten[0])
 				
 				// Vérifier si le membre est référent
 				let currentMemberIsSentry = false;
@@ -248,7 +246,7 @@ module.exports = (req, res, next) => co(function *() {
 				// Stocker les informations de l'identité
 				membersIdentity.push({
 					writtenBloc: blockstampIdtyWritten[0],
-					writtenTimestamp: resultQueryTimeWrittenIdty[0].medianTime,
+					writtenTimestamp: (resultQueryTimeWrittenIdty as any).medianTime,
 					detailedDistance: detailedDistance,
 					isSentry: currentMemberIsSentry
 				});
@@ -258,13 +256,11 @@ module.exports = (req, res, next) => co(function *() {
 				let tmpOrder = (sort_by == "lastSig") ? 'DESC' : 'ASC';
 				if (mode == 'emitted')
 				{
-					tmpQueryCertifsList = yield duniterServer.dal.peerDAL.query(
-						'SELECT `receiver`,`written_on`,`expires_on` FROM c_index WHERE `issuer`=\''+membersList[m].pub+'\' ORDER BY `expires_on` '+tmpOrder);
+					tmpQueryCertifsList = await dataFinder.findCertsOfIssuer(membersList[m].pub, tmpOrder)
 				}
 				else
 				{
-					tmpQueryCertifsList = yield duniterServer.dal.peerDAL.query(
-						'SELECT `issuer`,`written_on`,`expires_on` FROM c_index WHERE `receiver`=\''+membersList[m].pub+'\' ORDER BY `expires_on` '+tmpOrder);
+					tmpQueryCertifsList = await dataFinder.findCertsOfReceiver(membersList[m].pub, tmpOrder)
 				}
 
 				// Calculer le nombre de certifications reçus/émises par le membre courant
@@ -278,11 +274,11 @@ module.exports = (req, res, next) => co(function *() {
 					let tmpQueryGetUidProtagonistCert
 					if (mode == 'emitted')
 					{
-						tmpQueryGetUidProtagonistCert = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`wotb_id` FROM i_index WHERE `pub`=\''+tmpQueryCertifsList[i].receiver+'\' LIMIT 1');
+						tmpQueryGetUidProtagonistCert = await dataFinder.getProtagonist(tmpQueryCertifsList[i].receiver)
 					}
 					else
 					{
-						tmpQueryGetUidProtagonistCert = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`wotb_id` FROM i_index WHERE `pub`=\''+tmpQueryCertifsList[i].issuer+'\' LIMIT 1');
+						tmpQueryGetUidProtagonistCert = await dataFinder.getProtagonist(tmpQueryCertifsList[i].issuer)
 					}
 					let tmpBlockWrittenOn = tmpQueryCertifsList[i].written_on.split("-");
 					
@@ -308,13 +304,11 @@ module.exports = (req, res, next) => co(function *() {
 					let tmpQueryPendingCertifsList = [];
 					if (mode == 'emitted')
 					{
-						tmpQueryPendingCertifsList = yield duniterServer.dal.peerDAL.query(
-							'SELECT `from`,`to`,`block_number`,`expires_on` FROM certifications_pending WHERE `from`=\''+membersList[m].pub+'\' ORDER BY `expires_on` '+tmpOrder);
+						tmpQueryPendingCertifsList = await dataFinder.getCertsPending(membersList[m].pub, tmpOrder)
 					}
 					else
 					{
-						tmpQueryPendingCertifsList = yield duniterServer.dal.peerDAL.query(
-							'SELECT `from`,`block_number`,`block_hash`,`expires_on` FROM certifications_pending WHERE `to`=\''+membersList[m].pub+'\' ORDER BY `expires_on` '+tmpOrder);
+						tmpQueryPendingCertifsList = await dataFinder.getCertsPendingFromTo(membersList[m].pub, tmpOrder)
 					}
 					
 					// Récupérer les uid des émetteurs des certifications reçus par l'utilisateur
@@ -323,17 +317,17 @@ module.exports = (req, res, next) => co(function *() {
 					for (var i=0;i<tmpQueryPendingCertifsList.length;i++)
 					{
 						// Récupérer le medianTime et le hash du bloc d'émission de la certification 
-						let emittedBlock = yield duniterServer.dal.peerDAL.query('SELECT `hash`,`medianTime` FROM block WHERE `number`=\''+tmpQueryPendingCertifsList[i].block_number+'\' AND `fork`=0 LIMIT 1');
+						let emittedBlock = await dataFinder.getBlockMedianTimeAndHash(tmpQueryPendingCertifsList[i].block_number)
 						
 						let tmpPub = (mode=='emitted') ? tmpQueryPendingCertifsList[i].to:tmpQueryPendingCertifsList[i].from;
-						let tmpQueryGetUidProtagonistPendingCert = yield duniterServer.dal.peerDAL.query('SELECT `uid` FROM i_index WHERE `pub`=\''+tmpPub+'\' LIMIT 1');
+						let tmpQueryGetUidProtagonistPendingCert = await dataFinder.getUidOfPub(tmpPub)
 						
 						// Vérifier que l'émetteur de la certification correspond à une identié connue
 						if ( tmpQueryGetUidProtagonistPendingCert.length > 0 )
 						{
 							// Vérifier la validité du blockStamp de la certification en piscine
 							let validBlockStamp = false;
-							if (typeof(emittedBlock[0]) != 'undefined' && emittedBlock[0].hash == tmpQueryPendingCertifsList[i].block_hash)
+							if (typeof(emittedBlock) != 'undefined' && emittedBlock.hash == tmpQueryPendingCertifsList[i].block_hash)
 							{ validBlockStamp = true; }
 							
 							// Vérifier que le membre courant n'a pas déjà émis/reçu d'autre(s) certification(s) vis à vis du même protagoniste ET dans le même état de validité du blockstamp
@@ -348,7 +342,7 @@ module.exports = (req, res, next) => co(function *() {
 							if (!doubloonPendingCertif)
 							{
 								// récupérer le timestamp d'écriture de la dernière certification écrite par l'émetteur
-								let tmpQueryLastIssuerCert = yield duniterServer.dal.peerDAL.query('SELECT `chainable_on` FROM c_index WHERE `issuer`=\''+tmpQueryPendingCertifsList[i].from+'\' ORDER BY `expires_on` DESC LIMIT 1');
+								let tmpQueryLastIssuerCert = await dataFinder.getChainableOnByIssuerPubkeyByExpOn(tmpQueryPendingCertifsList[i].from)
 									
 								// Stoker la liste des certifications en piscine qui n'ont pas encore expirées
 								if (tmpQueryPendingCertifsList[i].expires_on > currentBlockchainTimestamp)
@@ -376,8 +370,7 @@ module.exports = (req, res, next) => co(function *() {
 			// Convertir chaque blockNumber (de membership) en timestamp
 			for (const membershipBlockNumber of membershipsBlockNumberList)
 			{
-				membershipsTimeList.push(yield duniterServer.dal.peerDAL.query(
-					'SELECT `medianTime` FROM block WHERE `number`=\''+membershipBlockNumber+'\' LIMIT 1') );
+				membershipsTimeList.push(await dataFinder.getBlockMedianTimeAndHash(membershipBlockNumber) as { medianTime: number })
 			}
     
 			// Traiter les cas ou expires_on est indéfini
@@ -385,7 +378,7 @@ module.exports = (req, res, next) => co(function *() {
 			{
 				if (membershipsExpireTimeList[i] == null)
 				{
-					membershipsExpireTimeList[i] = membershipsTimeList[i] + msValidity;
+					// membershipsExpireTimeList[i] = membershipsTimeList[i] + msValidity; ## msValidity is unknown var?
 				}
 			}
 			
@@ -456,7 +449,7 @@ module.exports = (req, res, next) => co(function *() {
     else if (sort_by == "lastRenewal")
     { 
       for (const membershipTimeList of membershipsTimeList)
-      { tabSort.push(membershipTimeList[0].medianTime); }
+      { tabSort.push(membershipTimeList.medianTime); }
     }
     else if (sort_by == "oldestSig" || sort_by == "lastSig")
     { 
@@ -524,7 +517,7 @@ module.exports = (req, res, next) => co(function *() {
           pub: membersList[idMaxTime].pub,
           idtyWrittenTimestamp: membersIdentity[idMaxTime].writtenTimestamp,
           idtyWrittenBloc: membersIdentity[idMaxTime].writtenBloc,
-          lastRenewalTimestamp: membershipsTimeList[idMaxTime][0].medianTime,
+          lastRenewalTimestamp: membershipsTimeList[idMaxTime].medianTime,
           lastRenewalWrittenBloc: membershipsBlockNumberList[idMaxTime],
           expireMembershipTimestamp: membershipsExpireTimeList[idMaxTime],
           certifications: membersCertifsList[idMaxTime],
@@ -624,11 +617,11 @@ module.exports = (req, res, next) => co(function *() {
         // Template helpers
         timestampToDatetime,
 				// Calculer la proportion de temps restant avant l'expiration
-				color: function( timestamp, idtyWindow, max )
+				color: function( timestamp: number, idtyWindow: number, max: number )
 				{
 					let proportion = ((timestamp-currentBlockchainTimestamp)*max)/idtyWindow;
 					proportion = proportion < 0 ? 0 : proportion > max ? max : proportion 
-					let hex = parseInt( proportion ).toString(16)
+					let hex = proportion.toString(16)
 					return `#${hex}${hex}${hex}`
 				},
         /**
@@ -636,7 +629,7 @@ module.exports = (req, res, next) => co(function *() {
          * background: hsl( 0, 0%, ${proportion(item.time,period,0,200)}, 1 )
          * background: #${proportion()}${proportion()}${proportion()}
          */
-        proportion: function( timestamp, maxRange, min, max )
+        proportion: function( timestamp: number, maxRange: number, min: number, max: number )
         {
           let proportion = ( (timestamp-currentBlockchainTimestamp) * max ) / maxRange
           proportion = proportion < 0 ? 0 : proportion > max ? max : proportion 
@@ -667,4 +660,4 @@ module.exports = (req, res, next) => co(function *() {
     res.status(500).send(`<pre>${e.stack || e.message}</pre>`)
   }
   
-})
+}

@@ -1,7 +1,8 @@
 import {Server} from 'duniter/server'
 import {DBMembership} from 'duniter/app/lib/dal/sqliteDAL/MembershipDAL'
 import {DBIdentity} from 'duniter/app/lib/dal/sqliteDAL/IdentityDAL'
-import {MonitorExecutionTime, showExecutionTimes} from '../lib/MonitorExecutionTime'
+import {showExecutionTimes} from '../lib/MonitorExecutionTime'
+import {DataFinder} from '../lib/DataFinder'
 
 const constants = require(__dirname + '/../lib/constants')
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
@@ -561,76 +562,4 @@ interface WillMemberIdentity {
 
 interface WillMemberIdentityWithPendingCerts extends WillMemberIdentity {
   pendingCertifications: PendingCert[]
-}
-
-class DataFinder {
-
-  private memBlocks: { [k: number]: any } = {}
-  private memCertsToTarget: { [k: number]: any } = {}
-  private memUidFromPub: { [k: number]: any } = {}
-  private memWotbIdFromPub: { [k: number]: any } = {}
-
-  constructor(protected duniterServer: Server) {
-  }
-
-  @MonitorExecutionTime()
-  findPendingMembers() {
-    return this.query('SELECT `buid`,`pubkey`,`uid`,`hash`,`expires_on`,`revocation_sig` FROM identities_pending WHERE `member`=0')
-  }
-
-  @MonitorExecutionTime()
-  findPendingCertsToTarget(toPubkey: string, hash: string) {
-    return DataFinder.getFromCacheOrDB(this.memCertsToTarget, [toPubkey, hash].join('-'), () => this.query(
-      'SELECT `from`,`block_number`,`block_hash`,`expires_on` FROM certifications_pending WHERE `to`=\''+toPubkey+'\' AND `target`=\''+hash+'\' ORDER BY `expires_on` DESC'))
-  }
-
-  @MonitorExecutionTime()
-  getWotexInfos(uid: string) {
-    return this.duniterServer.dal.idtyDAL.query('' +
-      'SELECT hash, uid, pub, wotb_id FROM i_index WHERE uid = ? ' +
-      'UNION ALL ' + 'SELECT hash, uid, pubkey as pub, (SELECT NULL) AS wotb_id FROM idty WHERE uid = ?', [uid, uid])
-  }
-
-  @MonitorExecutionTime()
-  async getBlockMedianTimeAndHash(block_number: number): Promise<{ hash: string, medianTime: number }|undefined> {
-    return (await DataFinder.getFromCacheOrDB(this.memBlocks, String(block_number),() => this.duniterServer.dal.getBlock(block_number))) || undefined
-  }
-
-  @MonitorExecutionTime()
-  getUidOfPub(pub: string): Promise<{ uid: string }[]> {
-    return DataFinder.getFromCacheOrDB(this.memUidFromPub, pub, () => this.query('SELECT `uid` FROM i_index WHERE `pub`=\''+pub+'\' LIMIT 1'))
-  }
-
-  @MonitorExecutionTime()
-  async getWotbIdByIssuerPubkey(issuerPubkey: string) {
-    return DataFinder.getFromCacheOrDB(this.memWotbIdFromPub, issuerPubkey, async () => (await this.duniterServer.dal.iindexDAL.query('SELECT wotb_id FROM i_index WHERE pub = ? AND wotb_id IS NOT NULL', [issuerPubkey]))[0].wotb_id)
-  }
-
-  @MonitorExecutionTime()
-  getChainableOnByIssuerPubkey(issuerPubkey: string) {
-    return this.query('SELECT `chainable_on` FROM c_index WHERE `issuer`=\''+issuerPubkey+'\' ORDER BY `chainable_on` DESC LIMIT 1')
-  }
-
-  @MonitorExecutionTime()
-  getCurrentBlockOrNull() {
-    return this.duniterServer.dal.getCurrentBlockOrNull()
-  }
-
-  query(sql: string, params?: any[]) {
-    return this.duniterServer.dal.peerDAL.query(sql, params || [])
-  }
-
-  static async getFromCacheOrDB<T>(cache: { [k: string]: any }, key: string, fetcher: () => Promise<T>) {
-    if (cache[key]) {
-      return cache[key]
-    }
-    return cache[key] = await fetcher()
-  }
-
-  invalidateCache() {
-    this.memBlocks = {}
-    this.memCertsToTarget = {}
-    this.memUidFromPub = {}
-    this.memWotbIdFromPub = {}
-  }
 }

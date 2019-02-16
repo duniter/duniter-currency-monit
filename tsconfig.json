@@ -12,7 +12,8 @@
     "experimentalDecorators": true
   },
   "include": [
-    "routes"
+    "routes",
+    "lib"
   ],
   "compileOnSave": true
 }
