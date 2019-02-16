@@ -192,7 +192,7 @@ module.exports = async (req: any, res: any, next: any) => {
 				let blockstampIdtyWritten = membersList[m].written_on.split("-"); // Separate blockNumber and blockHash
 				
 				// Récupérer le champ medianTime du bloc d'écriture de l'identité du membre
-				let resultQueryTimeWrittenIdty = await dataFinder.getBlockMedianTimeAndHash(blockstampIdtyWritten[0])
+				let resultQueryTimeWrittenIdty = await dataFinder.getBlock(blockstampIdtyWritten[0])
 				
 				// Vérifier si le membre est référent
 				let currentMemberIsSentry = false;
@@ -317,7 +317,7 @@ module.exports = async (req: any, res: any, next: any) => {
 					for (var i=0;i<tmpQueryPendingCertifsList.length;i++)
 					{
 						// Récupérer le medianTime et le hash du bloc d'émission de la certification 
-						let emittedBlock = await dataFinder.getBlockMedianTimeAndHash(tmpQueryPendingCertifsList[i].block_number)
+						let emittedBlock = await dataFinder.getBlock(tmpQueryPendingCertifsList[i].block_number)
 						
 						let tmpPub = (mode=='emitted') ? tmpQueryPendingCertifsList[i].to:tmpQueryPendingCertifsList[i].from;
 						let tmpQueryGetUidProtagonistPendingCert = await dataFinder.getUidOfPub(tmpPub)
@@ -370,7 +370,7 @@ module.exports = async (req: any, res: any, next: any) => {
 			// Convertir chaque blockNumber (de membership) en timestamp
 			for (const membershipBlockNumber of membershipsBlockNumberList)
 			{
-				membershipsTimeList.push(await dataFinder.getBlockMedianTimeAndHash(membershipBlockNumber) as { medianTime: number })
+				membershipsTimeList.push(await dataFinder.getBlock(membershipBlockNumber) as { medianTime: number })
 			}
     
 			// Traiter les cas ou expires_on est indéfini

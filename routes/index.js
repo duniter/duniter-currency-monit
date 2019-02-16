@@ -135,7 +135,7 @@ app.get('/gaussianWotQuality',
 * Lister les block en graphe
 ***************************************/
 app.get('/blockCount', 
-  require(__dirname + '/blockCount.js'),
+  require(__dirname + '/blockCount2.js'),
   (req, res)=> res.render('Chart.html', {
     printMenu,
     pageName: 'BLOCK_COUNT',

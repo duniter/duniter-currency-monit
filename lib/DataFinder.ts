@@ -1,4 +1,5 @@
 import {Server} from 'duniter/server'
+import {DBBlock} from 'duniter/app/lib/db/DBBlock'
 
 export class DataFinder {
 
@@ -26,8 +27,8 @@ export class DataFinder {
       'UNION ALL ' + 'SELECT hash, uid, pubkey as pub, (SELECT NULL) AS wotb_id FROM idty WHERE uid = ?', [uid, uid])
   }
 
-  async getBlockMedianTimeAndHash(block_number: number): Promise<{ hash: string, medianTime: number }|undefined> {
-    return (await this.getFromCacheOrDB('getBlockMedianTimeAndHash', String(block_number),() => this.duniterServer.dal.getBlock(block_number))) || undefined
+  async getBlock(block_number: number): Promise<DBBlock|undefined> {
+    return (await this.getFromCacheOrDB('getBlock', String(block_number),() => this.duniterServer.dal.getBlock(block_number))) || undefined
   }
 
   getUidOfPub(pub: string): Promise<{ uid: string }[]> {
@@ -97,5 +98,15 @@ export class DataFinder {
 
   invalidateCache() {
     this.memCache = {}
+  }
+
+  getBlockWhereMedianTimeGt(previousBlockchainTime: number) {
+    return this.getFromCacheOrDB('getBlockWhereMedianTimeGt', String(previousBlockchainTime),
+      () => this.query('SELECT `issuer`,`membersCount`,`medianTime`,`dividend`,`number`,`nonce` FROM block WHERE `fork`=0 AND `medianTime` > '+previousBlockchainTime+' ORDER BY `medianTime` ASC'))
+  }
+
+  getBlockWhereMedianTimeLteAnd(medianTime: number, previousBlockchainTime: number) {
+    return this.getFromCacheOrDB('getBlockWhereMedianTimeLteAnd', [medianTime, previousBlockchainTime].join('-'),
+      () => this.query('SELECT `issuer`,`membersCount`,`medianTime`,`dividend`,`number`,`nonce` FROM block WHERE `fork`=0 AND `medianTime` <= '+medianTime+' AND `medianTime` > '+previousBlockchainTime+' ORDER BY `medianTime` ASC'))
   }
 }

@@ -97,7 +97,7 @@ module.exports = async (req: any, res: any, next: any) => {
         let idtyBlockNumber = idtyBlockStamp[0];
 
         // récupérer le medianTime et le hash du bloc d'émission de l'identité
-        let idtyEmittedBlock = await dataFinder.getBlockMedianTimeAndHash(parseInt(idtyBlockNumber));
+        let idtyEmittedBlock = await dataFinder.getBlock(parseInt(idtyBlockNumber));
 
         // Récupérer l'identifiant wotex de l'identité (en cas d'identité multiple)
         let idties = await dataFinder.getWotexInfos(resultQueryIdtys[i].uid);
@@ -149,7 +149,7 @@ module.exports = async (req: any, res: any, next: any) => {
         for (let j=0;j<tmpQueryPendingCertifsList.length;j++)
         {
           // Récupérer le medianTime et le hash du bloc d'émission de la certification
-          let emittedBlock = await dataFinder.getBlockMedianTimeAndHash(tmpQueryPendingCertifsList[j].block_number)
+          let emittedBlock = await dataFinder.getBlock(tmpQueryPendingCertifsList[j].block_number)
 
           // Vérifier que l'émetteur de la certification correspond à une identité inscrite en blockchain
           let tmpQueryGetUidIssuerPendingCert = await dataFinder.getUidOfPub(tmpQueryPendingCertifsList[j].from)
