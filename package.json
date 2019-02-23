@@ -16,7 +16,8 @@
     "node-pre-gyp": "0.6.34",
     "q": "1.5.0",
     "request": "^2.81.0",
-    "request-promise": "4.2.0"
+    "request-promise": "4.2.0",
+    "underscore": "^1.9.1"
   },
   "devDependencies": {
     "@types/node": "^11.9.3",
