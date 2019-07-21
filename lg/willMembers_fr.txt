@@ -46,7 +46,7 @@ NO non
 QUALITY_CERTIFIERS qualité dossier
 DISTANCE Distance
 CERTS certifications
-QUALITY qualité
+QUALITY qualité membre
 SIG_PERIOD_OK disponible
 IDTY_REVOKED [identité revoquée]
 INVALID_BLOCKSTAMP blockstamp incorrect
