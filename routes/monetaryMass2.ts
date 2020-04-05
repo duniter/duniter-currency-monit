@@ -1,11 +1,9 @@
-"use strict";
-
 import {DataFinder} from "../lib/DataFinder";
+import {MonitConstants} from "../lib/constants2";
 
 const co = require('co')
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 const getLang = require(__dirname + '/../lib/getLang')
-const constants = require(__dirname + '/../lib/constants.js')
 
 module.exports = async (req:any, res:any, next:any) => {
   
@@ -21,14 +19,14 @@ module.exports = async (req:any, res:any, next:any) => {
     var format = req.query.format || 'HTML';
 
     // get lg file
-    const LANG = getLang(`${__dirname}/../lg/monetaryMass_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`);
+    const LANG = getLang(`${__dirname}/../lg/monetaryMass_${req.query.lg||MonitConstants.DEFAULT_LANGUAGE}.txt`);
 
     // calculate meanMonetaryMassAtFullCurrency
     const meanMonetaryMassAtFullCurrency = Math.ceil((1/duniterServer.conf.c)*(duniterServer.conf.dtReeval / duniterServer.conf.dt));
     
     // get beginBlock and endBlock
     var beginBlock = [await dataFinder.getBlock(begin)];
-    var endBlock = null;
+    var endBlock: any = null;
     if (end > 0)
     {
       endBlock = [await dataFinder.getBlock(end)];

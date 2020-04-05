@@ -3,8 +3,8 @@ import {DBMembership} from 'duniter/app/lib/dal/sqliteDAL/MembershipDAL'
 import {DBIdentity} from 'duniter/app/lib/dal/sqliteDAL/IdentityDAL'
 import {showExecutionTimes} from '../lib/MonitorExecutionTime'
 import {DataFinder} from '../lib/DataFinder'
+import {MonitConstants} from "../lib/constants2";
 
-const constants = require(__dirname + '/../lib/constants')
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 
 // Préserver les résultats en cache
@@ -31,7 +31,7 @@ module.exports = async (req: any, res: any, next: any) => {
 
   try {
     // get blockchain timestamp
-    let resultQueryCurrentBlock = await dataFinder.getCurrentBlockOrNull();
+    let resultQueryCurrentBlock: any = await dataFinder.getCurrentBlockOrNull();
     const currentBlockchainTimestamp = resultQueryCurrentBlock.medianTime;
     const currentMembersCount = resultQueryCurrentBlock.membersCount;
     const currentBlockNumber = resultQueryCurrentBlock.number;
@@ -60,7 +60,7 @@ module.exports = async (req: any, res: any, next: any) => {
 
 
     // Vérifier si le cache doit être Réinitialiser
-    let reinitCache = (Math.floor(Date.now() / 1000) > (willMembersLastUptime + constants.MIN_WILLMEMBERS_UPDATE_FREQ));
+    let reinitCache = (Math.floor(Date.now() / 1000) > (willMembersLastUptime + MonitConstants.MIN_WILLMEMBERS_UPDATE_FREQ));
 
     // Si le cache willMembers est dévérouillé, le vérouiller, sinon ne pas réinitialiser le cache
     if (reinitCache && !lockWillMembers) {
@@ -360,7 +360,7 @@ module.exports = async (req: any, res: any, next: any) => {
         {
           // Tester la présence de l'adhésion
           let membership: DBMembership|null = null
-          const pendingMembershipsOfIdty: DBMembership[] = await duniterServer.dal.msDAL.getPendingINOfTarget(identitiesList[idMax].hash);
+          const pendingMembershipsOfIdty: DBMembership[] = await duniterServer.dal.msDAL.getPendingINOfTarget(identitiesList[idMax].hash as string);
           for (const ms of pendingMembershipsOfIdty)
           {
             if (!membership && ms.expires_on > currentBlockchainTimestamp)

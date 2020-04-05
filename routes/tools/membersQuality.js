@@ -1,4 +1,4 @@
-const constants = require(__dirname + '/../../lib/constants')
+const constants = require(__dirname + '/../../lib/constants2').MonitConstants
 
 // membersQuality cache
 var lastUpgradeTime = 0;

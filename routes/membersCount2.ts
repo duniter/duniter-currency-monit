@@ -1,11 +1,11 @@
 "use strict";
 
 import {DataFinder} from "../lib/DataFinder";
+import {MonitConstants} from "../lib/constants2";
 
 const co = require('co')
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 const getLang = require(__dirname + '/../lib/getLang')
-const constants = require(__dirname + '/../lib/constants.js')
 
 //const STEP_COUNT_MAX = 150;
 
@@ -21,7 +21,7 @@ module.exports = async (req: any, res: any, next: any) => {
 		var pow = req.query.pow || 'no';
     
     // get lg file
-		const LANG = getLang(`${__dirname}/../lg/membersCount_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`);
+		const LANG = getLang(`${__dirname}/../lg/membersCount_${req.query.lg||MonitConstants.DEFAULT_LANGUAGE}.txt`);
     
     // get blockchain
     var blockchain = await dataFinder.getBlockWhereMedianTimeLteNoLimit(cache.endBlock[0].medianTime);

@@ -1,10 +1,8 @@
-"use strict";
-
 import {DataFinder} from "../lib/DataFinder";
+import {MonitConstants} from "../lib/constants2";
 
 const _ = require('underscore')
 const getLang = require(__dirname + '/../lib/getLang')
-const constants = require(__dirname + '/../lib/constants.js')
 
 const MAX_STEP_LOOK = 7
 
@@ -20,7 +18,7 @@ module.exports = async (req:any, res:any, next:any) => {
       var help = req.query.help || 'yes';
       
       // get lg file
-      const LANG = getLang(`${__dirname}/../lg/wotex_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`);
+      const LANG = getLang(`${__dirname}/../lg/wotex_${req.query.lg||MonitConstants.DEFAULT_LANGUAGE}.txt`);
       
       // Trouve les points de contrôle efficacement grâce au module C (nommé "wotb")
       const wotb = duniterServer.dal.wotb.memCopy();
