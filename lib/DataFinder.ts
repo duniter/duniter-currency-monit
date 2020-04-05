@@ -2,7 +2,7 @@ import {Server} from 'duniter/server'
 import {DBBlock} from 'duniter/app/lib/db/DBBlock'
 import {MonitorExecutionTime} from './MonitorExecutionTime'
 import {LevelDBIindex} from "duniter/app/lib/dal/indexDAL/leveldb/LevelDBIindex";
-import {reduce} from "duniter/app/lib/indexer";
+import {IindexEntry, reduce} from "duniter/app/lib/indexer";
 
 export class DataFinder {
 
@@ -13,6 +13,7 @@ export class DataFinder {
   } = {};
 
   // Cache
+  private intemporalWot: Promise<IindexEntry[]>;
   private wotmap: Promise<WotMap>;
 
   constructor(protected duniterServer: Server) {
@@ -97,7 +98,10 @@ export class DataFinder {
 
   @MonitorExecutionTime()
   getMembers() {
-    return this.getFromCacheOrDB('getMembers', 'members', () => this.query('SELECT `uid`,`pub`,`member`,`written_on`,`wotb_id` FROM i_index WHERE `member`=1'))
+    return this.getFromCacheOrDB('getMembers', 'members', async () => {
+      const intemporalWot = await this.getIntemporalWot();
+      return intemporalWot.filter(node => node.member)
+    })
   }
 
   @MonitorExecutionTime()
@@ -199,6 +203,16 @@ export class DataFinder {
   /**
    * Singleton de fetching de la wotmap
    */
+  getIntemporalWot() {
+    if (!this.intemporalWot) {
+      this.intemporalWot = this.fetchIntemporalWot()
+    }
+    return this.intemporalWot
+  }
+
+  /**
+   * Singleton de fetching de la wotmap
+   */
   getWotmap() {
     if (!this.wotmap) {
       this.wotmap = this.fetchWotMap()
@@ -206,9 +220,14 @@ export class DataFinder {
     return this.wotmap
   }
 
+  async fetchIntemporalWot() {
+    console.log('Fetching intemporal wot...');
+    return (await this.iindex.findAllValues()).map(reduce);
+  }
+
   async fetchWotMap() {
-    console.log('Fetching wotmap...')
-    const reducedIdentities = (await this.iindex.findAllValues()).map(reduce);
+    console.log('Fetching wotmap...');
+    const reducedIdentities = await this.getIntemporalWot();
     const wotmap: WotMap = {};
     reducedIdentities.forEach(identity => {
       wotmap[identity.wotb_id as number] = identity;
@@ -218,5 +237,5 @@ export class DataFinder {
 }
 
 interface WotMap {
-  [k: number]: any
+  [k: number]: IindexEntry
 }
