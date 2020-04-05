@@ -21,10 +21,10 @@
   },
   "devDependencies": {
     "@types/node": "^11.9.3",
-    "duniter": "1.6.x",
+    "duniter": "1.7.x",
     "typescript": "^3.3.3"
   },
   "peerDependencies": {
-    "duniter": "^1.6.21"
+    "duniter": "1.7.x"
   }
 }
