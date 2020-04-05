@@ -56,7 +56,7 @@ module.exports = async (req: any, res: any, next: any) => {
     }
     else if (end > blockchain.length)
     {
-      newBlocks = await dataFinder.getBlockWhereMedianTimeLteAnd(endBlock.medianTime, previousBlockchainTime)
+      newBlocks = await dataFinder.getBlockWhereMedianTimeLteAndGt(endBlock.medianTime, previousBlockchainTime)
       
       for (let i=0;i<newBlocks.length;i++)
       {

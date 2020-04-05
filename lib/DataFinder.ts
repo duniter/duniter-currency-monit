@@ -127,8 +127,8 @@ export class DataFinder {
   }
 
   @MonitorExecutionTime()
-  getBlockWhereMedianTimeLteAnd(medianTime: number, previousBlockchainTime: number) {
-    return this.getFromCacheOrDB('getBlockWhereMedianTimeLteAnd', [medianTime, previousBlockchainTime].join('-'),
+  getBlockWhereMedianTimeLteAndGt(medianTime: number, previousBlockchainTime: number) {
+    return this.getFromCacheOrDB('getBlockWhereMedianTimeLteAndGt', [medianTime, previousBlockchainTime].join('-'),
       () => this.query('SELECT `issuer`,`membersCount`,`medianTime`,`dividend`,`number`,`nonce` FROM block WHERE `fork`=0 AND `medianTime` <= '+medianTime+' AND `medianTime` > '+previousBlockchainTime+' ORDER BY `medianTime` ASC'))
   }
 }
