@@ -9,7 +9,9 @@
     "noImplicitThis": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true
   },
   "include": [
     "routes",
