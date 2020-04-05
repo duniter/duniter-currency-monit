@@ -94,7 +94,7 @@ app.get('/members',
 * Évolution du nombre de membres
 ***************************************/
 app.get('/membersCount',
-  require(__dirname + '/../lib/updateCache.js'), require(__dirname + '/membersCount.js'),
+  require(__dirname + '/../lib/updateCache2.js'), require(__dirname + '/membersCount2.js'),
   (req, res)=> res.render('Chart.html', {
     printMenu,
     pageName: 'MEMBERS_COUNT',

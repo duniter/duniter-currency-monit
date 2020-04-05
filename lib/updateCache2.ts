@@ -1,5 +1,8 @@
 "use strict";
 
+import {DataFinder} from "./DataFinder";
+import {DBBlock} from "duniter/app/lib/db/DBBlock";
+
 const co = require('co');
 const constants = require(__dirname + '/constants')
 
@@ -7,9 +10,11 @@ const constants = require(__dirname + '/constants')
      * updateCache
      * 
      */
-module.exports = (req, res, next) => co(function *() {
+module.exports = async (req:any, res:any, next:any) => {
   
   var { duniterServer, cache } = req.app.locals
+
+	const dataFinder = new DataFinder(duniterServer)
 
   try {
 		// Définition des constantes
@@ -35,7 +40,7 @@ module.exports = (req, res, next) => co(function *() {
     let reinitBdd = false;
     if (cache.endBlock != null)
     {
-      let checkBlock = yield duniterServer.dal.peerDAL.query('SELECT `hash` FROM block WHERE `fork`=0 AND `number`='+(cache.blockchain[cache.blockchain.length-1].number)+' LIMIT 1 ');
+      let checkBlock = [await dataFinder.getBlock(cache.blockchain[cache.blockchain.length-1].number) as DBBlock];
 			if (cache.blockchain.length > 0 && cache.blockchain[cache.blockchain.length-1].hash != checkBlock[0].hash && upgradeCache)
       {
 				// reinitialize cache
@@ -87,27 +92,27 @@ module.exports = (req, res, next) => co(function *() {
     // get endBlock
     if ( typeof(req.query.end) == 'undefined' || req.query.end <= 0)
     {
-      cache.endBlock = yield duniterServer.dal.peerDAL.query('SELECT `hash`,`medianTime`,`number`,`membersCount` FROM block WHERE `fork`=0 ORDER BY `medianTime` DESC LIMIT 1 ');
+      cache.endBlock = [await dataFinder.getCurrentBlockOrNull()];
     }
     else
     {
-      cache.endBlock = yield duniterServer.dal.peerDAL.query('SELECT `hash`,`medianTime`,`number`,`membersCount` FROM block WHERE `fork`=0 AND `number`='+req.query.end+' LIMIT 1 ');
+      cache.endBlock = [await dataFinder.getBlock(req.query.end)];
       // Si end >= currentBlock, get currentBlock
       if ( typeof(cache.endBlock[0]) == 'undefined' )
       {
-				cache.endBlock = yield duniterServer.dal.peerDAL.query('SELECT `hash`,`medianTime`,`number`,`membersCount` FROM block WHERE `fork`=0 ORDER BY `medianTime` DESC LIMIT 1 ');
+				cache.endBlock = [await dataFinder.getCurrentBlockOrNull()];
       }
 		}
     
     // fix begin value
     if ( typeof(req.query.begin) == 'undefined' || req.query.begin < 0 )
-    { cache.beginBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`number` FROM block WHERE `fork`=0 AND `number`=0 LIMIT 1 '); }
+    { cache.beginBlock = [await dataFinder.getBlock(0)]; }
     else if (req.query.begin > cache.endBlock[0].number)
     {
 			let beginTime = cache.endBlock[0].medianTime-(parseInt(cache.step)*unitTime*constants.STEP_COUNT_MIN);
-      cache.beginBlock =  yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`number` FROM block WHERE `fork`=0 AND `medianTime` >= \''+beginTime+'\' ORDER BY `medianTime` ASC LIMIT 1 ');
+      cache.beginBlock =  [await dataFinder.getBlockWhereMedianTimeGte(beginTime)];
     }
-		else { cache.beginBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`number` FROM block WHERE `fork`=0 AND `number`='+req.query.begin+' LIMIT 1 '); }
+		else { cache.beginBlock = [await dataFinder.getBlock(req.query.begin)]; }
 
 		// Define nbMaxPoints and adaptMaxPoints
 		if ( typeof(req.query.nbMaxPoints) != 'undefined' && req.query.nbMaxPoints > 0 ) {
@@ -127,13 +132,13 @@ module.exports = (req, res, next) => co(function *() {
 			if ( Math.ceil((cache.endBlock[0].medianTime-cache.beginBlock[0].medianTime)/(cache.step*unitTime)) > cache.nbMaxPoints  )
 			{
 				let newBeginTime = cache.endBlock[0].medianTime-cache.step*cache.nbMaxPoints*unitTime;
-				cache.beginBlock =  yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`number` FROM block WHERE `fork`=0 AND `medianTime` >= \''+newBeginTime+'\' ORDER BY `medianTime` ASC LIMIT 1 ');
+				cache.beginBlock =  [await dataFinder.getBlockWhereMedianTimeGte(newBeginTime)];
 			}
 		} else if (cache.adaptMaxPoints == "step") {
 			cache.step = Math.ceil((cache.endBlock[0].medianTime-cache.beginBlock[0].medianTime)/(constants.STEP_COUNT_MAX*unitTime));
 		} else {
 			let newEndTime = cache.beginBlock[0].medianTime+cache.step*cache.nbMaxPoints*unitTime;
-			cache.endBlock =  yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`number` FROM block WHERE `fork`=0 AND `medianTime` <= \''+newEndTime+'\' ORDER BY `medianTime` DESC LIMIT 1 ');
+			cache.endBlock = [await dataFinder.getBlockWhereMedianTimeLte(newEndTime)];
 		}
     
 		// Calculate stepTime
@@ -143,7 +148,7 @@ module.exports = (req, res, next) => co(function *() {
 		if ( parseInt(cache.endBlock[0].number) >= cache.currentBlockNumber && Math.floor(Date.now() / 1000) > (cache.lastUptime + constants.MIN_CACHE_UPDATE_FREQ))
     {
       // let previousCacheTime = (cache.blockchain.length > 0) ? cache.blockchain[cache.blockchain.length-1].medianTime:0;
-      var newBlocks = yield duniterServer.dal.peerDAL.query('SELECT `hash`,`membersCount`,`medianTime`,`number`,`certifications`,`joiners`,`actives`,`revoked` FROM block WHERE `fork`=0 AND `medianTime` > '+cache.currentBlockTime+' AND `medianTime` <= '+cache.endBlock[0].medianTime+' ORDER BY `medianTime` ASC');
+      var newBlocks = await dataFinder.getBlockWhereMedianTimeLteAndGtNoLimit(cache.currentBlockTime, cache.endBlock[0].medianTime);
       
       // Initialise newJoiners
       let newJoiners = new Array();
@@ -282,8 +287,9 @@ module.exports = (req, res, next) => co(function *() {
 
     next()
   } catch (e) {
+		console.error(e.stack || e)
     // En cas d'exception, afficher le message
     res.status(500).send(`<pre>${e.stack || e.message}</pre>`)
   }
-})
-.catch((err) => console.error(err.stack || err));
+}
+

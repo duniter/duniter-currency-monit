@@ -1,5 +1,7 @@
 "use strict";
 
+import {DataFinder} from "../lib/DataFinder";
+
 const co = require('co')
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 const getLang = require(__dirname + '/../lib/getLang')
@@ -7,9 +9,11 @@ const constants = require(__dirname + '/../lib/constants.js')
 
 //const STEP_COUNT_MAX = 150;
 
-module.exports = (req, res, next) => co(function *() {
+module.exports = async (req: any, res: any, next: any) => {
   
   var { duniterServer, cache } = req.app.locals
+
+	const dataFinder = new DataFinder(duniterServer)
   
   try {
     // get GET parameters
@@ -19,11 +23,8 @@ module.exports = (req, res, next) => co(function *() {
     // get lg file
 		const LANG = getLang(`${__dirname}/../lg/membersCount_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`);
     
-    // get medianTime of beginBlock
-    var beginBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`hash` FROM block WHERE `fork`=0 AND `number` = '+cache.beginBlock[0].number+' LIMIT 1');
-    
     // get blockchain
-    var blockchain = yield duniterServer.dal.peerDAL.query('SELECT `hash`,`membersCount`,`medianTime`,`number`,`certifications`,`issuersCount`,`powMin` FROM block WHERE `fork`=0 AND `medianTime` <= '+cache.endBlock[0].medianTime+' ORDER BY `medianTime` ASC');
+    var blockchain = await dataFinder.getBlockWhereMedianTimeLteNoLimit(cache.endBlock[0].medianTime);
 
     
     // Get blockchain timestamp
@@ -101,8 +102,8 @@ module.exports = (req, res, next) => co(function *() {
 						dateTime: dateTime,
 						membersCount: blockchain[blockIndex].membersCount,
 						sentriesCount: cache.blockchain[cacheIndex].sentries,
-						issuersCount: parseInt(stepIssuerCount/bStep),
-						powMin: parseInt(stepPowMin/bStep)
+						issuersCount: parseInt(String(stepIssuerCount/bStep)),
+						powMin: parseInt(String(stepPowMin/bStep))
 				});
 					
 				if (cache.stepUnit != "blocks") { nextStepTime += cache.stepTime; }
@@ -234,4 +235,4 @@ module.exports = (req, res, next) => co(function *() {
     // En cas d'exception, afficher le message
     res.status(500).send(`<pre>${e.stack || e.message}</pre>`);
   }
-})
+}
