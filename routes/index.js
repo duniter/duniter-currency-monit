@@ -108,7 +108,7 @@ app.get('/membersCount',
 * Wotex
 ***************************************/
 app.get('/wotex',
-  require(__dirname + '/wotex.js'),
+  require(__dirname + '/wotex2.js'),
   (req, res)=> res.render('wotex.html', {
     printMenu,
     help: req.query.help,

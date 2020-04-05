@@ -143,4 +143,11 @@ export class DataFinder {
     return this.getFromCacheOrDB('getBlockWhereMedianTimeGtNoLimit', String(beginMedianTime),
       () => this.query('SELECT `issuer`,`membersCount`,`monetaryMass`,`medianTime`,`dividend`,`number`,`nonce` FROM block WHERE `fork`=0 AND `medianTime` >= '+beginMedianTime+' ORDER BY `medianTime` ASC'))
   }
+
+  searchIdentities(search: string) { // TODO: refactor duniterServer in all this class
+    return this.duniterServer.dal.idtyDAL.query('' +
+      'SELECT uid, pub, wotb_id FROM i_index WHERE (uid = ? or pub = ?) ' +
+      'UNION ALL ' +
+      'SELECT uid, pubkey as pub, (SELECT NULL) AS wotb_id FROM idty WHERE (uid = ? or pubkey = ?)', [search, search, search, search])
+  }
 }
