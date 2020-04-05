@@ -43,7 +43,7 @@ export class DataFinder {
 
   @MonitorExecutionTime()
   async getWotbIdByIssuerPubkey(issuerPubkey: string) {
-    return this.getFromCacheOrDB('getWotbIdByIssuerPubkey', issuerPubkey, async () => (await this.duniterServer.dal.iindexDAL.query('SELECT wotb_id FROM i_index WHERE pub = ? AND wotb_id IS NOT NULL', [issuerPubkey]))[0].wotb_id)
+    return this.getFromCacheOrDB('getWotbIdByIssuerPubkey', issuerPubkey, async () => (await this.query('SELECT wotb_id FROM i_index WHERE pub = ? AND wotb_id IS NOT NULL', [issuerPubkey]))[0].wotb_id)
   }
 
   @MonitorExecutionTime()
@@ -102,8 +102,8 @@ export class DataFinder {
   }
 
   @MonitorExecutionTime()
-  query(sql: string, params?: any[]) {
-    return this.duniterServer.dal.peerDAL.query(sql, params || [])
+  query(sql: string, params?: any[]): Promise<any> {
+    throw Error('Unhandled in Duniter 1.7.x')
   }
 
   @MonitorExecutionTime()
