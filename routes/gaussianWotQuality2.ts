@@ -1,5 +1,7 @@
 "use strict";
 
+import {DataFinder} from "../lib/DataFinder";
+
 const co = require('co')
 
 const constants = require(__dirname + '/../lib/constants')
@@ -9,9 +11,11 @@ const getLang = require(__dirname + '/../lib/getLang')
 // gaussianWotQuality cache
 var previousNextYn = "no";
 
-module.exports = (req, res, next) => co(function *() {
+module.exports = async (req:any, res:any, next:any) => {
   
   var { duniterServer  } = req.app.locals
+
+  const dataFinder = new DataFinder(duniterServer)
   
   try {
       // get GET parameters
@@ -37,7 +41,7 @@ module.exports = (req, res, next) => co(function *() {
       let tabLimit1 = [];
 
       // Récupérer la liste des identités ayant actuellement le statut de membre
-      let membersList = yield duniterServer.dal.peerDAL.query('SELECT `uid`,`wotb_id` FROM i_index WHERE `member`=1');
+      let membersList = await dataFinder.getMembers();
 
       // Si les données de qualité n'ont jamais été calculés, le faire
       if (lastUpgradeTimeDatas == 0 || (lastUpgradeTimeDatas+constants.MIN_WOT_QUALITY_CACHE_UPDATE_FREQ) < (Math.floor(Date.now() / 1000)) || (previousNextYn != nextYn))
@@ -63,7 +67,7 @@ module.exports = (req, res, next) => co(function *() {
       switch (unit)
       {
           case 'percentReached': limit1 = conf.xpercent*100; label = LANG['PERCENT_REACHED']; break;
-          case 'nbReached': limit1 = parseInt(conf.xpercent*nbSentries); label = LANG['NB_REACHED']; break;
+          case 'nbReached': limit1 = parseInt(String(conf.xpercent*nbSentries)); label = LANG['NB_REACHED']; break;
           default: break;
       }
 
@@ -112,10 +116,10 @@ module.exports = (req, res, next) => co(function *() {
         }
 
         // Remplir les tableaux triée de façon gaussienne
-        let idGaussian = parseInt(i/2);
+        let idGaussian = i/2;
         if(!debut)
         {
-          idGaussian = parseInt(tabMembersQuality.length-(i/2));
+          idGaussian = tabMembersQuality.length-(i/2);
         }
         debut = !debut;
         tabMembersQualitySorted[idGaussian] = tabMembersQuality[idMin];
@@ -162,7 +166,7 @@ module.exports = (req, res, next) => co(function *() {
         else { unitCoeff *= 100.0; }
         for (let i=0;i<tabMembersQualitySorted.length;i++)
         {
-          tabMembersQualitySorted[i] = parseInt(tabMembersQualitySorted[i]*unitCoeff);
+          tabMembersQualitySorted[i] = tabMembersQualitySorted[i]*unitCoeff;
         }
       }
       
@@ -238,4 +242,4 @@ module.exports = (req, res, next) => co(function *() {
     // En cas d'exception, afficher le message
     res.status(500).send(`<pre>${e.stack || e.message}</pre>`);
   }
-})
+}

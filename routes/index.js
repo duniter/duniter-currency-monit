@@ -121,7 +121,7 @@ app.get('/wotex',
 * Graphe gaussien de la qualité des membres
 ********************************************/
 app.get('/gaussianWotQuality', 
-  require(__dirname + '/gaussianWotQuality.js'),
+  require(__dirname + '/gaussianWotQuality2.js'),
   (req, res)=> res.render('Chart.html', {
     printMenu,
     pageName: 'GAUSSIAN_WOT_QUALITY',
