@@ -1,6 +1,8 @@
 import {Server} from 'duniter/server'
 import {DBBlock} from 'duniter/app/lib/db/DBBlock'
 import {MonitorExecutionTime} from './MonitorExecutionTime'
+import {LevelDBIindex} from "duniter/app/lib/dal/indexDAL/leveldb/LevelDBIindex";
+import {reduce} from "duniter/app/lib/indexer";
 
 export class DataFinder {
 
@@ -8,7 +10,10 @@ export class DataFinder {
     [cacheName: string]: {
       [k: string]: any
     }
-  } = {}
+  } = {};
+
+  // Cache
+  private wotmap: Promise<WotMap>;
 
   constructor(protected duniterServer: Server) {
   }
@@ -141,7 +146,10 @@ export class DataFinder {
   @MonitorExecutionTime()
   getIdentityByWotbid(wotb_id: number): Promise<any> {
     return this.getFromCacheOrDB('getIdentityByWotbid', [wotb_id].join('-'),
-      async () => (await this.duniterServer.dal.idtyDAL.query('SELECT * FROM i_index WHERE wotb_id = ?', [wotb_id]))[0])
+      async () => {
+        const matching = (await this.getWotmap())[wotb_id];
+        return matching
+      })
   }
 
   @MonitorExecutionTime()
@@ -180,10 +188,35 @@ export class DataFinder {
       () => this.query('SELECT `issuer`,`membersCount`,`monetaryMass`,`medianTime`,`dividend`,`number`,`nonce` FROM block WHERE `fork`=0 AND `medianTime` >= '+beginMedianTime+' ORDER BY `medianTime` ASC'))
   }
 
-  searchIdentities(search: string) { // TODO: refactor duniterServer in all this class
-    return this.duniterServer.dal.idtyDAL.query('' +
-      'SELECT uid, pub, wotb_id FROM i_index WHERE (uid = ? or pub = ?) ' +
-      'UNION ALL ' +
-      'SELECT uid, pubkey as pub, (SELECT NULL) AS wotb_id FROM idty WHERE (uid = ? or pubkey = ?)', [search, search, search, search])
+  searchIdentities(search: string) {
+    return this.duniterServer.dal.searchJustIdentities(search)
   }
+
+  get iindex() {
+    return this.duniterServer.dal.iindexDAL as LevelDBIindex
+  }
+
+  /**
+   * Singleton de fetching de la wotmap
+   */
+  getWotmap() {
+    if (!this.wotmap) {
+      this.wotmap = this.fetchWotMap()
+    }
+    return this.wotmap
+  }
+
+  async fetchWotMap() {
+    console.log('Fetching wotmap...')
+    const reducedIdentities = (await this.iindex.findAllValues()).map(reduce);
+    const wotmap: WotMap = {};
+    reducedIdentities.forEach(identity => {
+      wotmap[identity.wotb_id as number] = identity;
+    });
+    return wotmap;
+  }
+}
+
+interface WotMap {
+  [k: number]: any
 }
