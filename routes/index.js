@@ -149,7 +149,7 @@ app.get('/blockCount',
 * Évolution de la masse monétaire totale
 ***************************************/
 app.get('/monetaryMass',
-  require(__dirname + '/monetaryMass.js'),
+  require(__dirname + '/monetaryMass2.js'),
   (req, res)=> res.render('Chart.html', {
     printMenu,
     pageName: 'MONETARY_MASS',

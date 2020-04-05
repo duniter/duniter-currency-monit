@@ -131,4 +131,16 @@ export class DataFinder {
     return this.getFromCacheOrDB('getBlockWhereMedianTimeLteAndGt', [medianTime, previousBlockchainTime].join('-'),
       () => this.query('SELECT `issuer`,`membersCount`,`medianTime`,`dividend`,`number`,`nonce` FROM block WHERE `fork`=0 AND `medianTime` <= '+medianTime+' AND `medianTime` > '+previousBlockchainTime+' ORDER BY `medianTime` ASC'))
   }
+
+  @MonitorExecutionTime()
+  getBlockWhereMedianTimeLteAndGteNoLimit(endMedianTime: number, beginMedianTime: number) {
+    return this.getFromCacheOrDB('getBlockWhereMedianTimeLteAndGteNoLimit', [endMedianTime, beginMedianTime].join('-'),
+      () => this.query('SELECT `issuer`,`membersCount`,`monetaryMass`,`medianTime`,`dividend`,`number`,`nonce` FROM block WHERE `fork`=0 AND `medianTime` <= '+endMedianTime+' AND `medianTime` >= '+beginMedianTime+' ORDER BY `medianTime` ASC'))
+  }
+
+  @MonitorExecutionTime()
+  getBlockWhereMedianTimeGtNoLimit(beginMedianTime: number) {
+    return this.getFromCacheOrDB('getBlockWhereMedianTimeGtNoLimit', String(beginMedianTime),
+      () => this.query('SELECT `issuer`,`membersCount`,`monetaryMass`,`medianTime`,`dividend`,`number`,`nonce` FROM block WHERE `fork`=0 AND `medianTime` >= '+beginMedianTime+' ORDER BY `medianTime` ASC'))
+  }
 }

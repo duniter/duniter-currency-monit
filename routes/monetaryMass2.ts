@@ -1,12 +1,17 @@
 "use strict";
 
+import {DataFinder} from "../lib/DataFinder";
+
 const co = require('co')
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 const getLang = require(__dirname + '/../lib/getLang')
+const constants = require(__dirname + '/../lib/constants.js')
 
-module.exports = (req, res, next) => co(function *() {
+module.exports = async (req:any, res:any, next:any) => {
   
   var { duniterServer  } = req.app.locals
+
+  const dataFinder = new DataFinder(duniterServer)
   
   try {
     // get GET parameters
@@ -22,30 +27,30 @@ module.exports = (req, res, next) => co(function *() {
     const meanMonetaryMassAtFullCurrency = Math.ceil((1/duniterServer.conf.c)*(duniterServer.conf.dtReeval / duniterServer.conf.dt));
     
     // get beginBlock and endBlock
-    var beginBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime` FROM block WHERE `number` = '+begin+' LIMIT 1');
+    var beginBlock = [await dataFinder.getBlock(begin)];
     var endBlock = null;
     if (end > 0)
     {
-      endBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`membersCount` FROM block WHERE `number` = '+end+' LIMIT 1');
+      endBlock = [await dataFinder.getBlock(end)];
       if ( typeof(endBlock[0]) == 'undefined')
       {
-	endBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`membersCount`,`number` FROM block ORDER BY `medianTime` DESC LIMIT 1');
+	endBlock = [await dataFinder.getCurrentBlockOrNull()];
 	end = endBlock[0].number;
       }
     }
     else
     {
-      endBlock = yield duniterServer.dal.peerDAL.query('SELECT `medianTime`,`membersCount` FROM block ORDER BY `medianTime` DESC LIMIT 1');
+      endBlock = [await dataFinder.getCurrentBlockOrNull()];
     }
     
     // get blockchain
     if (end >= begin && begin >= 1)
     {
-      var blockchain = yield duniterServer.dal.peerDAL.query('SELECT `issuer`,`membersCount`,`monetaryMass`,`medianTime`,`dividend`,`number`,`nonce` FROM block WHERE `fork`=0 AND `medianTime` <= '+endBlock[0].medianTime+' AND `medianTime` >= '+beginBlock[0].medianTime+' ORDER BY `medianTime` ASC');
+      var blockchain = await dataFinder.getBlockWhereMedianTimeLteAndGteNoLimit(endBlock[0].medianTime, (beginBlock[0] as any).medianTime);
     }
     else
     {
-      var blockchain = yield duniterServer.dal.peerDAL.query('SELECT `issuer`,`membersCount`,`monetaryMass`,`medianTime`,`dividend`,`number`,`nonce` FROM block WHERE `fork`=0 AND `medianTime` >= '+beginBlock[0].medianTime+' ORDER BY `medianTime` ASC');
+      var blockchain = await dataFinder.getBlockWhereMedianTimeGtNoLimit((beginBlock[0] as any).medianTime);
     }
     
     // get blockchain timestamp
@@ -66,7 +71,7 @@ module.exports = (req, res, next) => co(function *() {
           timestamp: blockchain[b].medianTime,
           dateTime: timestampToDatetime(blockchain[b].medianTime, true),
           membersCount: blockchain[b].membersCount,
-          monetaryMass: parseInt(blockchain[b].monetaryMass / 100),
+          monetaryMass: blockchain[b].monetaryMass / 100,
           monetaryMassPerMembers: parseFloat(((blockchain[b].monetaryMass / 100) / blockchain[b].membersCount).toFixed(2)),
           derivedChoiceMonetaryMass: 0
         });
@@ -189,7 +194,7 @@ module.exports = (req, res, next) => co(function *() {
 		            type: type,
                 position: 'left',
                 ticks: {
-                    callback: function(value, index, values) {//needed to change the scientific notation results from using logarithmic scale
+                    callback: function(value:any, index:any, values:any) {//needed to change the scientific notation results from using logarithmic scale
                             return Number(value.toString()); //pass tick values as a string into Number function
                     },
                     max: maxYAxes,
@@ -216,4 +221,4 @@ module.exports = (req, res, next) => co(function *() {
     // En cas d'exception, afficher le message
     res.status(500).send(`<pre>${e.stack || e.message}</pre>`);
   }
-})
+}
