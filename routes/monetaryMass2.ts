@@ -6,7 +6,7 @@ const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 const getLang = require(__dirname + '/../lib/getLang')
 
 module.exports = async (req:any, res:any, next:any) => {
-  
+
   var { duniterServer  } = req.app.locals
 
   const dataFinder = await DataFinder.getInstanceReindexedIfNecessary()
@@ -55,7 +55,7 @@ module.exports = async (req:any, res:any, next:any) => {
     const currentBlockNumber = begin+blockchain.length-1;
     const currentBlockchainTimestamp = blockchain[blockchain.length-1].medianTime;
     if (end == -1) { end = begin+blockchain.length-1; }
-    
+
     // create and fill tabMembersCount, tabMonetaryMass, tabCurrency and currentDividend
     var tabCurrency = [];
     var currentDividend = 0;
@@ -95,9 +95,9 @@ module.exports = async (req:any, res:any, next:any) => {
         tabCurrency[i].monetaryMass = parseFloat((((tabCurrency[i].monetaryMassPerMembers / currentDividend) / meanMonetaryMassAtFullCurrency) * 10000).toFixed(2));
         tabCurrency[i].monetaryMassPerMembers = tabCurrency[i].monetaryMass;
       }
-      if (i>0) { tabCurrency[i].derivedChoiceMonetaryMass = parseFloat((((tabCurrency[i].monetaryMass / tabCurrency[i-1].monetaryMass) - 1.0) * 100).toFixed(2)); }
+      if (i>0) { tabCurrency[i].derivedChoiceMonetaryMass = Math.abs(parseFloat((((tabCurrency[i].monetaryMass / tabCurrency[i-1].monetaryMass) - 1.0) * 100).toFixed(2))); }
     }
-    
+
     // Si le client demande la réponse au format JSON, le faire
     if (format == 'JSON')
       res.status(200).jsonp( tabCurrency )
