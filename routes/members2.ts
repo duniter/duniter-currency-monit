@@ -70,8 +70,17 @@ module.exports = async (req: any, res: any, next: any) => {
 	var centrality = req.query.centrality || "no"; // Valeur par défaut
 	var format = req.query.format || 'HTML'; // Valeur par défaut
 	let nextYn = (req.query.nextYn=="yes") ? "yes":"no";
-	let randomList = (req.query.randomList=="yes") ? "yes":"no";
-	let numberOfRandomMembers = req.query.randomCounts || 10
+	let randomList = req.query.randomList === 'no' ? 'no' : 'yes';
+	let numberOfRandomMembers = parseInt(req.query.randomCounts) || MonitConstants.MEMBERS_VIEW.DEFAULT_MEMBERS_RANDOM_NUMBER
+
+		// Recherche aléatoire
+		if (randomList === 'yes') {
+			if (isNaN(numberOfRandomMembers)) {
+				numberOfRandomMembers = MonitConstants.MEMBERS_VIEW.DEFAULT_MEMBERS_RANDOM_NUMBER
+			}
+			numberOfRandomMembers = Math.min(numberOfRandomMembers, MonitConstants.MEMBERS_VIEW.MEMBERS_DISPLAY_MAX)
+		}
+
 
 	// Vérifier la valeur de nextYn dans le cache
 	let lastUpgradeTimeDatas = membersQuality(MonitConstants.QUALITY_CACHE_ACTION.INIT);

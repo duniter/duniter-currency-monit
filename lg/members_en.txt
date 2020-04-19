@@ -67,4 +67,5 @@ NEXT_YN Feign the following Y[n] landing
 MEMBER_FILTER search a member
 EXPIRE_TIME expiration datetime
 RANDOM_LIST Draw lots
+RANDOM_LIST_END membres (max. 100)
 MEMBERS members
