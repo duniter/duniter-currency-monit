@@ -47,8 +47,10 @@ ${printMenu(MENU_LANG, help, "MEMBERS")}
 <input type="checkbox" name="pendingSigs" value="yes" ${pendingSigs == 'yes' ? 'checked' : ''}>${LANG["CHECKBOX_PENDING_SIGS"]}.<br>
 <input type="checkbox" name="mode" value="emitted" ${mode == 'emitted' ? 'checked' : ''}>${LANG["CHECKBOX_MODE_SIG"]}.<br>
 <input type="checkbox" name="nextYn" value="yes" ${nextYn == 'yes' ? 'checked' : ''}> ${LANG["NEXT_YN"]}<br>
-<input type="checkbox" name="randomList" value="yes" ${randomList == 'yes' ? 'checked' : ''}> ${LANG["RANDOM_LIST"]} 
-<input type="number" name="randomCounts" value="${numberOfRandomMembers}"/> ${LANG["MEMBERS"]}.<br>
+<input type="checkbox" name="randomList" value="yes" ${randomList == 'yes' ? 'checked' : ''}> ${LANG["RANDOM_LIST"]}
+<input type="number" name="randomCounts" value="${numberOfRandomMembers}"/> ${LANG["RANDOM_LIST_END"]}.<br>
+<input type="checkbox" name="uidOrPubList" value="yes" ${uidOrPubList ? 'checked' : ''}> ${LANG["UID_OR_PUB_LIST"]}
+<input type="search" name="uidOrPubValue" value="${uidOrPubValue || ''}"/> ${LANG["UID_OR_PUB_LIST_END"]}.<br>
 <hr>
 
 <!-- Afficher la légende et l'aide -->

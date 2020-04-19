@@ -69,15 +69,36 @@ module.exports = async (req: any, res: any, next: any) => {
 	var pendingSigs = req.query.pendingSigs || "no"; // Valeur par défaut
 	var centrality = req.query.centrality || "no"; // Valeur par défaut
 	var format = req.query.format || 'HTML'; // Valeur par défaut
+    let uidOrPubList = req.query.uidOrPubList === 'yes';
+    let uidOrPubValue = req.query.uidOrPubValue;
 	let nextYn = (req.query.nextYn=="yes") ? "yes":"no";
-	let randomList = (req.query.randomList=="yes") ? "yes":"no";
-	let numberOfRandomMembers = req.query.randomCounts || 10
+	let randomList = req.query.randomList === 'no' ? 'no' : 'yes';
+	let numberOfRandomMembers = parseInt(req.query.randomCounts) || MonitConstants.MEMBERS_VIEW.DEFAULT_MEMBERS_RANDOM_NUMBER
+
+		// Recherche aléatoire
+		if (randomList === 'yes') {
+			if (isNaN(numberOfRandomMembers)) {
+				numberOfRandomMembers = MonitConstants.MEMBERS_VIEW.DEFAULT_MEMBERS_RANDOM_NUMBER
+			}
+			numberOfRandomMembers = Math.min(numberOfRandomMembers, MonitConstants.MEMBERS_VIEW.MEMBERS_DISPLAY_MAX)
+		}
+
 
 	// Vérifier la valeur de nextYn dans le cache
 	let lastUpgradeTimeDatas = membersQuality(MonitConstants.QUALITY_CACHE_ACTION.INIT);
 	let dSenCache = membersQuality(MonitConstants.QUALITY_CACHE_ACTION.GET_D_SEN);
 	if (lastUpgradeTimeDatas > 0 && dSenCache > dSen) { previousNextYn == "yes"; }
-    
+
+    // Recherche par pseudo/pubkey
+    if (uidOrPubList) {
+      // UID/PUB > random
+      randomList = 'no'
+      if (!uidOrPubValue || uidOrPubValue.length < 3) {
+        // Recherche trop large
+        uidOrPubList = false
+        randomList = 'yes' // A la place
+      }
+    }
     // Alimenter wotb avec la toile actuelle
 	const wotbInstance = duniterServer.dal.wotb;
 		
@@ -85,7 +106,8 @@ module.exports = async (req: any, res: any, next: any) => {
 	let reinitCache = (Math.floor(Date.now() / 1000) > (membersLastUptime + MonitConstants.MIN_MEMBERS_UPDATE_FREQ));
 		
 		// Si changement de conditions, alors forcer le rechargement du cache s'il n'est pas vérouillé, sinon forcer les conditions à celles en mémoire
-		if (previousMode != mode || previousCentrality != centrality || previousNextYn != nextYn || previousRandomList != randomList || numberOfRandomMembers != previousRandomCounts)
+		// Si recherche par UID ou pubkey => recharger systématiquement
+		if (uidOrPubList || previousMode != mode || previousCentrality != centrality || previousNextYn != nextYn || previousRandomList != randomList || numberOfRandomMembers != previousRandomCounts)
 		{
 			if (!lockMembers)
 			{
@@ -174,6 +196,12 @@ module.exports = async (req: any, res: any, next: any) => {
 					}
 				}
 				membersList = randomMembers
+			}
+			else if (uidOrPubList) {
+				// Rerchercher les membres qui matchent par l'UID ou la pubkey
+				membersList = membersList.filter(m => {
+					return m.uid.toLocaleLowerCase().includes(uidOrPubValue) || m.pub.toLocaleLowerCase().includes(uidOrPubValue)
+				})
 			}
     
 			// Récupérer pour chaque identité, le numéro du block d'écriture du dernier membership
@@ -581,7 +609,9 @@ module.exports = async (req: any, res: any, next: any) => {
 				// get parameters
         		days, mode, sort_by, order,
 				pendingSigs, centrality, nextYn,
-				numberOfRandomMembers, randomList,
+				numberOfRandomMembers: numberOfRandomMembers, randomList,
+				// Formulaire de recherche par UID ou PUB
+				uidOrPubList, uidOrPubValue,
 				
 				// page data
         		currentBlockchainTimestamp,

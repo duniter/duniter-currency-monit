@@ -13,5 +13,9 @@ export const MonitConstants = {
     INIT: 2,
     GET_SENTRIES_COUNT: 3,
     GET_D_SEN: 3
-  }
+  },
+  MEMBERS_VIEW: {
+    DEFAULT_MEMBERS_RANDOM_NUMBER: 10,
+    MEMBERS_DISPLAY_MAX: 100,
+  },
 };

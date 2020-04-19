@@ -67,4 +67,7 @@ NEXT_YN Simuler le palier Y[n] suivant
 MEMBER_FILTER rechercher un membre
 EXPIRE_TIME date et heure d'expiration
 RANDOM_LIST Tirer au sort
+RANDOM_LIST_END membres (max. 100)
 MEMBERS membres
+UID_OR_PUB_LIST Dont le pseudo ou la clé contient
+UID_OR_PUB_LIST_END (3 car. min.)
