@@ -1,12 +1,12 @@
 import {DBBlock} from 'duniter/app/lib/db/DBBlock'
 import {DataFinder} from '../lib/DataFinder'
 import {showExecutionTimes} from '../lib/MonitorExecutionTime'
+import {MonitConstants} from "../lib/constants2";
 
 const fs = require('fs')
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 const colorScale = require(__dirname + '/../lib/colorScale')
 const getLang = require(__dirname + '/../lib/getLang')
-const constants = require(__dirname + '/../lib/constants')
 
 // Garder l'index des blocs en mémoire vive
 var blockchain: DBBlock[] = [];
@@ -15,9 +15,9 @@ var previousBlockchainTime= 0;
 
 module.exports = async (req: any, res: any, next: any) => {
   
-  var { duniterServer, monitDatasPath } = req.app.locals
+  var { monitDatasPath } = req.app.locals
 
-  const dataFinder = new DataFinder(duniterServer)
+  const dataFinder = await DataFinder.getInstanceReindexedIfNecessary()
   
   try {
     // get GET parameters
@@ -30,7 +30,7 @@ module.exports = async (req: any, res: any, next: any) => {
     var significantPercent = req.query.significantPercent || 3;
 
     // get lg file
-    const LANG = getLang(`${__dirname}/../lg/blockCount_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`);
+    const LANG = getLang(`${__dirname}/../lg/blockCount_${req.query.lg||MonitConstants.DEFAULT_LANGUAGE}.txt`);
     
     // detect fork
     if ( blockchain.length > 0 )

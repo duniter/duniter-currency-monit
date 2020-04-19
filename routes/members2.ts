@@ -1,6 +1,6 @@
 import {DataFinder} from '../lib/DataFinder'
+import {MonitConstants} from "../lib/constants2";
 
-const constants = require(__dirname + '/../lib/constants')
 const randomInt = require(__dirname + '/../lib/randomInt')
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime')
 const membersQuality = require(__dirname + '/tools/membersQuality')
@@ -45,7 +45,7 @@ module.exports = async (req: any, res: any, next: any) => {
   
   var { duniterServer  } = req.app.locals
 
-  const dataFinder = new DataFinder(duniterServer)
+  const dataFinder = await DataFinder.getInstanceReindexedIfNecessary()
   
   try {
     // Initaliser les constantes
@@ -74,15 +74,15 @@ module.exports = async (req: any, res: any, next: any) => {
 	let numberOfRandomMembers = req.query.randomCounts || 10
 
 	// Vérifier la valeur de nextYn dans le cache
-	let lastUpgradeTimeDatas = membersQuality(constants.QUALITY_CACHE_ACTION.INIT);
-	let dSenCache = membersQuality(constants.QUALITY_CACHE_ACTION.GET_D_SEN);
+	let lastUpgradeTimeDatas = membersQuality(MonitConstants.QUALITY_CACHE_ACTION.INIT);
+	let dSenCache = membersQuality(MonitConstants.QUALITY_CACHE_ACTION.GET_D_SEN);
 	if (lastUpgradeTimeDatas > 0 && dSenCache > dSen) { previousNextYn == "yes"; }
     
     // Alimenter wotb avec la toile actuelle
 	const wotbInstance = duniterServer.dal.wotb;
 		
 	// Vérifier si le cache doit être Réinitialiser
-	let reinitCache = (Math.floor(Date.now() / 1000) > (membersLastUptime + constants.MIN_MEMBERS_UPDATE_FREQ));
+	let reinitCache = (Math.floor(Date.now() / 1000) > (membersLastUptime + MonitConstants.MIN_MEMBERS_UPDATE_FREQ));
 		
 		// Si changement de conditions, alors forcer le rechargement du cache s'il n'est pas vérouillé, sinon forcer les conditions à celles en mémoire
 		if (previousMode != mode || previousCentrality != centrality || previousNextYn != nextYn || previousRandomList != randomList || numberOfRandomMembers != previousRandomCounts)
@@ -145,7 +145,7 @@ module.exports = async (req: any, res: any, next: any) => {
 			if (nextYn=="yes") { dSen++; }
 
 			// réinitialiser le cache des données de qualité
-			membersQuality(constants.QUALITY_CACHE_ACTION.INIT, 0, dSen, conf.stepMax, conf.xpercent, wotbInstance.memCopy());
+			membersQuality(MonitConstants.QUALITY_CACHE_ACTION.INIT, 0, dSen, conf.stepMax, conf.xpercent, wotbInstance.memCopy());
 			
 			// Réinitialiser le cache des données de centralité
 			if (centrality=='yes')
@@ -181,7 +181,7 @@ module.exports = async (req: any, res: any, next: any) => {
 			for (let m=0;m<membersList.length;m++)
 			{
 				// Récupérer les blockstamp d'écriture et date d'expiration du membership courant du membre m
-				let tmpQueryResult = await dataFinder.membershipWrittenOnExpiresOn(membersList[m].pub);
+				let tmpQueryResult = [await dataFinder.membershipWrittenOnExpiresOn(membersList[m].pub)];
 					membershipsExpireTimeList.push(tmpQueryResult[0].expires_on);
 					
 				// Extraire le numéro de bloc du blockstamp d'écriture du membership courant
@@ -229,14 +229,14 @@ module.exports = async (req: any, res: any, next: any) => {
 				membersNbSentriesUnreached[membersList[m].uid] = parseInt(detailedDistance.nbSentries) - parseInt(detailedDistance.nbSuccess);
 
 				// Calculer la qualité du membre courant
-				if (membersQuality(constants.QUALITY_CACHE_ACTION.GET_QUALITY, membersList[m].wotb_id, (currentMemberIsSentry) ? 1 : 0) >= 1.0) {
+				if (membersQuality(MonitConstants.QUALITY_CACHE_ACTION.GET_QUALITY, membersList[m].wotb_id, (currentMemberIsSentry) ? 1 : 0) >= 1.0) {
 					proportionMembersWithQualityUpper1++;
 				}
 
 				// Calculer la qualité du membre courant s'il n'y avait pas de référents (autrement di si tout les membres était référents)
 				//let membersQualityIfNoSentries = ((detailedDistanceQualityExt.nbReached/membersList.length)/conf.xpercent).toFixed(2);
 				//console.log("membersQualityIfNoSentries[%s] = %s", membersList[m].uid, membersQualityIfNoSentries);
-				if (membersQuality(constants.QUALITY_CACHE_ACTION.GET_QUALITY, membersList[m].wotb_id, -1) >= 1.0) {
+				if (membersQuality(MonitConstants.QUALITY_CACHE_ACTION.GET_QUALITY, membersList[m].wotb_id, -1) >= 1.0) {
 					proportionMembersWithQualityUpper1IfNoSentries++;
 				}
 				
@@ -274,11 +274,11 @@ module.exports = async (req: any, res: any, next: any) => {
 					let tmpQueryGetUidProtagonistCert
 					if (mode == 'emitted')
 					{
-						tmpQueryGetUidProtagonistCert = await dataFinder.getProtagonist(tmpQueryCertifsList[i].receiver)
+						tmpQueryGetUidProtagonistCert = [await dataFinder.getProtagonist(tmpQueryCertifsList[i].receiver)]
 					}
 					else
 					{
-						tmpQueryGetUidProtagonistCert = await dataFinder.getProtagonist(tmpQueryCertifsList[i].issuer)
+						tmpQueryGetUidProtagonistCert = [await dataFinder.getProtagonist(tmpQueryCertifsList[i].issuer)]
 					}
 					let tmpBlockWrittenOn = tmpQueryCertifsList[i].written_on.split("-");
 					
@@ -474,7 +474,7 @@ module.exports = async (req: any, res: any, next: any) => {
 		{ 
 			for (const member of membersList)
 			{
-				tabSort.push(membersQuality(constants.QUALITY_CACHE_ACTION.GET_QUALITY, member.wotb_id));
+				tabSort.push(membersQuality(MonitConstants.QUALITY_CACHE_ACTION.GET_QUALITY, member.wotb_id));
 			}
 		}
     else if (sort_by == "sigCount")
@@ -574,7 +574,7 @@ module.exports = async (req: any, res: any, next: any) => {
     // Sinon, printer le tableau html
     else
     {
-	  let meansMembersQuality = membersQuality(constants.QUALITY_CACHE_ACTION.GET_MEANS);
+	  let meansMembersQuality = membersQuality(MonitConstants.QUALITY_CACHE_ACTION.GET_MEANS);
 
       res.locals = {
 				host: req.headers.host.toString(),

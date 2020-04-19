@@ -1,6 +1,4 @@
-"use strict";
-
-module.exports = {
+export const MonitConstants = {
   USE_WOTB6: false,
   DEFAULT_LANGUAGE: "fr",
   MIN_WILLMEMBERS_UPDATE_FREQ: 180,

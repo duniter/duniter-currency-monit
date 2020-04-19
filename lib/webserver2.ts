@@ -1,5 +1,8 @@
 "use strict";
 
+import {Server} from "duniter/server";
+import {initMonitDB} from "./DataFinder";
+
 const fs = require('fs');
 //const util = require('util');
 const Q = require('q');
@@ -13,13 +16,13 @@ const bodyParser = require('body-parser');
 const routes = require(__dirname + '/../routes');
 const tpl = require(__dirname + '/tplit.js');
 
-module.exports = (host, port, appParente, duniterServer, monitDatasPath, offset, cache) => {
+module.exports = (host: any, port: any, appParente: any, duniterServer: Server, monitDatasPath: any, offset: any, cache: any, resetData: boolean) => {
   
   var app = express();
   
   app.use(morgan('\x1b[90m:remote-addr :remote-user [:date[clf]] :method :url HTTP/:http-version :status :res[content-length] - :response-time ms\x1b[0m', {
     stream: {
-      write: function(message){
+      write: function(message: any){
         message && console.log(message.replace(/\n$/,''));
       }
     }
@@ -44,7 +47,7 @@ module.exports = (host, port, appParente, duniterServer, monitDatasPath, offset,
   /***************************************
   * CSV des membres calculants
   ***************************************/
-  app.get('/csvCalculatorsRank', function(req, res) {
+  app.get('/csvCalculatorsRank', function(req: any, res: any) {
     let files = fs.readdirSync(monitDatasPath + '/calculators_rank/')
     let maxTimestamp = 0
     for (let file of files) {
@@ -61,35 +64,46 @@ module.exports = (host, port, appParente, duniterServer, monitDatasPath, offset,
   if ( appParente == null )
   {
     let httpServer = http.createServer(app);
-    httpServer.on('error', function(err) {
+    httpServer.on('error', function(err: any) {
       httpServer.errorPropagates(err);
     });
     
     return {
-      openConnection: () => co(function *() {
-	try {
-	  yield Q.Promise((resolve, reject) => {
-	    // Weird the need of such a hack to catch an exception...
-	    httpServer.errorPropagates = function(err) {
-	      reject(err);
-	    };
+      openConnection: async () => {
+        try {
+          await Q.Promise((resolve: any, reject: any) => {
+            // Weird the need of such a hack to catch an exception...
+            httpServer.errorPropagates = function(err: any) {
+              reject(err);
+            };
 
-	    httpServer.listen(port, host, (err) => {
-	      if (err) return reject(err);
-	      resolve(httpServer);
-	    });
-	  });
-	  console.log('Server listening on http://' + host + ':' + port);
-	} catch (e) {
-	  console.warn('Could NOT listen to http://' + host + ':' + port);
-	  console.warn(e);
-	}
-      }),
+            httpServer.listen(port, host, (err: any) => {
+              if (err) return reject(err);
+              resolve(httpServer);
+            });
+          });
+
+          // Init + first incremental indexation
+          await initMonitDB(duniterServer, resetData)
+
+          console.log('Server listening on http://' + host + ':' + port);
+
+        } catch (e) {
+          console.warn('Could NOT listen to http://' + host + ':' + port);
+          console.warn(e);
+        }
+      },
     };
   }
   else
   {
     appParente.use("/currency-monit", app);
+
+    return {
+      openConnection: async () => {
+        console.log('No connection to open')
+      }
+    };
   }
   
   

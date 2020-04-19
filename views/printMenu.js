@@ -1,4 +1,4 @@
-const constants = require(__dirname + '/../lib/constants')
+const constants = require(__dirname + '/../lib/constants2').MonitConstants
 
 module.exports = function printMenu(lang, help, location) {
   let htmlMenu = '<ul class="menu">';//'<table align="center" width="100%"><tr>';

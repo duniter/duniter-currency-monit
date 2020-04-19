@@ -1,10 +1,6 @@
-"use strict";
-
 import {DataFinder} from "../lib/DataFinder";
+import {MonitConstants} from "../lib/constants2";
 
-const co = require('co')
-
-const constants = require(__dirname + '/../lib/constants')
 const membersQuality = require(__dirname + '/tools/membersQuality')
 const getLang = require(__dirname + '/../lib/getLang')
 
@@ -15,7 +11,7 @@ module.exports = async (req:any, res:any, next:any) => {
   
   var { duniterServer  } = req.app.locals
 
-  const dataFinder = new DataFinder(duniterServer)
+  const dataFinder = await DataFinder.getInstanceReindexedIfNecessary()
   
   try {
       // get GET parameters
@@ -25,14 +21,14 @@ module.exports = async (req:any, res:any, next:any) => {
       const nextYn = (req.query.nextYn=="yes") ? "yes":"no";
 
       // get lg file
-      const LANG = getLang(`${__dirname}/../lg/gaussianWotQuality_${req.query.lg||constants.DEFAULT_LANGUAGE}.txt`);
+      const LANG = getLang(`${__dirname}/../lg/gaussianWotQuality_${req.query.lg||MonitConstants.DEFAULT_LANGUAGE}.txt`);
 
       // Définition des contantes
       const conf = duniterServer.conf;
       const qualityMax = (1/conf.xpercent);
 
       // Définition des variables
-      let lastUpgradeTimeDatas = membersQuality(constants.QUALITY_CACHE_ACTION.INIT);
+      let lastUpgradeTimeDatas = membersQuality(MonitConstants.QUALITY_CACHE_ACTION.INIT);
       let tabUidIndex = [];
       let tabMembersQuality= [];
       let tabMembersQualitySorted = [];
@@ -44,7 +40,7 @@ module.exports = async (req:any, res:any, next:any) => {
       let membersList = await dataFinder.getMembers();
 
       // Si les données de qualité n'ont jamais été calculés, le faire
-      if (lastUpgradeTimeDatas == 0 || (lastUpgradeTimeDatas+constants.MIN_WOT_QUALITY_CACHE_UPDATE_FREQ) < (Math.floor(Date.now() / 1000)) || (previousNextYn != nextYn))
+      if (lastUpgradeTimeDatas == 0 || (lastUpgradeTimeDatas+MonitConstants.MIN_WOT_QUALITY_CACHE_UPDATE_FREQ) < (Math.floor(Date.now() / 1000)) || (previousNextYn != nextYn))
       {
         // Calculer dSen
         var dSen = Math.ceil(Math.pow(membersList.length, 1 / conf.stepMax));
@@ -54,14 +50,14 @@ module.exports = async (req:any, res:any, next:any) => {
         const wot = duniterServer.dal.wotb;
 
         // Initialiser le cache des données de qualité
-        membersQuality(constants.QUALITY_CACHE_ACTION.INIT, 0, dSen, conf.stepMax, conf.xpercent, wot.memCopy());
+        membersQuality(MonitConstants.QUALITY_CACHE_ACTION.INIT, 0, dSen, conf.stepMax, conf.xpercent, wot.memCopy());
       }
 
       // Mettre a jour previousNextYn
       previousNextYn = (nextYn=="yes") ? "yes":"no";
 
       // Calculer nbSentries, limit1 and label
-      const nbSentries = (sentries=="no") ? membersList.length:membersQuality(constants.QUALITY_CACHE_ACTION.GET_SENTRIES_COUNT);
+      const nbSentries = (sentries=="no") ? membersList.length:membersQuality(MonitConstants.QUALITY_CACHE_ACTION.GET_SENTRIES_COUNT);
       let limit1 = 1;
       let label = LANG['QUALITY'];
       switch (unit)
@@ -80,15 +76,15 @@ module.exports = async (req:any, res:any, next:any) => {
 
       // Récupérer le tableau de qualité des membres
       tabMembersQuality= [];
-      for (let i=0;membersQuality(constants.QUALITY_CACHE_ACTION.GET_QUALITY, i) >= 0;i++)
+      for (let i=0; i < membersList.length && membersQuality(MonitConstants.QUALITY_CACHE_ACTION.GET_QUALITY, i) >= 0;i++)
       {
         if (sentries == "no")
         {
-          tabMembersQuality[i] = membersQuality(constants.QUALITY_CACHE_ACTION.GET_QUALITY, i, -1);
+          tabMembersQuality[i] = membersQuality(MonitConstants.QUALITY_CACHE_ACTION.GET_QUALITY, i, -1);
         }
         else
         {
-          tabMembersQuality[i] = membersQuality(constants.QUALITY_CACHE_ACTION.GET_QUALITY, i);
+          tabMembersQuality[i] = membersQuality(MonitConstants.QUALITY_CACHE_ACTION.GET_QUALITY, i);
         }
       }
 

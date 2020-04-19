@@ -1,7 +1,7 @@
 const fs = require('fs')
 const express = require('express')
 
-const constants = require(__dirname + '/../lib/constants')
+const constants = require(__dirname + '/../lib/constants2').MonitConstants
 const getLang = require(__dirname + '/../lib/getLang')
 const printMenu = require(__dirname + '/../views/printMenu')
 

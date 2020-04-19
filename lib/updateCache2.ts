@@ -2,9 +2,10 @@
 
 import {DataFinder} from "./DataFinder";
 import {DBBlock} from "duniter/app/lib/db/DBBlock";
+import {MonitConstants} from "./constants2";
+import {Server} from "duniter/server";
 
 const co = require('co');
-const constants = require(__dirname + '/constants')
 
 /**
      * updateCache
@@ -12,9 +13,9 @@ const constants = require(__dirname + '/constants')
      */
 module.exports = async (req:any, res:any, next:any) => {
   
-  var { duniterServer, cache } = req.app.locals
+  var { duniterServer, cache } = req.app.locals as { duniterServer: Server, cache: MonitCache };
 
-	const dataFinder = new DataFinder(duniterServer)
+	const dataFinder = await DataFinder.getInstanceReindexedIfNecessary()
 
   try {
 		// Définition des constantes
@@ -24,7 +25,7 @@ module.exports = async (req:any, res:any, next:any) => {
 		let upgradeCache = false;
 		
 		// Cacluler s'il faut mettre à jour le cache ou pas
-		upgradeCache = (Math.floor(Date.now() / 1000) > (cache.lastUptime + constants.MIN_CACHE_UPDATE_FREQ));
+		upgradeCache = (Math.floor(Date.now() / 1000) > (cache.lastUptime + MonitConstants.MIN_CACHE_UPDATE_FREQ));
 		
 		// Si le cache membersCount est dévérouillé, le vérouiller, sinon ne pas réinitialiser le cache
 		if (upgradeCache && !cache.lockMembersCount)
@@ -109,8 +110,8 @@ module.exports = async (req:any, res:any, next:any) => {
     { cache.beginBlock = [await dataFinder.getBlock(0)]; }
     else if (req.query.begin > cache.endBlock[0].number)
     {
-			let beginTime = cache.endBlock[0].medianTime-(parseInt(cache.step)*unitTime*constants.STEP_COUNT_MIN);
-      cache.beginBlock =  [await dataFinder.getBlockWhereMedianTimeGte(beginTime)];
+			let beginTime = cache.endBlock[0].medianTime-(parseInt(cache.step)*unitTime*MonitConstants.STEP_COUNT_MIN);
+      cache.beginBlock =  await dataFinder.getBlockWhereMedianTimeGte(beginTime);
     }
 		else { cache.beginBlock = [await dataFinder.getBlock(req.query.begin)]; }
 
@@ -118,34 +119,36 @@ module.exports = async (req:any, res:any, next:any) => {
 		if ( typeof(req.query.nbMaxPoints) != 'undefined' && req.query.nbMaxPoints > 0 ) {
 			cache.nbMaxPoints = req.query.nbMaxPoints;
 		} else {
-			cache.nbMaxPoints = constants.STEP_COUNT_MAX;
+			cache.nbMaxPoints = MonitConstants.STEP_COUNT_MAX;
 		}
 		if ( typeof(req.query.adaptMaxPoints) != 'undefined' && (req.query.adaptMaxPoints == "step" || req.query.adaptMaxPoints == "end")) {
 			cache.adaptMaxPoints = req.query.adaptMaxPoints;
 		} else {
 			cache.adaptMaxPoints = "begin";
 		}
-		
+		if (!cache.beginBlock || !cache.beginBlock[0]) {
+			throw Error("No begin block")
+		}
 		// Apply nbMaxPoints and adaptMaxPoints
 		if (cache.adaptMaxPoints == "begin")
 		{
 			if ( Math.ceil((cache.endBlock[0].medianTime-cache.beginBlock[0].medianTime)/(cache.step*unitTime)) > cache.nbMaxPoints  )
 			{
 				let newBeginTime = cache.endBlock[0].medianTime-cache.step*cache.nbMaxPoints*unitTime;
-				cache.beginBlock =  [await dataFinder.getBlockWhereMedianTimeGte(newBeginTime)];
+				cache.beginBlock =  await dataFinder.getBlockWhereMedianTimeGte(newBeginTime);
 			}
 		} else if (cache.adaptMaxPoints == "step") {
-			cache.step = Math.ceil((cache.endBlock[0].medianTime-cache.beginBlock[0].medianTime)/(constants.STEP_COUNT_MAX*unitTime));
+			cache.step = Math.ceil((cache.endBlock[0].medianTime-cache.beginBlock[0].medianTime)/(MonitConstants.STEP_COUNT_MAX*unitTime));
 		} else {
 			let newEndTime = cache.beginBlock[0].medianTime+cache.step*cache.nbMaxPoints*unitTime;
-			cache.endBlock = [await dataFinder.getBlockWhereMedianTimeLte(newEndTime)];
+			cache.endBlock = await dataFinder.getBlockWhereMedianTimeLte(newEndTime);
 		}
     
 		// Calculate stepTime
     cache.stepTime = parseInt(cache.step)*unitTime;
 
     // if new blocks and MIN_CACHE_UPDATE_FREQ pass, update cache
-		if ( parseInt(cache.endBlock[0].number) >= cache.currentBlockNumber && Math.floor(Date.now() / 1000) > (cache.lastUptime + constants.MIN_CACHE_UPDATE_FREQ))
+		if ( parseInt(cache.endBlock[0].number) >= cache.currentBlockNumber && Math.floor(Date.now() / 1000) > (cache.lastUptime + MonitConstants.MIN_CACHE_UPDATE_FREQ))
     {
       // let previousCacheTime = (cache.blockchain.length > 0) ? cache.blockchain[cache.blockchain.length-1].medianTime:0;
       var newBlocks = await dataFinder.getBlockWhereMedianTimeLteAndGtNoLimit(cache.currentBlockTime, cache.endBlock[0].medianTime);
@@ -293,3 +296,7 @@ module.exports = async (req:any, res:any, next:any) => {
   }
 }
 
+interface MonitCache {
+	[k: string]: any
+	beginBlock: null|DBBlock[]
+}
