@@ -35,7 +35,7 @@ module.exports = async (req: any, res: any, next: any) => {
     // detect fork
     if ( blockchain.length > 0 )
     {
-      let newHashPreviousCurrentblock = (await dataFinder.getBlock(blockchain.length - 1) as { hash: string }).hash
+      let newHashPreviousCurrentblock = (await dataFinder.getCurrentBlockOrNull() as { hash: string }).hash
       if ( hashPreviousCurrentblock != newHashPreviousCurrentblock )
       {
 				blockchain.splice(0, blockchain.length);
@@ -65,7 +65,7 @@ module.exports = async (req: any, res: any, next: any) => {
     }
     
     // stock hashPreviousCurrentblock and previousBlockchainTime
-    let tmpCurrentBlock = await dataFinder.getBlock(blockchain.length - 1) as DBBlock
+    let tmpCurrentBlock = await dataFinder.getCurrentBlockOrNull() as DBBlock
     hashPreviousCurrentblock = tmpCurrentBlock.hash;
     previousBlockchainTime = tmpCurrentBlock.medianTime;
    
