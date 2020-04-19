@@ -134,7 +134,14 @@ export class DataFinder {
 
   @MonitorExecutionTime()
   getUidOfPub(pub: string): Promise<{ uid: string }[]> {
-    return this.getFromCacheOrDB('getUidOfPub', pub, () => this.iindex.getFullFromPubkey(pub))
+    return this.getFromCacheOrDB('getUidOfPub', pub, async () => {
+      const entry = await this.iindex.getFullFromPubkey(pub)
+      if (!entry.uid) {
+        // Not found
+        return []
+      }
+      return [entry]
+    })
   }
 
   @MonitorExecutionTime()
