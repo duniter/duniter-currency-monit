@@ -53,7 +53,10 @@ export const MonitorExecutionTime = function (idProperty?: string) {
           const start = getMicrosecondsTime()
           const entities: any[] = await original.apply(this, args)
           const duration = getDurationInMicroSeconds(start)
-          const k = target.constructor.name + '.' + propertyKey + (idProperty ? `[${(this as any)[idProperty]}]` : '')
+          const k = propertyKey === 'getFromCacheOrDB'
+            ? target.constructor.name + '.<>' + args[0] + '(' + args[1] + ')'
+            : target.constructor.name + '.' + propertyKey + (idProperty ? `[${(this as any)[idProperty]}]` : '');
+          // const k = target.constructor.name + '.' + propertyKey + (idProperty ? `[${(this as any)[idProperty]}]` : '')
           if (!monitorings[k]) {
             monitorings[k] = {
               times: []
