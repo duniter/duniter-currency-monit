@@ -42,7 +42,8 @@ module.exports = {
       },
 
       cliOptions: [
-        { value: '--monitor', desc: 'Enable performance monitoring of DB access'}
+        { value: '--monitor', desc: 'Enable performance monitoring of DB access'},
+        { value: '--reset-data', desc: 'Forces Monit to reset its indexed data on startup'},
       ],
 
       cli: [{

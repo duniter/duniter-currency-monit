@@ -16,7 +16,7 @@ const bodyParser = require('body-parser');
 const routes = require(__dirname + '/../routes');
 const tpl = require(__dirname + '/tplit.js');
 
-module.exports = (host: any, port: any, appParente: any, duniterServer: Server, monitDatasPath: any, offset: any, cache: any, resetData: boolean = false) => {
+module.exports = (host: any, port: any, appParente: any, duniterServer: Server, monitDatasPath: any, offset: any, cache: any, resetData: boolean) => {
   
   var app = express();
   
