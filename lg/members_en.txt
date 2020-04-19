@@ -69,3 +69,5 @@ EXPIRE_TIME expiration datetime
 RANDOM_LIST Draw lots
 RANDOM_LIST_END membres (max. 100)
 MEMBERS members
+UID_OR_PUB_LIST Whose pseudo or key contains
+UID_OR_PUB_LIST_END (3 chars. min.)
