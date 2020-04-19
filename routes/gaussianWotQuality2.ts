@@ -76,7 +76,7 @@ module.exports = async (req:any, res:any, next:any) => {
 
       // Récupérer le tableau de qualité des membres
       tabMembersQuality= [];
-      for (let i=0;membersQuality(MonitConstants.QUALITY_CACHE_ACTION.GET_QUALITY, i) >= 0;i++)
+      for (let i=0; i < membersList.length && membersQuality(MonitConstants.QUALITY_CACHE_ACTION.GET_QUALITY, i) >= 0;i++)
       {
         if (sentries == "no")
         {
