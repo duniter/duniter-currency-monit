@@ -11,9 +11,9 @@ const getLang = require(__dirname + '/../lib/getLang')
 
 module.exports = async (req: any, res: any, next: any) => {
   
-  var { duniterServer, cache } = req.app.locals
+  var { cache } = req.app.locals
 
-	const dataFinder = new DataFinder(duniterServer)
+	const dataFinder = await DataFinder.getInstanceReindexedIfNecessary()
   
   try {
     // get GET parameters

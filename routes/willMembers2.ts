@@ -27,7 +27,7 @@ module.exports = async (req: any, res: any, next: any) => {
   const locals: { duniterServer: Server } = req.app.locals
 
   const duniterServer = locals.duniterServer
-  const dataFinder = new DataFinder(duniterServer)
+  const dataFinder = await DataFinder.getInstanceReindexedIfNecessary()
 
   try {
     // get blockchain timestamp

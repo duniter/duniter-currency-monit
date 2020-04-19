@@ -45,7 +45,7 @@ module.exports = async (req: any, res: any, next: any) => {
   
   var { duniterServer  } = req.app.locals
 
-  const dataFinder = new DataFinder(duniterServer)
+  const dataFinder = await DataFinder.getInstanceReindexedIfNecessary()
   
   try {
     // Initaliser les constantes
@@ -181,7 +181,7 @@ module.exports = async (req: any, res: any, next: any) => {
 			for (let m=0;m<membersList.length;m++)
 			{
 				// Récupérer les blockstamp d'écriture et date d'expiration du membership courant du membre m
-				let tmpQueryResult = await dataFinder.membershipWrittenOnExpiresOn(membersList[m].pub);
+				let tmpQueryResult = [await dataFinder.membershipWrittenOnExpiresOn(membersList[m].pub)];
 					membershipsExpireTimeList.push(tmpQueryResult[0].expires_on);
 					
 				// Extraire le numéro de bloc du blockstamp d'écriture du membership courant
@@ -274,11 +274,11 @@ module.exports = async (req: any, res: any, next: any) => {
 					let tmpQueryGetUidProtagonistCert
 					if (mode == 'emitted')
 					{
-						tmpQueryGetUidProtagonistCert = await dataFinder.getProtagonist(tmpQueryCertifsList[i].receiver)
+						tmpQueryGetUidProtagonistCert = [await dataFinder.getProtagonist(tmpQueryCertifsList[i].receiver)]
 					}
 					else
 					{
-						tmpQueryGetUidProtagonistCert = await dataFinder.getProtagonist(tmpQueryCertifsList[i].issuer)
+						tmpQueryGetUidProtagonistCert = [await dataFinder.getProtagonist(tmpQueryCertifsList[i].issuer)]
 					}
 					let tmpBlockWrittenOn = tmpQueryCertifsList[i].written_on.split("-");
 					

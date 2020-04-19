@@ -11,7 +11,7 @@ module.exports = async (req:any, res:any, next:any) => {
   
   var { duniterServer  } = req.app.locals
 
-  const dataFinder = new DataFinder(duniterServer)
+  const dataFinder = await DataFinder.getInstanceReindexedIfNecessary()
   
   try {
       // get GET parameters

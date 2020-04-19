@@ -3,6 +3,7 @@
 import {DataFinder} from "./DataFinder";
 import {DBBlock} from "duniter/app/lib/db/DBBlock";
 import {MonitConstants} from "./constants2";
+import {Server} from "duniter/server";
 
 const co = require('co');
 
@@ -12,9 +13,9 @@ const co = require('co');
      */
 module.exports = async (req:any, res:any, next:any) => {
   
-  var { duniterServer, cache } = req.app.locals
+  var { duniterServer, cache } = req.app.locals as { duniterServer: Server, cache: MonitCache };
 
-	const dataFinder = new DataFinder(duniterServer)
+	const dataFinder = await DataFinder.getInstanceReindexedIfNecessary()
 
   try {
 		// Définition des constantes
@@ -110,7 +111,7 @@ module.exports = async (req:any, res:any, next:any) => {
     else if (req.query.begin > cache.endBlock[0].number)
     {
 			let beginTime = cache.endBlock[0].medianTime-(parseInt(cache.step)*unitTime*MonitConstants.STEP_COUNT_MIN);
-      cache.beginBlock =  [await dataFinder.getBlockWhereMedianTimeGte(beginTime)];
+      cache.beginBlock =  await dataFinder.getBlockWhereMedianTimeGte(beginTime);
     }
 		else { cache.beginBlock = [await dataFinder.getBlock(req.query.begin)]; }
 
@@ -125,20 +126,22 @@ module.exports = async (req:any, res:any, next:any) => {
 		} else {
 			cache.adaptMaxPoints = "begin";
 		}
-		
+		if (!cache.beginBlock || !cache.beginBlock[0]) {
+			throw Error("No begin block")
+		}
 		// Apply nbMaxPoints and adaptMaxPoints
 		if (cache.adaptMaxPoints == "begin")
 		{
 			if ( Math.ceil((cache.endBlock[0].medianTime-cache.beginBlock[0].medianTime)/(cache.step*unitTime)) > cache.nbMaxPoints  )
 			{
 				let newBeginTime = cache.endBlock[0].medianTime-cache.step*cache.nbMaxPoints*unitTime;
-				cache.beginBlock =  [await dataFinder.getBlockWhereMedianTimeGte(newBeginTime)];
+				cache.beginBlock =  await dataFinder.getBlockWhereMedianTimeGte(newBeginTime);
 			}
 		} else if (cache.adaptMaxPoints == "step") {
 			cache.step = Math.ceil((cache.endBlock[0].medianTime-cache.beginBlock[0].medianTime)/(MonitConstants.STEP_COUNT_MAX*unitTime));
 		} else {
 			let newEndTime = cache.beginBlock[0].medianTime+cache.step*cache.nbMaxPoints*unitTime;
-			cache.endBlock = [await dataFinder.getBlockWhereMedianTimeLte(newEndTime)];
+			cache.endBlock = await dataFinder.getBlockWhereMedianTimeLte(newEndTime);
 		}
     
 		// Calculate stepTime
@@ -293,3 +296,7 @@ module.exports = async (req:any, res:any, next:any) => {
   }
 }
 
+interface MonitCache {
+	[k: string]: any
+	beginBlock: null|DBBlock[]
+}
