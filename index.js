@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const main = require(__dirname + '/lib/main.js');
 const indexing = require(__dirname + '/lib/indexing.js');
+const initMonitDB = require('./lib/DataFinder').initMonitDB;
 
 /****************************************
  * TECHNICAL CONFIGURATION
@@ -52,7 +53,7 @@ module.exports = {
         preventIfRunning: true,
         logs: false,
         onDatabaseExecute: (server, conf, program, params, startServices) => co(function*() {
-	  
+
           // currency-monit parameters
           const ACTION = params[0] || DEFAULT_ACTION;
           const SERVER_HOST = params[1] || DEFAULT_HOST;
@@ -86,6 +87,14 @@ module.exports = {
             return server && server.disconnect()
           }
         })
+      }, {
+        name: 'reindex',
+        desc: 'Reset indexed Monit data and rebuild index',
+        preventIfRunning: true,
+        logs: false,
+        async onDatabaseExecute(server, conf, program, params, startServices) {
+          await initMonitDB(server, true);
+        }
       }]
     },
     duniterUI: {
