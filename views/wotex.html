@@ -2,74 +2,13 @@
 ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
   <title>${currencyName}-monit : ${MENU_LANG['WOTEX']}</title>
 		<!-- Style css spécifique de wotex -->
-                <style>
-                .sentry {
-                  float: left;
-                  width: 200px;
-                  height: 21px;
-                  overflow: hidden;
-                }
-                .arrow {
-                  width: 50px;
-                }
-                .isMax {
-                  border-right: 1px dashed gray;
-                }
-                .isSentry, .isSentry a {
-                  text-decoration: none;
-                  color: blue;
-                }
-                .isSentry, .isSentry a:visited {
-                  text-decoration: none;
-                  color: blue;
-                }
-                .isPending, .isPending a {
-                  text-decoration: none;
-                  color: orange !important;
-                  font-weight: bold;
-                }
-                .isMember, .isMember a {
-                  text-decoration: none;
-                  color: black !important;
-                }
-                .isNonMember, .isNonMember a {
-                  text-decoration: none;
-                  color: red !important;
-                }
-                .isPendingCert, .isPendingCert a {
-                  text-decoration: none;
-                  color: orange;
-                  font-weight: bold;
-                }
-                .isPending, .isPending a:visited {
-                  text-decoration: none;
-                  color: orange !important;
-                  font-weight: bold;
-                }
-                .isMember, .isMember a:visited {
-                  text-decoration: none;
-                  color: black !important;
-                }
-                .isNonMember, .isNonMember a:visited {
-                  text-decoration: none;
-                  color: red !important;
-                }
-                .isPendingCert, .isPendingCert a:visited {
-                  text-decoration: none;
-                  color: orange;
-                  font-weight: bold;
-                }
-                td {
-                  text-align: center;
-                }
-              </style>
               <script type="text/javascript">
-              
+
                 function onLoadedPage() {
                   var to = decodeURIComponent(querySt("to") || '');
                   var pending = querySt("pending") == 'on' ? 'checked' : '';
                   var mode = querySt("mode");
-                  
+
                   document.getElementById('to').value = to || '';
                   if (window.location.search) {
                     document.getElementById('pending').checked = pending;
@@ -77,29 +16,29 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
                     // Default checked
                     document.getElementById('pending').checked = 'checked';
                   }
-                  
+
                   if (mode == "u2w") {
                     document.getElementById('modeu2w').checked = 'checked';
                   } else {
                     document.getElementById('modew2u').checked = 'checked';
                   }
-                  
+
                   var params = [
                     "pending=" + (pending == 'checked' ? 'on' : (!window.location.search ? 'on' : '')),
                     "mode=" + mode
                   ];
-                  
+
                   var links = document.getElementsByTagName('a');
                   for (var i = 0; i < links.length; i++) {
-                    links[i].href += '&' + params.join('&');                    
+                    links[i].href += '&' + params.join('&');
                   }
                 }
-                
+
                 function querySt(ji) {
-  
+
                     var hu = window.location.search.substring(1);
                     var gy = hu.split("&");
-                
+
                     for (i=0;i<gy.length;i++) {
                         ft = gy[i].split("=");
                         if (ft[0] == ji) {
@@ -107,14 +46,14 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
                         }
                     }
                 }
-                
+
                 function resetAll() {
                   window.location = '/';
                   return false;
                 }
               </script>
 </head>
-  <body onload="onLoadedPage()">
+  <main onload="onLoadedPage()">
 
     <!-- Afficher le menu -->
     ${printMenu(MENU_LANG, help, "WOTEX")}
@@ -143,8 +82,8 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 
   <span class="isMember">${LANG['LEGEND_BLACK']}</span></br>
   <span class="isSentry">${LANG['LEGEND_BLUE']}</span></br>
-	<span class="isPending">${LANG['LEGEND_ORANGE']}</span></br>
-	<span class="isNonMember">${LANG['LEGEND_RED']}</span></br>
+	<span class="isPending">${LANG['LEGEND_#ffc55a']}</span></br>
+	<span class="isNonMember">${LANG['LEGEND_#FF596A']}</span></br>
 
       <hr/>
       `:``}
@@ -153,5 +92,6 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
     <!-- Afficher les membres référents -->
     <h2>${LANG['CURRENT_SENTRIES']} :</h2>
     ${sentriesHTML}
+  </main>
   </body>
 </html>

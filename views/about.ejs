@@ -1,0 +1,52 @@
+<%- include('header'); -%>
+<%- printMenu(MENU_LANG, help, "ABOUT") -%>
+<main
+        id='about'
+        class='content' >
+    <div class='container' >
+
+        <h1 class='title is-1' >About</h1 >
+        <article >
+            <div class='columns' >
+                <div class='column' >
+                    <div align='left' > <%- LANG['VERSION '] -%> :
+                        <a href='https://git.duniter.org/nodes/typescript/modules/duniter-currency-monit/tree/v0.4.152' >0.4.152</a >
+                    </div >
+                </div >
+                <div class='column' >
+                    <div align='left' > <%- LANG['AUTHOR '] -%> : <a href='https://github.com/librelois' >Éloïs
+                                                                                                          Librelois</a >
+                    </div >
+                </div >
+                <div class='column' >
+                    <div align='left' ><small > <%- LANG['CONTRIBUTORS '] -%>:
+                            <a href='https://github.com/jytou' >jytou</a >
+                                                                             (translator),
+                            <a href='https://github.com/devingfx' >devingfx</a > (frontend)
+                            <a href='https://www.cipherbliss.com' >tykayn</a >
+                                                                             , <a href='https://github.com/c-geek' >cgeek</a >
+                                                                             (willMembers and
+                                                                             wotex),<a href='https://github.com/M5oul' >M5oul</a >
+                                                                             (adjustments)</small >
+                    </div >
+                </div >
+            </div >
+            <div align='left' >
+                <%- LANG['LICENSE '] -%> :
+                <a href='https://github.com/duniter/duniter-currency-monit/blob/master/LICENSE' >AGPL
+                                                                                                 V
+                                                                                                 3.0</a ><br >
+                <a href='https://git.duniter.org/nodes/typescript/modules/duniter-currency-monit' > <%- LANG['GIT_REPOSITORY '] -%></a >
+            </div >
+        </article >
+        <%- include('footer', {LANG: LANG}); -%>
+        <link
+                rel='stylesheet'
+                type='text/css'
+                href='css/bulma.min.css' />
+        <link
+                rel='stylesheet'
+                type='text/css'
+                href='css/main.css' />
+    </div >
+</main >
