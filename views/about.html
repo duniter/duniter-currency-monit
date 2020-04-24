@@ -1,27 +1,68 @@
 ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
-  <title>${currencyName}-monit : ${MENU_LANG['ABOUT']}</title>
+<title >${currencyName}-monit : ${MENU_LANG['ABOUT']}</title >
 </head>
-<body>
-  
+<body >
+
 <!-- Afficher le menu -->
 ${printMenu(MENU_LANG, help, "ABOUT")}
 
 </form>
-<div align="left">${LANG['VERSION']} : <a href="https://git.duniter.org/nodes/typescript/modules/duniter-currency-monit/tree/v0.4.15">0.4.15</a></div><br>
-<div align="left">${LANG['AUTHOR']} : <a href="https://github.com/librelois">Éloïs Librelois</a></div><br>
-<div align="left"><small>${LANG['CONTRIBUTORS']}: <a href="https://github.com/jytou">jytou</a> (translator), <a href="https://github.com/devingfx">devingfx</a> (frontend), <a href="https://github.com/c-geek">cgeek</a> (willMembers and wotex),<a href="https://github.com/M5oul">M5oul</a> (adjustments)</small></div><br>
-<div align="left">
-  ${LANG['LICENSE']} : <a href="https://github.com/duniter/duniter-currency-monit/blob/master/LICENSE">AGPL V 3.0</a><br>
-  <a href="https://git.duniter.org/nodes/typescript/modules/duniter-currency-monit">${LANG['GIT_REPOSITORY']}</a>
-</div><br>
-<div align="left">${LANG['IF_YOU_WANT']} <a href="?lg=${MENU_LANG['LG']}&help=no">${LANG['DISABLE_HELP']}</a>.</div><br>
-<div align="left">${LANG['DONATE']} : GGUSkrw8csnV5uYXfL7Vdoy3qcM8fCD91v3NXHixWtKS<br>
-  <a href="https://cesium.monnaielibreoccitanie.org/api/#/v1/payment/GGUSkrw8csnV5uYXfL7Vdoy3qcM8fCD91v3NXHixWtKS?amount=30&comment=merci%20pour%20currency-monit">
-    <div style="border-radius: 5px; min-height: 42px; text-align: center; padding: 5px; line-height: 30px; max-width: 300px; background-color: #fbc14c; color: black; ">
-      <img style="vertical-align: middle;" src="https://cesium.monnaielibreoccitanie.org/api/../img/logo_32px.png">
-      faire un don (via Cesium)
+<main >
+  <div class="tile is-ancestor">
+    <div class="tile is-4 is-vertical is-parent">
+      <div class="tile is-child box  notification is-success">
+        <p class="title"> ${LANG['VERSION']} :</p>
+        <p>
+          <a href='https://git.duniter.org/nodes/typescript/modules/duniter-currency-monit/tree/v0.4.15' >0.4.15</a >
+        </p>
+      </div>
+      <div class="tile is-child  notification is-warning box">
+        <p class="title">${LANG['AUTHOR']} :</p>
+        <p><a href='https://github.com/librelois' >Éloïs Librelois</a ></p>
+      </div>
     </div>
-  </a>
-  <br>
-</div>
-<br>
+    <div class="tile is-parent">
+      <div class="tile is-child box  notification is-info">
+        <p class="title">${LANG['CONTRIBUTORS']}:</p>
+        <p>
+          <a href='https://github.com/jytou' >jytou</a >
+          (translator),
+          <a href='https://github.com/devingfx' >devingfx</a > (frontend)
+          <a href='https://www.cipherbliss.com' >tykayn</a >
+          , <a href='https://github.com/c-geek' >cgeek</a >
+          (willMembers and   wotex),<a href='https://github.com/M5oul' >M5oul</a >
+          (adjustments)
+
+        </p>
+      </div>
+      <div class="tile is-child box notification is-info" >
+        ${LANG['LICENSE']} : <a href='https://github.com/duniter/duniter-currency-monit/blob/master/LICENSE' >
+        AGPL V3.0</a >
+
+        <a href='https://git.duniter.org/nodes/typescript/modules/duniter-currency-monit' >${LANG['GIT_REPOSITORY']}</a >
+        <div>
+          ${LANG['IF_YOU_WANT']} <a href="?lg=${MENU_LANG['LG']}&help=no" >${LANG['DISABLE_HELP']}</a >.
+        </div>
+      </div >
+
+      <div class="tile is-child box notification is-info" >
+      </div >
+
+      <div class="tile is-child box notification is-info" >
+        ${LANG['DONATE']} : GGUSkrw8csnV5uYXfL7Vdoy3qcM8fCD91v3NXHixWtKS
+        <a href='https://cesium.monnaielibreoccitanie.org/api/#/v1/payment/GGUSkrw8csnV5uYXfL7Vdoy3qcM8fCD91v3NXHixWtKS?amount=30&comment=merci%20pour%20currency-monit' >
+          <div style='border-radius: 5px; min-height: 42px; text-align: center; padding: 5px; line-height: 30px; max-width: 300px; background-color: #fbc14c; color: black; ' >
+            <img
+                style='vertical-align: middle;'
+                src='https://cesium.monnaielibreoccitanie.org/api/../img/logo_32px.png' >
+            faire un don (via Cesium)
+          </div >
+        </a >
+
+      </div >
+    </div>
+  </div>
+
+
+
+</main >

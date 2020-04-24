@@ -19,7 +19,7 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 				tableElem.rows[i].style.display = 'none';
 			else
 				tableElem.rows[i].style.display = '';
-		}  
+		}
 		return false;
 	}
 // ]]></script>
@@ -28,6 +28,7 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 
 <!-- Afficher le menu -->
 ${printMenu(MENU_LANG, help, "MEMBERS")}
+<main>
 
 <!-- Afficher le formulaire -->
 <input type="number" name="d" value="${days}"/> ${LANG["FORM1"]} <select name="sort_by">
@@ -85,7 +86,7 @@ ${(membersLastCentralityCalcTime==0) ? `
 	`}
 `}
 <br>
-	<table border="1">
+	<table class='table is-hoverable is-stripped' border="1">
 		<tr><td align='center' colspan='3'>${LANG["DATA_AT"]} ${timestampToDatetime(membersLastUptime)}</td></tr>
 		<tr><td align='center'>${LANG["meanMembersReachedByMembers"]}</td><td align='center'>${LANG["SENTRIES_REACHED"]}</td><td align='center'>${LANG["MEMBERS_REACHED"]}</td></tr>
 		<tr><td align='center'>${LANG["SENTRY_CERT"]}</td><td align='center'>${(meansMembersQuality.meanSentriesReachedBySentries).toFixed(2)}%</td><td align='center'>${(meansMembersQuality.meanMembersReachedBySentries).toFixed(2)}%</td></tr>
@@ -106,7 +107,7 @@ ${LANG["MEMBER_FILTER"]} : <input type="text" name="filter" id="filter" value=""
 
 <!-- On parcour tout les membres pour afficher ceux dont la date d'expiration est dans moins de 'd' jours -->
 <b>${LANG["TABLE_TITLE"]} ${days} ${LANG["DAYS"]} :</b>
-<table id="table" border="1">
+<table id="table" class="is-striped is-hoverable" border="1">
   <!-- Printer les nom des colonnes -->
   <tr>
     <td align="center" style="display :none"></td>
@@ -125,15 +126,15 @@ ${LANG["MEMBER_FILTER"]} : <input type="text" name="filter" id="filter" value=""
         ${(member.proportion = proportion(member.expireMembershipTimestamp,msValidity,0,120),'')}
         <td align="center" style="display :none">${member.uid}</td>
         <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)"><b>${member.uid}</b><br>
-          
+
           ${(member.isSentry) ? `<font color="blue">${LANG['REFERRING_MEMBER']} : ${LANG['YES']}</font>`:`${LANG['REFERRING_MEMBER']} : ${LANG['NO']}`}<br>
             ${LANG['QUALITY_EXT']} : <b>${(typeof(membersQuality(0, member.wotb_id))=='undefined') ? `0.00`:membersQuality(0, member.wotb_id)}</b><br>
           <b>${(membersLastCentralityCalcTime==0) ? `${LANG['CENTRALITY']} : ?`:`
 						${LANG['CENTRALITY']} : <b>${(typeof(membersCentrality[member.wotb_id])=='undefined') ? `0`:membersCentrality[member.wotb_id]}
 					`}</b><br>
           ->${member.certifications.length}
-          ${pendingSigs == "yes" && typeof(member.pendingCertifications) != 'undefined' 
-            ? ` (+${member.pendingCertifications.length})` 
+          ${pendingSigs == "yes" && typeof(member.pendingCertifications) != 'undefined'
+            ? ` (+${member.pendingCertifications.length})`
             : ''}
         </td>
         <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)">
@@ -145,14 +146,14 @@ ${LANG["MEMBER_FILTER"]} : <input type="text" name="filter" id="filter" value=""
         <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)">
           ${timestampToDatetime(member.expireMembershipTimestamp)}</td>
         <td align='center' style="background:hsla(${member.proportion}, 100%, 50%, 1)">
-          
+
 						<font color="${member.detailedDistance.isOutdistanced ? 'red' : 'blue' }">
 							${member.detailedDistance.isOutdistanced ? LANG['COL_DISTANCE_isOutdistanced'] : LANG['COL_DISTANCE_isNotOutdistanced'] }
 								<br>${member.percentSentriesReached}% (${member.detailedDistance.nbSuccess}/${member.detailedDistance.nbSentries})
 						</font>
         </td>
         <td style="background:#000000">-</td>
-  
+
         <!-- Printer les certifications en piscine -->
         ${pendingSigs == "yes" && typeof(member.pendingCertifications) != 'undefined' ?
             member.pendingCertifications.map( cert=> `
@@ -160,7 +161,7 @@ ${LANG["MEMBER_FILTER"]} : <input type="text" name="filter" id="filter" value=""
               <td align="center" style="background:${(cert.validBlockStamp) ? cert.colorPending=color(cert.expires_on,idtyWindow,250) : cert.colorPending='#FF8000'}">
 								<b>${cert.protagonist}</b><br>
                 <span data-tip="${LANG['EXPIRE_TIME']}">${timestampToDatetime(cert.timestampExpire)}</span><br>
-                
+
                 ${LANG["EMITTED"]} #${cert.blockNumber}<br>
                 ${ ( !cert.validBlockStamp || cert.timestampWritable > currentBlockchainTimestamp ) ? `
 									<font color="DarkRed">[${ (cert.validBlockStamp) ? timestampToDatetime(cert.timestampWritable):LANG['INVALID_BLOCKSTAMP']}]</font>
@@ -169,9 +170,9 @@ ${LANG["MEMBER_FILTER"]} : <input type="text" name="filter" id="filter" value=""
 								`}
                 </font>
               </td>
-            `).join('') 
+            `).join('')
         :''}
-    
+
         <!-- Printer les certifications écrites en blockchain -->
         ${member.certifications.map( cert=> `
           <!-- Printer la certification -->
@@ -187,3 +188,5 @@ ${LANG["MEMBER_FILTER"]} : <input type="text" name="filter" id="filter" value=""
 </table><br>
 
 <hr>
+
+</main>

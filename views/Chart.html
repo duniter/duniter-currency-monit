@@ -3,9 +3,12 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 </head>
 <body>
 
-<!-- Afficher le menu -->
-<script src=${(host.substr(host.length-6,6) == '.onion') ? "http://722iprlhm7pw4mx7.onion/js/Chart.min.js":"https://librelois.fr/js/Chart.min.js"}></script>
-${printMenu(MENU_LANG, help, pageName)}
+
+  <!-- Afficher le menu -->
+  <script src=${(host.substr(host.length-6,6) == '.onion') ? "http://722iprlhm7pw4mx7.onion/js/Chart.min.js":"https://librelois.fr/js/Chart.min.js"}></script>
+  ${printMenu(MENU_LANG, help, pageName)}
+
+<main>
 
 <!-- Afficher le formulaire -->
 ${form||''} <input type="submit" value="${LANG['SUBMIT_BUTTON']}"><br>${(typeof(form2) != 'undefined') ? form2:''}</form><br>
@@ -15,6 +18,8 @@ ${(typeof(description) != 'undefined' && help != 'no') ? description:''}<br>
 
 <!-- Afficher le graphique -->
 <canvas id="myChart"></canvas>
+
+      </main>
 <script>
   var ctx = document.getElementById("myChart").getContext("2d");
   var myNewChart = new Chart(ctx, ${JSON.stringify(chart)} );

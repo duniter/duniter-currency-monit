@@ -1,6 +1,6 @@
 ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
   <title>${currencyName}-monit : ${MENU_LANG['WILL_MEMBERS']}</title>
-  
+
 <script type="text/javascript">// <![CDATA[
 	var table = document.getElementById('table')
 	var filter = document.getElementById('filter')
@@ -20,10 +20,10 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 				tableElem.rows[i].style.display = 'none';
 			else
 				tableElem.rows[i].style.display = '';
-		}  
+		}
 		return false;
 	}
-	
+
 	function deroule(champ,valeur)
 	{
 		/*valeur est la hauteur en pixel de la zone*/
@@ -40,6 +40,8 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 // ]]></script>
 </head>
 <body>
+
+<main>
 
 <!-- Afficher le menu -->
 ${printMenu(MENU_LANG, help, "WILL_MEMBERS")}
@@ -157,14 +159,14 @@ ${(help != 'no') ? `
 		<td align="center" style="display :none"></td>
     <td align='center'>${LANG['IDENTITY']}</td><td align='center'>${LANG['MEMBERSHIP_CASE_FULL']}</td><td align='center'>${LANG['DISTANCE_RULE']}</td>
     <td style="background:#000000">-</td>
-    <td align='center' colspan="${nbMaxCertifs}">${sortSig == "Availability" 
+    <td align='center' colspan="${nbMaxCertifs}">${sortSig == "Availability"
                                                   ? LANG['COL_4_WITH_AVAIlABILITY_SORT']
                                                   : LANG['COL_4']}</td>
   </tr>
-  
+
   ${idtysListFiltered
     .map( (idty,nbPrintMembers)=> `
-      
+
       <!--Printer la ligne-->
       <tr>
 				<td align="center" style="display :none">${idty['uid']}</td>
@@ -197,7 +199,7 @@ ${(help != 'no') ? `
 					<td align='center' colspan=2 style="background:#FF0000"><b>${LANG['IDTY_REVOKED']}</b></td>
 				`}
         <td style="background:#000000">-</td>
-        
+
         <!--printer les certifications-->
         ${idty.pendingCertifications.map( (cert,j)=> `
           ${ (j<nbMaxCertifs) ? `
@@ -218,11 +220,11 @@ ${(help != 'no') ? `
 						</td>
           `:''}
         `).join('')}
-      
+
       </tr>
-      
+
   `).join('')}
-  
+
   <tr>
     <td colspan="${nbMaxCertifs+4}" align="center">
       ${LANG['LAST_TR1']} : <b>${idtysListFiltered.length}</b> ${LANG['LAST_TR2']}.
@@ -231,3 +233,4 @@ ${(help != 'no') ? `
 </table><br>
 
 <hr>
+</main>

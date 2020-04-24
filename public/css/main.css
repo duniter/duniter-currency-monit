@@ -3,10 +3,6 @@ html {
     overflow-y: scroll;
 }
 
-body {
-
-}
-
 main {
     min-height: 80vh;
     padding: 0 4rem;
@@ -63,7 +59,6 @@ span[data-tip] {
     background-color: rgba(0, 0, 0, 0.8);
     left: -10px;
     top: -38px;
-    font-size: 14px;
     border-radius: 3px;
     white-space: nowrap;
     color: #fff;
@@ -78,4 +73,65 @@ span[data-tip] {
     border-right: 8px solid transparent;
     left: 0;
     top: -10px;
+}
+
+
+.sentry {
+    float: left;
+    width: 200px;
+    height: 21px;
+    overflow: hidden;
+}
+.arrow {
+    width: 50px;
+}
+.isMax {
+    border-right: 1px dashed gray;
+}
+.isSentry, .isSentry a {
+    text-decoration: none;
+    color: #6f93ff;
+}
+.isSentry, .isSentry a:visited {
+    text-decoration: none;
+    color: #6f93ff;
+}
+.isPending, .isPending a {
+    text-decoration: none;
+    color: #ffc55a !important;
+    font-weight: bold;
+}
+.isMember, .isMember a {
+    text-decoration: none;
+    color: black !important;
+}
+.isNonMember, .isNonMember a {
+    text-decoration: none;
+    color: #FF596A !important;
+}
+.isPendingCert, .isPendingCert a {
+    text-decoration: none;
+    color: #ffc55a;
+    font-weight: bold;
+}
+.isPending, .isPending a:visited {
+    text-decoration: none;
+    color: #ffc55a !important;
+    font-weight: bold;
+}
+.isMember, .isMember a:visited {
+    text-decoration: none;
+    color: black !important;
+}
+.isNonMember, .isNonMember a:visited {
+    text-decoration: none;
+    color: #ff596a !important;
+}
+.isPendingCert, .isPendingCert a:visited {
+    text-decoration: none;
+    color: #ffc55a;
+    font-weight: bold;
+}
+td {
+    text-align: center;
 }
