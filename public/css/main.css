@@ -1,0 +1,81 @@
+
+html {
+    overflow-y: scroll;
+}
+
+body {
+
+}
+
+main {
+    min-height: 80vh;
+    padding: 0 4rem;
+}
+
+footer {
+    margin-top: 2em;
+    text-align: center;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+}
+
+.menu li {
+    float: left;
+}
+
+li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+li a:hover:not(.active) {
+    background-color: #111;
+}
+
+.active {
+    background-color: #4CAF50;
+}
+
+span[data-tip] {
+    border-bottom: 1px dotted #000;
+}
+
+[data-tip] {
+    display: inline-block;
+    position: relative;
+}
+
+[data-tip]:hover:before {
+    content: attr(data-tip);
+    position: absolute;
+    padding: 0 8px;
+    height: 28px;
+    line-height: 28px;
+    background-color: rgba(0, 0, 0, 0.8);
+    left: -10px;
+    top: -38px;
+    font-size: 14px;
+    border-radius: 3px;
+    white-space: nowrap;
+    color: #fff;
+    font-size: 11px;
+}
+
+[data-tip]:hover:after {
+    content: "";
+    position: absolute;
+    border-top: 8px solid rgba(0, 0, 0, 0.8);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    left: 0;
+    top: -10px;
+}
