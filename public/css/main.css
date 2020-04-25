@@ -6,6 +6,7 @@ html {
 main {
     min-height: 80vh;
     padding: 0 4rem;
+    margin-bottom:5rem;
 }
 
 footer {
@@ -139,4 +140,27 @@ td {
     max-width: 100%;
     display: block;
     overflow-x: scroll;
+}
+
+input {
+
+    margin-bottom: 0.5em;
+    margin-top: 0.5em;
+}
+input[type=number],
+input[type=text]
+{
+    min-width: 15em;
+}
+input[type=checkbox],
+input[type=radio]
+{
+    margin: 0 1ch;
+}
+
+.sentry a {
+    display: block;
+}
+.sentry a:hover {
+    background: #dedede;
 }
