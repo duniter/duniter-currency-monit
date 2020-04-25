@@ -120,14 +120,14 @@ module.exports = async (req, res, next) => {
                 unit,
                 massByMembers,
                 type,
-                form: `${LANG['BEGIN']} #<input type="number" name="begin" value="${begin}"> - ${LANG['END']} #<input type="number" name="end" value="${end}"> <select name="unit">
+                form: `${LANG['BEGIN']} #<input class="input" type="number" name="begin" value="${begin}"> - ${LANG['END']} #<input type="number" name="end" value="${end}"> <select class="input select" name="unit">
             <option name="unit" value ="quantitative">${LANG['QUANTITATIVE']}
             <option name="unit" value ="relative" ${unit == 'relative' ? 'selected' : ''}>${LANG['RELATIVE']}
             <option name="unit" value ="percentOfFullCurrency" ${unit == 'percentOfFullCurrency' ? 'selected' : ''}>${LANG['PERCENT_OF_FULL_CURRENCY']}
-          </select> <select name="massByMembers">
+          </select> <select  class="input select" name="massByMembers">
             <option name="massByMembers" value ="yes">${LANG['MASS_BY_MEMBERS']}
             <option name="massByMembers" value ="no" ${massByMembers == 'no' ? 'selected' : ''}>${LANG['TOTAL_MASS']}
-          </select> <select name="type">
+          </select> <select  class="input select" name="type">
             <option name="type" value ="logarithmic">${LANG['LOGARITHMIC']}
             <option name="type" value ="linear" ${type == 'linear' ? 'selected' : ''}>${LANG['LINEAR']}
           </select>`,
