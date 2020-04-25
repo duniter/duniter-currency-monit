@@ -135,3 +135,8 @@ span[data-tip] {
 td {
     text-align: center;
 }
+.x-scroll{
+    max-width: 100%;
+    display: block;
+    overflow-x: scroll;
+}

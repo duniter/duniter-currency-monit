@@ -184,13 +184,13 @@ module.exports = async (req:any, res:any, next:any) => {
         res.locals = {
         host: req.headers.host.toString(),
           form: `
-            <select name="unit">
+            <select class="input" name="unit">
               <option name="unit" value ="quality">${LANG['QUALITY']}
               <option name="unit" value ="percentReached" ${unit == 'percentReached' ? 'selected' : ''}>${LANG['PERCENT_REACHED']}
               <option name="unit" value ="nbReached" ${unit == 'nbReached' ? 'selected' : ''}>${LANG['NB_REACHED']}
             </select>`,
-          form2: `<input type="checkbox" name="sentries" value="no" ${sentries == 'no' ? 'checked' : ''}> ${LANG["IF_NO_SENTRIES"]}<br>
-            <input type="checkbox" name="nextYn" value="yes" ${nextYn == 'yes' ? 'checked' : ''}> ${LANG["NEXT_YN"]}`,
+          form2: `<input class="input" type="checkbox" name="sentries" value="no" ${sentries == 'no' ? 'checked' : ''}> ${LANG["IF_NO_SENTRIES"]}<br>
+            <input class="input" type="checkbox" name="nextYn" value="yes" ${nextYn == 'yes' ? 'checked' : ''}> ${LANG["NEXT_YN"]}`,
           chart: {
             type: 'bar',
             data: {

@@ -4,6 +4,9 @@
   "main": "index.js",
   "license": "AGPLv3",
   "scripts": {
+    "sync": "node run.js sync 2000",
+    "sync-full": "node run.js sync",
+    "start": "node run.js currency-monit",
     "prepublish": "tsc",
     "test": "mocha"
   },
@@ -18,6 +21,7 @@
     "q": "1.5.0",
     "request": "^2.81.0",
     "request-promise": "4.2.0",
+    "supervisor": "^0.12.0",
     "underscore": "^1.9.1"
   },
   "devDependencies": {

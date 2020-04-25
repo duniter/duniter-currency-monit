@@ -75,7 +75,7 @@ ${(membersLastCentralityCalcTime==0) ? `
   ${(lockCentralityCalc) ? `
     ${LANG["CENTRALITY_CALC_BUSY"]}.<br>
   `:`
-		<table border="1">
+		<table class='table is-striped is-hoverable' border="1">
 			<tr><td align='center' colspan='2'>${LANG["DATA_AT"]} ${timestampToDatetime(membersLastCentralityCalcTime)}</td></tr>
 			<tr><td align='center'>${LANG["MEAN_LENGTH_PATH"]}</td><td align='center'><b>${(meanShortestsPathLength).toFixed(2)}</b></td></tr>
 			<tr><td align='center'>${LANG["MEAN_CENTRALITY"]}</td><td align='center'><b>${meanCentrality.toFixed(2)}</b></td></tr>
@@ -102,13 +102,15 @@ ${(membersLastCentralityCalcTime==0) ? `
 <b>${membersListFiltered.length}</b> ${LANG["MEMBERS"]} ${LANG["OF_WHICH"]} <b>${countSentries}</b> ${LANG['ARE_REFERRING_MEMBERS']} (<b>${((countSentries/membersListFiltered.length)*100).toFixed(2)}%</b>).</i><br>
 <br>
 <!-- Afficher le filtre des membres -->
-${LANG["MEMBER_FILTER"]} : <input type="text" name="filter" id="filter" value="" maxlength="20" onchange="filterRows(document.getElementById('table'),1,0,this.value);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/><br>
+	<label for='filter' >
+${LANG["MEMBER_FILTER"]} :	</label > <input class='input' type="text" name="filter" id="filter" value="" maxlength="20" onchange="filterRows(document.getElementById('table'),1,0,this.value);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/><br>
 </form>
 
 <!-- On parcour tout les membres pour afficher ceux dont la date d'expiration est dans moins de 'd' jours -->
 <b>${LANG["TABLE_TITLE"]} ${days} ${LANG["DAYS"]} :</b>
-<table id="table" class="is-striped is-hoverable" border="1">
+<table id="table" class="table is-striped is-hoverable x-scroll" border="1">
   <!-- Printer les nom des colonnes -->
+	<thead>
   <tr>
     <td align="center" style="display :none"></td>
     <td align="center">${LANG["COL_UID"]}</td>
@@ -116,16 +118,19 @@ ${LANG["MEMBER_FILTER"]} : <input type="text" name="filter" id="filter" value=""
     <td align="center">${LANG["COL_LAST_RENEWAL"]}</td>
     <td align="center">${LANG["COL_EXPIRE_MEMBERSHIP"]}</td>
     <td align='center'>${LANG['COL_DISTANCE']}</td>
-    <td style="background:#000000">-</td>
+    <td style="background:#000000; width: 3px">-</td>
     <td align="left" colspan="${nbMaxCertifs}">${(mode=='emitted') ? LANG['COL_LIST_EMITTED_CERT']:LANG['COL_LIST_RECEIVED_CERT']} (${sort_by == 'lastSig' ? LANG["LAST2OLDEST"] : LANG["OLDEST2LAST"]})</td>
   </tr>
-  ${membersListFiltered
+	</thead>
+	<tbody>
+
+	${membersListFiltered
     .map( member=> `
       <!-- Printer la ligne -->
       <tr>
         ${(member.proportion = proportion(member.expireMembershipTimestamp,msValidity,0,120),'')}
         <td align="center" style="display :none">${member.uid}</td>
-        <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)"><b>${member.uid}</b><br>
+        <td align="center" style="background:hsla(${member.proportion}, 80%, 70%, 1)"><b>${member.uid}</b><br>
 
           ${(member.isSentry) ? `<font color="blue">${LANG['REFERRING_MEMBER']} : ${LANG['YES']}</font>`:`${LANG['REFERRING_MEMBER']} : ${LANG['NO']}`}<br>
             ${LANG['QUALITY_EXT']} : <b>${(typeof(membersQuality(0, member.wotb_id))=='undefined') ? `0.00`:membersQuality(0, member.wotb_id)}</b><br>
@@ -137,15 +142,15 @@ ${LANG["MEMBER_FILTER"]} : <input type="text" name="filter" id="filter" value=""
             ? ` (+${member.pendingCertifications.length})`
             : ''}
         </td>
-        <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)">
+        <td align="center" style="background:hsla(${member.proportion}, 80%, 70%, 1)">
           <span data-tip="${timestampToDatetime(member.idtyWrittenTimestamp)}">#${member.idtyWrittenBloc}</span>
         </td>
-        <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)">
+        <td align="center" style="background:hsla(${member.proportion}, 80%, 70%, 1)">
           <span data-tip="${timestampToDatetime(member.lastRenewalTimestamp)}">#${member.lastRenewalWrittenBloc}</span>
         </td>
-        <td align="center" style="background:hsla(${member.proportion}, 100%, 50%, 1)">
+        <td align="center" style="background:hsla(${member.proportion}, 80%, 70%, 1)">
           ${timestampToDatetime(member.expireMembershipTimestamp)}</td>
-        <td align='center' style="background:hsla(${member.proportion}, 100%, 50%, 1)">
+        <td align='center' style="background:hsla(${member.proportion}, 80%, 70%, 1)">
 
 						<font color="${member.detailedDistance.isOutdistanced ? 'red' : 'blue' }">
 							${member.detailedDistance.isOutdistanced ? LANG['COL_DISTANCE_isOutdistanced'] : LANG['COL_DISTANCE_isNotOutdistanced'] }
@@ -176,7 +181,7 @@ ${LANG["MEMBER_FILTER"]} : <input type="text" name="filter" id="filter" value=""
         <!-- Printer les certifications écrites en blockchain -->
         ${member.certifications.map( cert=> `
           <!-- Printer la certification -->
-          <td align="center" style="background:hsla(${proportion(cert.timestampExpire,sigValidity,0,120)}, 100%, 50%, 1 )">
+          <td align="center" style="background:hsla(${proportion(cert.timestampExpire,sigValidity,0,120)}, 80%, 70%, 1 )">
             <b>${(mode=='emitted') ? cert.receiver:cert.issuer}</b><br>
             <span data-tip="${LANG['EXPIRE_TIME']}">${timestampToDatetime(cert.timestampExpire)}</span><br>
             ${LANG["WRITTEN"]} #${cert.writtenBloc}
@@ -185,7 +190,9 @@ ${LANG["MEMBER_FILTER"]} : <input type="text" name="filter" id="filter" value=""
       </tr>
     `).join('')
   }
-</table><br>
+	</tbody>
+
+</table>
 
 <hr>
 
