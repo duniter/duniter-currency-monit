@@ -11,7 +11,10 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 <main>
 
 <!-- Afficher le formulaire -->
-${form||''} <input type="submit" value="${LANG['SUBMIT_BUTTON']}"><br>${(typeof(form2) != 'undefined') ? form2:''}</form><br>
+${form||''} <input class="button is-primary" type="submit" value="${LANG['SUBMIT_BUTTON']}">
+      <br>
+      ${(typeof(form2) != 'undefined') ? form2:''}
+      </form><br>
 
 <!-- Afficher la description -->
 ${(typeof(description) != 'undefined' && help != 'no') ? description:''}<br>

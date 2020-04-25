@@ -182,22 +182,22 @@ module.exports = async (req: any, res: any, next: any) => {
         begin: cache.beginBlock[0].number,
         end: cache.endBlock[0].number,
         form: `${LANG["BEGIN"]} #<input type="number" name="begin" value="${cache.beginBlock[0].number}" min="0" size="7" style="width:60px;"> - ${LANG["END"]} #<input type="number" name="end" value="${cache.endBlock[0].number}" size="7" style="width:60px;"> - 		${LANG["STEP"]} <input type="number" name="step" value="${cache.step}" min="1" size="4" style="width:50px;">
-					<select name="stepUnit">
+					<select class="input" name="stepUnit">
 						<option name="stepUnit" value ="blocks" ${cache.stepUnit == 'blocks' ? 'selected' : ''}>${LANG["BLOCKS"]}
 						<option name="stepUnit" value ="hours" ${cache.stepUnit == 'hours' ? 'selected' : ''}>${LANG["HOURS"]}
 						<option name="stepUnit" value ="days" ${cache.stepUnit == 'days' ? 'selected' : ''}>${LANG["DAYS"]}
 						<option name="stepUnit" value ="weeks" ${cache.stepUnit == 'weeks' ? 'selected' : ''}>${LANG["WEEKS"]}
 						<option name="stepUnit" value ="months" ${cache.stepUnit == 'months' ? 'selected' : ''}>${LANG["MONTHS"]}
 						<option name="stepUnit" value ="years" ${cache.stepUnit == 'years' ? 'selected' : ''}>${LANG["YEARS"]}
-					</select> - ${LANG["MAX"]} <input type="number" name="nbMaxPoints" value="${cache.nbMaxPoints}" min="1" size="4" style="width:50px;"> ${LANG["POINTS"]} (${LANG["REGULATE_BY_ADAPTING"]} 
-					<select name="adaptMaxPoints">
+					</select> - ${LANG["MAX"]} <input class="input" type="number" name="nbMaxPoints" value="${cache.nbMaxPoints}" min="1" size="4" style="width:50px;"> ${LANG["POINTS"]} (${LANG["REGULATE_BY_ADAPTING"]} 
+					<select class="input" name="adaptMaxPoints">
 						<option name="adaptMaxPoints" value ="begin"> ${LANG["BEGIN"]}
 						<option name="adaptMaxPoints" value ="step" ${cache.adaptMaxPoints == 'step' ? 'selected' : ''}> ${LANG["STEP"]}
 						<option name="adaptMaxPoints" value ="end" ${cache.adaptMaxPoints == 'end' ? 'selected' : ''}> ${LANG["END"]}
 					</select>)`,
 				description: `${LANG["DESCRIPTION1"]+'<br>'+LANG["DESCRIPTION2"]+'<b>'+cache.Yn+'</b>.'}`,
 				form2: `
-					<input type="checkbox" name="pow" value="yes" ${pow == 'yes' ? 'checked' : ''}> ${LANG["SHOW_POW_MIN"]}`,
+					<input class="input" type="checkbox" name="pow" value="yes" ${pow == 'yes' ? 'checked' : ''}> ${LANG["SHOW_POW_MIN"]}`,
         chart: {
           type: 'line',
           data: {
