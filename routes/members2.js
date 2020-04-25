@@ -285,7 +285,7 @@ module.exports = async (req, res, next) => {
                 // Et stocker les uid et dates d'expiration dans un tableau
                 membersPendingCertifsList[m] = new Array();
                 for (var i = 0; i < tmpQueryPendingCertifsList.length; i++) {
-                    // Récupérer le medianTime et le hash du bloc d'émission de la certification 
+                    // Récupérer le medianTime et le hash du bloc d'émission de la certification
                     let emittedBlock = await dataFinder.getBlock(tmpQueryPendingCertifsList[i].block_number);
                     let tmpPub = (mode == 'emitted') ? tmpQueryPendingCertifsList[i].to : tmpQueryPendingCertifsList[i].from;
                     let tmpQueryGetUidProtagonistPendingCert = await dataFinder.getUidOfPub(tmpPub);
@@ -554,7 +554,7 @@ module.exports = async (req, res, next) => {
                 // {
                 //   // Calculer la proportion de membership restant (en pour 255ème)
                 //   let proportion = ((timestamp-currentBlockchainTimestamp)*max)/maxRange;
-                //   proportion = proportion < 0 ? 0 : proportion > max ? max : proportion 
+                //   proportion = proportion < 0 ? 0 : proportion > max ? max : proportion
                 //   // Calculer la couleur à attribuer à cette ligne (dégradé du vert au rouge)
                 //   let color="";
                 //   let tmpRed = 255-(membershipProportion);

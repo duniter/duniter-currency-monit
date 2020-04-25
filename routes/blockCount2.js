@@ -34,7 +34,7 @@ module.exports = async (req, res, next) => {
                 previousBlockchainTime = 0;
             }
         }
-        // get endBlock 
+        // get endBlock
         var endBlock = await dataFinder.getBlock(end); // Sure?
         // get new blocks
         var newBlocks = [];

@@ -42,11 +42,11 @@ var nbShortestsPath = 0;
 
 
 module.exports = async (req: any, res: any, next: any) => {
-  
-  var { duniterServer  } = req.app.locals
 
-  const dataFinder = await DataFinder.getInstanceReindexedIfNecessary()
-  
+  var { duniterServer  } = req.app.locals;
+
+  const dataFinder = await DataFinder.getInstanceReindexedIfNecessary();
+
   try {
     // Initaliser les constantes
     const conf = duniterServer.conf;
@@ -54,7 +54,7 @@ module.exports = async (req: any, res: any, next: any) => {
     const currentBlockchainTimestamp =  head ? head.medianTime : 0;
     const membersCount = head ? head.membersCount : 0;
     var dSen = Math.ceil(Math.pow(membersCount, 1 / conf.stepMax));
-    
+
     // Initaliser les variables
 		let membersListOrdered = [];
 		let membersCertifsListSorted = [];
@@ -101,10 +101,10 @@ module.exports = async (req: any, res: any, next: any) => {
     }
     // Alimenter wotb avec la toile actuelle
 	const wotbInstance = duniterServer.dal.wotb;
-		
+
 	// Vérifier si le cache doit être Réinitialiser
 	let reinitCache = (Math.floor(Date.now() / 1000) > (membersLastUptime + MonitConstants.MIN_MEMBERS_UPDATE_FREQ));
-		
+
 		// Si changement de conditions, alors forcer le rechargement du cache s'il n'est pas vérouillé, sinon forcer les conditions à celles en mémoire
 		// Si recherche par UID ou pubkey => recharger systématiquement
 		if (uidOrPubList || previousMode != mode || previousCentrality != centrality || previousNextYn != nextYn || previousRandomList != randomList || numberOfRandomMembers != previousRandomCounts)
@@ -133,7 +133,7 @@ module.exports = async (req: any, res: any, next: any) => {
 		{
 			reinitCache = false;
 		}
-		
+
 		if (reinitCache)
 		{
 			// Réinitialiser le cache
@@ -168,7 +168,7 @@ module.exports = async (req: any, res: any, next: any) => {
 
 			// réinitialiser le cache des données de qualité
 			membersQuality(MonitConstants.QUALITY_CACHE_ACTION.INIT, 0, dSen, conf.stepMax, conf.xpercent, wotbInstance.memCopy());
-			
+
 			// Réinitialiser le cache des données de centralité
 			if (centrality=='yes')
 			{
@@ -178,10 +178,10 @@ module.exports = async (req: any, res: any, next: any) => {
 				meanShortestsPathLength = 0;
 				nbShortestsPath = 0;
 			}
-			
+
 			// Récupérer la liste des membres référents
 			sentries = wotbInstance.getSentries(dSen);
-    
+
 			// Récupérer la liste des identités ayant actuellement le statut de membre
 			membersList = await dataFinder.getMembers()
 
@@ -203,7 +203,7 @@ module.exports = async (req: any, res: any, next: any) => {
 					return m.uid.toLocaleLowerCase().includes(uidOrPubValue) || m.pub.toLocaleLowerCase().includes(uidOrPubValue)
 				})
 			}
-    
+
 			// Récupérer pour chaque identité, le numéro du block d'écriture du dernier membership
 			// Ainsi que la première ou dernière certification
 			for (let m=0;m<membersList.length;m++)
@@ -211,17 +211,17 @@ module.exports = async (req: any, res: any, next: any) => {
 				// Récupérer les blockstamp d'écriture et date d'expiration du membership courant du membre m
 				let tmpQueryResult = [await dataFinder.membershipWrittenOnExpiresOn(membersList[m].pub)];
 					membershipsExpireTimeList.push(tmpQueryResult[0].expires_on);
-					
+
 				// Extraire le numéro de bloc du blockstamp d'écriture du membership courant
 				let blockstampMembershipWritten = tmpQueryResult[0].written_on.split("-"); // Separate blockNumber and blockHash
 				membershipsBlockNumberList.push(blockstampMembershipWritten[0]);
-				
+
 				// Extraire le numéro de bloc du blockstamp d'écriture de l'identité du membre
 				let blockstampIdtyWritten = membersList[m].written_on.split("-"); // Separate blockNumber and blockHash
-				
+
 				// Récupérer le champ medianTime du bloc d'écriture de l'identité du membre
 				let resultQueryTimeWrittenIdty = await dataFinder.getBlock(blockstampIdtyWritten[0])
-				
+
 				// Vérifier si le membre est référent
 				let currentMemberIsSentry = false;
 				sentriesIndex[membersList[m].uid] = false;
@@ -234,19 +234,19 @@ module.exports = async (req: any, res: any, next: any) => {
 						sentriesIndex[membersList[m].uid] = true;
 					}
 				}
-				
+
 				// Réinitialiser le degré de centralité du membre
 				if (centrality=='yes')
 				{
 					membersCentrality[membersList[m].wotb_id] = 0;
 				}
-				
+
 				// Créer une wot temporaire
 				let tmpWot = wotbInstance.memCopy();
-				
+
 				// Récupérer les informations détaillés de distance pour le membre courant
 				let detailedDistance = tmpWot.detailedDistance(membersList[m].wotb_id, dSen, conf.stepMax, conf.xpercent);
-				
+
 				// Calculer le nombre de membres référents
 				if (currentMemberIsSentry)
 				{
@@ -267,10 +267,10 @@ module.exports = async (req: any, res: any, next: any) => {
 				if (membersQuality(MonitConstants.QUALITY_CACHE_ACTION.GET_QUALITY, membersList[m].wotb_id, -1) >= 1.0) {
 					proportionMembersWithQualityUpper1IfNoSentries++;
 				}
-				
+
 				// Nettoyer la wot temporaire
 				tmpWot.clear();
-				
+
 				// Stocker les informations de l'identité
 				membersIdentity.push({
 					writtenBloc: blockstampIdtyWritten[0],
@@ -278,7 +278,7 @@ module.exports = async (req: any, res: any, next: any) => {
 					detailedDistance: detailedDistance,
 					isSentry: currentMemberIsSentry
 				});
-				
+
 				// récupérer toutes les certification  reçus/émises par l'utilisateur
 				let tmpQueryCertifsList = [];
 				let tmpOrder = (sort_by == "lastSig") ? 'DESC' : 'ASC';
@@ -293,7 +293,7 @@ module.exports = async (req: any, res: any, next: any) => {
 
 				// Calculer le nombre de certifications reçus/émises par le membre courant
 				let nbWrittenCertifs = tmpQueryCertifsList.length;
-				
+
 				// Récupérer les uid des émetteurs/receveurs des certifications reçus/émises par l'utilisateur
 				// Et stocker les uid et dates d'expiration dans un tableau
 				membersCertifsList[m] = new Array();
@@ -309,7 +309,7 @@ module.exports = async (req: any, res: any, next: any) => {
 						tmpQueryGetUidProtagonistCert = [await dataFinder.getProtagonist(tmpQueryCertifsList[i].issuer)]
 					}
 					let tmpBlockWrittenOn = tmpQueryCertifsList[i].written_on.split("-");
-					
+
 					// Stoker la liste des certifications qui n'ont pas encore expirées
 					if (tmpQueryCertifsList[i].expires_on > currentBlockchainTimestamp)
 					{
@@ -326,7 +326,7 @@ module.exports = async (req: any, res: any, next: any) => {
 						});
 					}
 				}
-				
+
 					// Récupérer toutes les certification en piscine
 					let nbValidPendingCertifs = 0;
 					let tmpQueryPendingCertifsList = [];
@@ -338,18 +338,18 @@ module.exports = async (req: any, res: any, next: any) => {
 					{
 						tmpQueryPendingCertifsList = await dataFinder.getCertsPendingFromTo(membersList[m].pub, tmpOrder)
 					}
-					
+
 					// Récupérer les uid des émetteurs des certifications reçus par l'utilisateur
 					// Et stocker les uid et dates d'expiration dans un tableau
 					membersPendingCertifsList[m] = new Array();
 					for (var i=0;i<tmpQueryPendingCertifsList.length;i++)
 					{
-						// Récupérer le medianTime et le hash du bloc d'émission de la certification 
+						// Récupérer le medianTime et le hash du bloc d'émission de la certification
 						let emittedBlock = await dataFinder.getBlock(tmpQueryPendingCertifsList[i].block_number)
-						
+
 						let tmpPub = (mode=='emitted') ? tmpQueryPendingCertifsList[i].to:tmpQueryPendingCertifsList[i].from;
 						let tmpQueryGetUidProtagonistPendingCert = await dataFinder.getUidOfPub(tmpPub)
-						
+
 						// Vérifier que l'émetteur de la certification correspond à une identié connue
 						if ( tmpQueryGetUidProtagonistPendingCert.length > 0 )
 						{
@@ -357,7 +357,7 @@ module.exports = async (req: any, res: any, next: any) => {
 							let validBlockStamp = false;
 							if (typeof(emittedBlock) != 'undefined' && emittedBlock.hash == tmpQueryPendingCertifsList[i].block_hash)
 							{ validBlockStamp = true; }
-							
+
 							// Vérifier que le membre courant n'a pas déjà émis/reçu d'autre(s) certification(s) vis à vis du même protagoniste ET dans le même état de validité du blockstamp
 							let doubloonPendingCertif = false;
 							for (const pendingCert of membersPendingCertifsList[m])
@@ -371,7 +371,7 @@ module.exports = async (req: any, res: any, next: any) => {
 							{
 								// récupérer le timestamp d'écriture de la dernière certification écrite par l'émetteur
 								let tmpQueryLastIssuerCert = await dataFinder.getChainableOnByIssuerPubkeyByExpOn(tmpQueryPendingCertifsList[i].from)
-									
+
 								// Stoker la liste des certifications en piscine qui n'ont pas encore expirées
 								if (tmpQueryPendingCertifsList[i].expires_on > currentBlockchainTimestamp)
 								{
@@ -385,22 +385,22 @@ module.exports = async (req: any, res: any, next: any) => {
 									});
 									nbValidPendingCertifs++;
 								}
-								
+
 							}
 						}
 					}
-				
+
 				// Calculer le nombre maximal de certifications reçus par le membre courant
 				let nbCertifs = nbWrittenCertifs + nbValidPendingCertifs;
 				if ( nbCertifs > nbMaxCertifs) { nbMaxCertifs = nbCertifs; }
 			} // END of members loop
-			
+
 			// Convertir chaque blockNumber (de membership) en timestamp
 			for (const membershipBlockNumber of membershipsBlockNumberList)
 			{
 				membershipsTimeList.push(await dataFinder.getBlock(membershipBlockNumber) as { medianTime: number })
 			}
-    
+
 			// Traiter les cas ou expires_on est indéfini
 			for (let i=0;i<membershipsExpireTimeList.length;i++)
 			{
@@ -409,7 +409,7 @@ module.exports = async (req: any, res: any, next: any) => {
 					// membershipsExpireTimeList[i] = membershipsTimeList[i] + msValidity; ## msValidity is unknown var?
 				}
 			}
-			
+
 			// Calculer le degré de centralité de tout les membres (si demandé)
 			if (centrality=='yes')
 			{
@@ -459,13 +459,13 @@ module.exports = async (req: any, res: any, next: any) => {
 				}
 			}
 		} // END if (reinitCache)
-        
+
     // Calculer le timestamp limite à prendre en compte
     let limitTimestamp = currentBlockchainTimestamp + (days*86400);
-        
+
     // trier les membres par ordre croissant/decroissant du critère sort_by
     if (sort_by == "idtyWritten")
-    { 
+    {
       for (const memberIdentity of membersIdentity)
       { tabSort.push(memberIdentity.writtenTimestamp); }
     }
@@ -475,17 +475,17 @@ module.exports = async (req: any, res: any, next: any) => {
       { tabSort.push(membershipExpireTimeList); }
     }
     else if (sort_by == "lastRenewal")
-    { 
+    {
       for (const membershipTimeList of membershipsTimeList)
       { tabSort.push(membershipTimeList.medianTime); }
     }
     else if (sort_by == "oldestSig" || sort_by == "lastSig")
-    { 
+    {
       for (const memberCertifsList of membersFirstCertifExpire)
       { tabSort.push(memberCertifsList); }
 		}
 		else if (sort_by == "centrality")
-		{ 
+		{
 			for (const member of membersList)
 			{
 				if (membersCentrality[member.wotb_id] > 0)
@@ -499,14 +499,14 @@ module.exports = async (req: any, res: any, next: any) => {
 			}
 		}
 		else if (sort_by == "quality")
-		{ 
+		{
 			for (const member of membersList)
 			{
 				tabSort.push(membersQuality(MonitConstants.QUALITY_CACHE_ACTION.GET_QUALITY, member.wotb_id));
 			}
 		}
     else if (sort_by == "sigCount")
-    { 
+    {
       for (const memberCertifsList of membersCertifsList)
       {
 		if (memberCertifsList.length > 0)
@@ -520,7 +520,7 @@ module.exports = async (req: any, res: any, next: any) => {
       }
     }
     else { res.status(500).send(`<pre><p>ERREUR : param <i>sort_by</i> invalid !</p></pre>`) } //
-    
+
     for (var i=0;i<membersList.length;i++)
     {
       var maxTime = 0;
@@ -534,7 +534,7 @@ module.exports = async (req: any, res: any, next: any) => {
           idMaxTime = j;
         }
       }
-      
+
       // Push max value on sort table, only if respect days limit
       if (limitTimestamp > membershipsExpireTimeList[idMaxTime])
       {
@@ -554,7 +554,7 @@ module.exports = async (req: any, res: any, next: any) => {
 					percentSentriesReached: parseFloat(((membersIdentity[idMaxTime].detailedDistance.nbSuccess/membersIdentity[idMaxTime].detailedDistance.nbSentries)*100).toFixed(2)),
 					isSentry: membersIdentity[idMaxTime].isSentry
         });
-        
+
         membersCertifsListSorted.push({
 					issuer: membersCertifsList[idMaxTime].issuer,
 					receiver: membersCertifsList[idMaxTime].receiver,
@@ -565,13 +565,13 @@ module.exports = async (req: any, res: any, next: any) => {
       // Exclure la valeur max avant de poursuivre le tri
       tabSort[idMaxTime] = -1;
     }
-    
+
     if (reinitCache)
 	{
 			//Calculate proportionMembersWithQualityUpper1 and proportionMembersWithQualityUpper1IfNoSentries
 			proportionMembersWithQualityUpper1 /= membersList.length;
 			proportionMembersWithQualityUpper1IfNoSentries /= membersList.length;
-			
+
 			// recalculate meanCentrality and meanShortestsPathLength
 			if (centrality=='yes')
 			{
@@ -592,7 +592,7 @@ module.exports = async (req: any, res: any, next: any) => {
 	{
 		console.log("%s %s", membersQuality(member.wotb_id), member.certifications.length);
 	}*/
-    
+
     // Si le client demande la réponse au format JSON =, le faire
     if (format == 'JSON')
     {
@@ -612,12 +612,12 @@ module.exports = async (req: any, res: any, next: any) => {
 				numberOfRandomMembers: numberOfRandomMembers, randomList,
 				// Formulaire de recherche par UID ou PUB
 				uidOrPubList, uidOrPubValue,
-				
+
 				// page data
         		currentBlockchainTimestamp,
 				limitTimestamp, nbMaxCertifs,
-				membersListFiltered: membersListOrdered.filter( member=> 
-					member.expireMembershipTimestamp < limitTimestamp 
+				membersListFiltered: membersListOrdered.filter( member=>
+					member.expireMembershipTimestamp < limitTimestamp
 					&& member.expireMembershipTimestamp > currentBlockchainTimestamp
 				),
 				countSentries,
@@ -628,14 +628,14 @@ module.exports = async (req: any, res: any, next: any) => {
 				msValidity: conf.msValidity,
 				sigValidity: conf.sigValidity,
 				stepMax: conf.stepMax,
-				
+
 				// members cache data
 				membersLastUptime,
 				membersQuality,
 				proportionMembersWithQualityUpper1,
 				proportionMembersWithQualityUpper1IfNoSentries,
 				meansMembersQuality,
-				
+
 				// centrality cache data
 				lockCentralityCalc,
 				membersLastCentralityCalcTime,
@@ -643,14 +643,14 @@ module.exports = async (req: any, res: any, next: any) => {
 				meanCentrality,
 				meanShortestsPathLength,
 				nbShortestsPath,
-        
+
         // Template helpers
         timestampToDatetime,
 				// Calculer la proportion de temps restant avant l'expiration
 				color: function( timestamp: number, idtyWindow: number, max: number )
 				{
 					let proportion = ((timestamp-currentBlockchainTimestamp)*max)/idtyWindow;
-					proportion = proportion < 0 ? 0 : proportion > max ? max : proportion 
+					proportion = proportion < 0 ? 0 : proportion > max ? max : proportion
 					let hex = proportion.toString(16)
 					return `#${hex}${hex}${hex}`
 				},
@@ -662,15 +662,15 @@ module.exports = async (req: any, res: any, next: any) => {
         proportion: function( timestamp: number, maxRange: number, min: number, max: number )
         {
           let proportion = ( (timestamp-currentBlockchainTimestamp) * max ) / maxRange
-          proportion = proportion < 0 ? 0 : proportion > max ? max : proportion 
+          proportion = proportion < 0 ? 0 : proportion > max ? max : proportion
           return proportion
         }
         // color2: function( timestamp, maxRange, max )
         // {
         //   // Calculer la proportion de membership restant (en pour 255ème)
         //   let proportion = ((timestamp-currentBlockchainTimestamp)*max)/maxRange;
-        //   proportion = proportion < 0 ? 0 : proportion > max ? max : proportion 
-          
+        //   proportion = proportion < 0 ? 0 : proportion > max ? max : proportion
+
         //   // Calculer la couleur à attribuer à cette ligne (dégradé du vert au rouge)
         //   let color="";
         //   let tmpRed = 255-(membershipProportion);
@@ -680,7 +680,7 @@ module.exports = async (req: any, res: any, next: any) => {
         //   if ( tmpGreen < 16 ) { color += "0"; }
         //   color += parseInt(tmpGreen).toString(16);
         //   color += "00";
-          
+
         // }
       }
       next()
@@ -689,5 +689,5 @@ module.exports = async (req: any, res: any, next: any) => {
     // En cas d'exception, afficher le message
     res.status(500).send(`<pre>${e.stack || e.message}</pre>`)
   }
-  
+
 }
