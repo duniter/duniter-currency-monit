@@ -30,11 +30,11 @@ PROPORTION_OF_EXIST_PATH Proportion de couples orientés pour lesquels il existe
 MEAN_LENGTH_PATH Longueur moyenne d'un plus court chemin
 WOT_TENSION_FACTOR Facteur de tension de la toile*
 DATA_AT Données au
-meanMembersReachedByMembers Taux moyen de membres joiniables via une seule certification
+meanMembersReachedByMembers Taux moyen de membres joignables via une seule certification
 MEMBER_CERT certification d'un membre
-MEMBERS_REACHED membres joiniables
+MEMBERS_REACHED membres joignables
 SENTRY_CERT certification d'un membre référent
-SENTRIES_REACHED membres référents joiniables
+SENTRIES_REACHED membres référents joignables
 MEAN_QUALITY Qualité moyenne
 PROPORTION_MEMBERS_WITH_QUALITY_UPPER_1 Proportion de membre avec une qualité >= 1
 CURRENT_BLOCKCHAIN_TIME Temps Blockchain actuel
