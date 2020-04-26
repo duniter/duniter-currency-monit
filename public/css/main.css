@@ -156,6 +156,8 @@ input[type=checkbox],
 input[type=radio]
 {
     margin: 0 1ch;
+    width: 1em;
+    height: 1em;
 }
 
 .sentry a {

@@ -1,8 +1,21 @@
 <!-- Inclure l'en-tête commun -->
 ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
   <title>${currencyName}-monit : ${MENU_LANG['WOTEX']}</title>
-		<!-- Style css spécifique de wotex -->
+<link
+    rel='stylesheet'
+    type='text/css'
+    href='//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css' />
+<script src="https://code.jquery.com/jquery-3.5.0.slim.min.js" integrity="sha256-MlusDLJIP1GRgLrOflUQtshyP0TwT/RHXsI1wWGnQhs=" crossorigin="anonymous"></script>
+<script src='/js/dataTables.min.js'></script >
+<script type='text/javascript' >
+
+  $(document).ready(function () {
+    $('table, #table').DataTable();
+  });
+</script >
+
               <script type="text/javascript">
+
 
                 function onLoadedPage() {
                   var to = decodeURIComponent(querySt("to") || '');

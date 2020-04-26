@@ -55,7 +55,7 @@ ${printMenu(MENU_LANG, help, "WILL_MEMBERS")}
 	</select> ${LANG["ORDER"]} : <select name="order">
 		<option name="order" value ="asc">${LANG["ORDER_ASC"]}
 		<option name="order" value ="desc" ${order == 'desc' ? 'selected' : ''}>${LANG["ORDER_DESC"]}
-	</select> <input type="submit" value="${LANG["SUBMIT_TXT"]}"><br>
+	</select> <input  class="button is-primary" type="submit" value="${LANG["SUBMIT_TXT"]}"><br>
 	<input type="checkbox" name="showIdtyWithZeroCert" value="yes" ${showIdtyWithZeroCert == 'yes' ? 'checked' : ''}>${LANG["CHECKBOX_SHOW_IDTY_WITH_ZERO_CERT"]}<br>
 	<input type="checkbox" name="sortSig" value="Availability" ${sortSig == 'Availability' ? 'checked' : ''}>${LANG["CHECKBOX_SORT_SIG"]}<br>
 	${LANG["IDTY_FILTER"]} : <input type="text" name="filter" id="filter" value="" maxlength="20" onchange="filterRows(document.getElementById('table'),2,0,this.value);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>

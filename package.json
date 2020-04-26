@@ -4,9 +4,9 @@
   "main": "index.js",
   "license": "AGPLv3",
   "scripts": {
-    "sync": "node run.js sync 2000",
-    "sync-full": "node run.js sync",
-    "start": "node run.js currency-monit",
+    "sync": "node run.js sync g1.duniter.org 1000",
+    "sync-full": "node run.js sync g1.duniter.org",
+    "start": "nodemon run.js currency-monit",
     "prepublish": "tsc",
     "test": "mocha"
   },
