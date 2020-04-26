@@ -31,10 +31,12 @@ var table = document.getElementById('tableMmembersExpiracy');
 function filterRows(tableElem, rowIndex, colIndex, filterString) {
   for (var i = rowIndex, val; i < tableElem.rows.length; ++i) {
     val = tableElem.rows[i].cells[colIndex].firstChild.nodeValue;
-    if (val.substr(0, filterString.length).toLowerCase() != filterString.toLowerCase())
+    if (!val.includes( filterString.toLowerCase())){
       tableElem.rows[i].style.display = 'none';
-    else
+    }
+    else{
       tableElem.rows[i].style.display = '';
+    }
   }
   return false;
 }
@@ -283,9 +285,7 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 					<td align='center' >
  ${ LANG["MEMBER_CERT"]}</td >
 					<td align='center' ><font ${ (meansMembersQuality.meanSentriesReachedByMembers
-						<xpercent
-						) ? 'color="DarkRed"' : 'color="blue"'
-						} ><b >
+						<xpercent ) ? 'color="DarkRed"' : 'color="blue"' 	} ><b >
  ${ meansMembersQuality.meanSentriesReachedByMembers}%</b ></font></td >
 					<td align='center' ><b >
  ${ meansMembersQuality.meanMembersReachedByMembers}%</b ></td >
