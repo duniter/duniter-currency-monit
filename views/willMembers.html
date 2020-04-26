@@ -1,5 +1,5 @@
 ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
-<title >${currencyName}-monit : ${MENU_LANG['WILL_MEMBERS']}</title >
+<title >   ${currencyName}-monit : ${MENU_LANG['WILL_MEMBERS']}</title >
 
 <script type='text/javascript' >// <![CDATA[
 var table = document.getElementById('table');
@@ -39,49 +39,52 @@ function deroule(champ, valeur) {
 // ]]></script >
 </head>
 <body >
-
+<!-- Afficher le menu -->
+${printMenu(MENU_LANG, help, "WILL_MEMBERS")}
 <main >
 
-	<!-- Afficher le menu -->
-	${printMenu(MENU_LANG, help, "WILL_MEMBERS")}
+
 
 	<!-- Afficher le formulaire -->
 	<input
 			name='d'
 			type='number'
-			value='${days}' />${LANG["DAYS"]} - ${LANG["SORT_BY"]}
+			value='${days}' />   ${LANG["DAYS"]} - ${LANG["SORT_BY"]}
 	<select name='sort_by' >
 		<option
 				name='sort_by'
-				value='creationIdty' >${LANG["SORT_BY_CREATION_IDTY"]}
-		<option ${sort_by='='
+				value='creationIdty' >
+			${LANG["SORT_BY_CREATION_IDTY"]}
+		<option
 		        name='sort_by'
 		        value='sigCount'
-		'sigCount' ? 'selected' : ''}>${LANG["SORT_BY_SIG_COUNT"]}
-		<option ${sort_by='='
+		        ${sort_by=='sigCount' ? 'selected' : ''} >
+		                                ${LANG["SORT_BY_SIG_COUNT"]}
+		<option
 		        name='sort_by'
 		        value='registrationPackage'
-		'registrationPackage' ? 'selected' : ''}>${LANG["SORT_BY_REGISTRATION_PACKAGE"]}
+		        ${sort_by=='registrationPackage' ? 'selected' : ''} >
+		                                ${LANG["SORT_BY_REGISTRATION_PACKAGE"]}
 	</select > ${LANG["ORDER"]} : <select name='order' >
 	<option
 			name='order'
-			value='asc' >${LANG["ORDER_ASC"]}
-	<option ${order='='
+			value='asc' >   ${LANG["ORDER_ASC"]}
+	<option
 	        name='order'
 	        value='desc'
-	'desc' ? 'selected' : ''}>${LANG["ORDER_DESC"]}
-</select > <input SUBMIT_TXT
+	        ${order=='desc' ? 'selected' : ''}>   ${LANG["ORDER_DESC"]}
+</select > <input
 	                class='button is-primary'
 	                type='submit'
-	                value='${LANG['"]}"><br >
-	<input ${showIdtyWithZeroCert='='
+	                value='${LANG["SUBMIT_TXT"]}'><br >
+	<input
 	       name='showIdtyWithZeroCert'
 	       type='checkbox'
-	       value='yes' 'yes' ? 'checked' : ''}>${LANG["CHECKBOX_SHOW_IDTY_WITH_ZERO_CERT"]}<br >
-	<input ${sortSig='='
+	       value='yes' ${showIdtyWithZeroCert=='yes' ? 'checked' : ''}> ${LANG["CHECKBOX_SHOW_IDTY_WITH_ZERO_CERT"]}<br >
+	<input
 	       name='sortSig'
 	       type='checkbox'
-	       value='Availability' 'Availability' ? 'checked' : ''}>${LANG["CHECKBOX_SORT_SIG"]}<br >
+	       value='Availability' ${sortSig=='Availability' ? 'checked' : ''}>   ${LANG["CHECKBOX_SORT_SIG"]}<br >
 	${LANG["IDTY_FILTER"]} : <input
 		id='filter'
 		maxlength='20'
@@ -105,24 +108,24 @@ function deroule(champ, valeur) {
 				id='bandeau1'
 				onmouseout='deroule(1,20);'
 				onmouseover='deroule(1,400);'
-				style='height: 20px; width: 100%; font-size: medium; color: white; background-color: darkgrey;' ><b >${LANG["LEGEND"]}</b >
+				style='height: 20px; width: 100%; font-size: medium; color: white; background-color: darkgrey;' ><b >   ${LANG["LEGEND"]}</b >
 		</div >
 		<div
 				id='texte1'
 				style='float: left;' >
-			<i ><font color='DarkRed' >${LANG["SIG_PERIOD_LEGEND"]}</font ><br >
-				<font color='green' >${LANG["SIG_PERIOD_LEGEND2"]}</font ></i ><br >
+			<i ><font color='DarkRed' >   ${LANG["SIG_PERIOD_LEGEND"]}</font ><br >
+				<font color='green' >   ${LANG["SIG_PERIOD_LEGEND2"]}</font ></i ><br >
 			<br >
-			<b >${LANG["HOW_TO_BECOME_MEMBER_TITLE"]}</b ><br >
+			<b >   ${LANG["HOW_TO_BECOME_MEMBER_TITLE"]}</b ><br >
 			${LANG["HOW_TO_BECOME_MEMBER_TEXT"]}<br >
 			<br >
-			<b >${LANG["DISTANCE_RULE_TITLE"]}</b ><br >
-			${LANG["DISTANCE_RULE_TXT"]} <b >${dSen}</b ><br >
+			<b >   ${LANG["DISTANCE_RULE_TITLE"]}</b ><br >
+			${LANG["DISTANCE_RULE_TXT"]} <b >   ${dSen}</b ><br >
 			<br >
-			<b >${LANG["WHAT_IS_CENTRALITY_TITLE"]}</b ><br >
+			<b >   ${LANG["WHAT_IS_CENTRALITY_TITLE"]}</b ><br >
 			${LANG["WHAT_IS_CENTRALITY_TEXT"]}<br >
 			<br >
-			<b >${LANG["QUALITY_MEMBER_TITLE"]}</b ><br >
+			<b >   ${LANG["QUALITY_MEMBER_TITLE"]}</b ><br >
 			${LANG["QUALITY_MEMBER_TXT"]}<br >
 		</div >
 	</div >
@@ -136,14 +139,14 @@ function deroule(champ, valeur) {
 				id='bandeau2'
 				onmouseout='deroule(2,20);'
 				onmouseover='deroule(2,150);'
-				style='height: 20px; width: 100%; font-size: medium; color: white; background-color: darkgrey;' ><b >${LANG["WOT_TENSION_STATE"]}</b >
+				style='height: 20px; width: 100%; font-size: medium; color: white; background-color: darkgrey;' ><b >   ${LANG["WOT_TENSION_STATE"]}</b >
 		</div >
 		<div
 				id='texte2'
 				style='float: left;' >
 			<table border='1' >
 				<tr >
-					<td align='center' >${LANG["NUMBER_OF_RECEIVED_CERTS"]}</td >
+					<td align='center' >   ${LANG["NUMBER_OF_RECEIVED_CERTS"]}</td >
 					<td align='center' >1</td >
 					<td align='center' >2</td >
 					<td align='center' >3</td >
@@ -167,104 +170,104 @@ function deroule(champ, valeur) {
 				</tr >
 				<!-- Afficher les moyennes SentriesReachedByIdtyPerCert -->
 				<tr >
-					<td align='center' >${LANG["MEAN_SENTRIES_REACHED"]}</td >
-					<td ><font color="${(meanSentriesReachedByIdtyPerCert[0]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${meanSentriesReachedByIdtyPerCert[0]}%</b ></font >
+					<td align='center' >   ${LANG["MEAN_SENTRIES_REACHED"]}</td >
+					<td ><font color="${(meanSentriesReachedByIdtyPerCert[0]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${meanSentriesReachedByIdtyPerCert[0]}%</b ></font >
 					</td >
-					<td ><font color="${(meanSentriesReachedByIdtyPerCert[1]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${meanSentriesReachedByIdtyPerCert[1]}%</b ></font >
+					<td ><font color="${(meanSentriesReachedByIdtyPerCert[1]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${meanSentriesReachedByIdtyPerCert[1]}%</b ></font >
 					</td >
-					<td ><font color="${(meanSentriesReachedByIdtyPerCert[2]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${meanSentriesReachedByIdtyPerCert[2]}%</b ></font >
+					<td ><font color="${(meanSentriesReachedByIdtyPerCert[2]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${meanSentriesReachedByIdtyPerCert[2]}%</b ></font >
 					</td >
-					<td ><font color="${(meanSentriesReachedByIdtyPerCert[3]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${meanSentriesReachedByIdtyPerCert[3]}%</b ></font >
+					<td ><font color="${(meanSentriesReachedByIdtyPerCert[3]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${meanSentriesReachedByIdtyPerCert[3]}%</b ></font >
 					</td >
-					<td ><font color="${(meanSentriesReachedByIdtyPerCert[4]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${meanSentriesReachedByIdtyPerCert[4]}%</b ></font >
+					<td ><font color="${(meanSentriesReachedByIdtyPerCert[4]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${meanSentriesReachedByIdtyPerCert[4]}%</b ></font >
 					</td >
 					${(nbMaxCertifs>5) ? `
-					<td ><font color="${(meanSentriesReachedByIdtyPerCert[5]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${meanSentriesReachedByIdtyPerCert[5]}%</b ></font >
+					<td ><font color="${(meanSentriesReachedByIdtyPerCert[5]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${meanSentriesReachedByIdtyPerCert[5]}%</b ></font >
 					</td >
 					`:``}
 					${(nbMaxCertifs>6) ? `
-					<td ><font color="${(meanSentriesReachedByIdtyPerCert[6]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${meanSentriesReachedByIdtyPerCert[6]}%</b ></font >
+					<td ><font color="${(meanSentriesReachedByIdtyPerCert[6]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${meanSentriesReachedByIdtyPerCert[6]}%</b ></font >
 					</td >
 					`:``}
 					${(nbMaxCertifs>7) ? `
-					<td ><font color="${(meanSentriesReachedByIdtyPerCert[7]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${meanSentriesReachedByIdtyPerCert[7]}%</b ></font >
+					<td ><font color="${(meanSentriesReachedByIdtyPerCert[7]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${meanSentriesReachedByIdtyPerCert[7]}%</b ></font >
 					</td >
 					`:``}
 					${(nbMaxCertifs>8) ? `
-					<td ><font color="${(meanSentriesReachedByIdtyPerCert[8]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${meanSentriesReachedByIdtyPerCert[8]}%</b ></font >
+					<td ><font color="${(meanSentriesReachedByIdtyPerCert[8]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${meanSentriesReachedByIdtyPerCert[8]}%</b ></font >
 					</td >
 					`:``}
 					${(nbMaxCertifs>9) ? `
-					<td ><font color="${(meanSentriesReachedByIdtyPerCert[9]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${meanSentriesReachedByIdtyPerCert[9]}%</b ></font >
+					<td ><font color="${(meanSentriesReachedByIdtyPerCert[9]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${meanSentriesReachedByIdtyPerCert[9]}%</b ></font >
 					</td >
 					`:``}
 				</tr >
 				<!-- Afficher les qualités moyennes -->
 				<tr >
-					<td align='center' >${LANG["MEAN_QUALITY_CERTS"]}</td >
+					<td align='center' >   ${LANG["MEAN_QUALITY_CERTS"]}</td >
 					<td align='center' >
-						<font color="${(meanSentriesReachedByIdtyPerCert[0]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${(meanSentriesReachedByIdtyPerCert[0]/(xpercent*100)).toFixed(2)}</b ></font >
+						<font color="${(meanSentriesReachedByIdtyPerCert[0]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${(meanSentriesReachedByIdtyPerCert[0]/(xpercent*100)).toFixed(2)}</b ></font >
 					</td >
 					<td align='center' >
-						<font color="${(meanSentriesReachedByIdtyPerCert[1]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${(meanSentriesReachedByIdtyPerCert[1]/(xpercent*100)).toFixed(2)}</b ></font >
+						<font color="${(meanSentriesReachedByIdtyPerCert[1]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${(meanSentriesReachedByIdtyPerCert[1]/(xpercent*100)).toFixed(2)}</b ></font >
 					</td >
 					<td align='center' >
-						<font color="${(meanSentriesReachedByIdtyPerCert[2]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${(meanSentriesReachedByIdtyPerCert[2]/(xpercent*100)).toFixed(2)}</b ></font >
+						<font color="${(meanSentriesReachedByIdtyPerCert[2]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${(meanSentriesReachedByIdtyPerCert[2]/(xpercent*100)).toFixed(2)}</b ></font >
 					</td >
 					<td align='center' >
-						<font color="${(meanSentriesReachedByIdtyPerCert[3]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${(meanSentriesReachedByIdtyPerCert[3]/(xpercent*100)).toFixed(2)}</b ></font >
+						<font color="${(meanSentriesReachedByIdtyPerCert[3]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${(meanSentriesReachedByIdtyPerCert[3]/(xpercent*100)).toFixed(2)}</b ></font >
 					</td >
 					<td align='center' >
-						<font color="${(meanSentriesReachedByIdtyPerCert[4]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${(meanSentriesReachedByIdtyPerCert[4]/(xpercent*100)).toFixed(2)}</b ></font >
+						<font color="${(meanSentriesReachedByIdtyPerCert[4]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${(meanSentriesReachedByIdtyPerCert[4]/(xpercent*100)).toFixed(2)}</b ></font >
 					</td >
 					${(nbMaxCertifs>5) ? `
 					<td align='center' >
-						<font color="${(meanSentriesReachedByIdtyPerCert[5]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${(meanSentriesReachedByIdtyPerCert[5]/(xpercent*100)).toFixed(2)}</b ></font >
+						<font color="${(meanSentriesReachedByIdtyPerCert[5]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${(meanSentriesReachedByIdtyPerCert[5]/(xpercent*100)).toFixed(2)}</b ></font >
 					</td >
 					`:``}
 					${(nbMaxCertifs>6) ? `
 					<td align='center' >
-						<font color="${(meanSentriesReachedByIdtyPerCert[6]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${(meanSentriesReachedByIdtyPerCert[6]/(xpercent*100)).toFixed(2)}</b ></font >
+						<font color="${(meanSentriesReachedByIdtyPerCert[6]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${(meanSentriesReachedByIdtyPerCert[6]/(xpercent*100)).toFixed(2)}</b ></font >
 					</td >
 					`:``}
 					${(nbMaxCertifs>7) ? `
 					<td align='center' >
-						<font color="${(meanSentriesReachedByIdtyPerCert[7]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${(meanSentriesReachedByIdtyPerCert[7]/(xpercent*100)).toFixed(2)}</b ></font >
+						<font color="${(meanSentriesReachedByIdtyPerCert[7]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${(meanSentriesReachedByIdtyPerCert[7]/(xpercent*100)).toFixed(2)}</b ></font >
 					</td >
 					`:``}
 					${(nbMaxCertifs>8) ? `
 					<td align='center' >
-						<font color="${(meanSentriesReachedByIdtyPerCert[8]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${(meanSentriesReachedByIdtyPerCert[8]/(xpercent*100)).toFixed(2)}</b ></font >
+						<font color="${(meanSentriesReachedByIdtyPerCert[8]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${(meanSentriesReachedByIdtyPerCert[8]/(xpercent*100)).toFixed(2)}</b ></font >
 					</td >
 					`:``}
 					${(nbMaxCertifs>9) ? `
 					<td align='center' >
-						<font color="${(meanSentriesReachedByIdtyPerCert[9]<xpercent) ? 'DarkRed' : 'blue' }" ><b >${(meanSentriesReachedByIdtyPerCert[9]/(xpercent*100)).toFixed(2)}</b ></font >
+						<font color="${(meanSentriesReachedByIdtyPerCert[9]<xpercent) ? 'DarkRed' : 'blue' }" ><b >   ${(meanSentriesReachedByIdtyPerCert[9]/(xpercent*100)).toFixed(2)}</b ></font >
 					</td >
 					`:``}
 				</tr >
 				<!-- Afficher les moyennes MembersReachedByIdtyPerCert -->
 				<tr >
-					<td align='center' >${LANG["MEAN_MEMBERS_REACHED"]}</td >
-					<td ><b >${meanMembersReachedByIdtyPerCert[0]}%</b ></td >
-					<td ><b >${meanMembersReachedByIdtyPerCert[1]}%</b ></td >
-					<td ><b >${meanMembersReachedByIdtyPerCert[2]}%</b ></td >
-					<td ><b >${meanMembersReachedByIdtyPerCert[3]}%</b ></td >
-					<td ><b >${meanMembersReachedByIdtyPerCert[4]}%</b ></td >
+					<td align='center' >   ${LANG["MEAN_MEMBERS_REACHED"]}</td >
+					<td ><b >   ${meanMembersReachedByIdtyPerCert[0]}%</b ></td >
+					<td ><b >   ${meanMembersReachedByIdtyPerCert[1]}%</b ></td >
+					<td ><b >   ${meanMembersReachedByIdtyPerCert[2]}%</b ></td >
+					<td ><b >   ${meanMembersReachedByIdtyPerCert[3]}%</b ></td >
+					<td ><b >   ${meanMembersReachedByIdtyPerCert[4]}%</b ></td >
 					${(nbMaxCertifs>5) ? `
-					<td ><b >${meanMembersReachedByIdtyPerCert[5]}%</b ></td >
+					<td ><b >   ${meanMembersReachedByIdtyPerCert[5]}%</b ></td >
 					`:``}
 					${(nbMaxCertifs>6) ? `
-					<td ><b >${meanMembersReachedByIdtyPerCert[6]}%</b ></td >
+					<td ><b >   ${meanMembersReachedByIdtyPerCert[6]}%</b ></td >
 					`:``}
 					${(nbMaxCertifs>7) ? `
-					<td ><b >${meanMembersReachedByIdtyPerCert[7]}%</b ></td >
+					<td ><b >   ${meanMembersReachedByIdtyPerCert[7]}%</b ></td >
 					`:``}
 					${(nbMaxCertifs>8) ? `
-					<td ><b >${meanMembersReachedByIdtyPerCert[8]}%</b ></td >
+					<td ><b >   ${meanMembersReachedByIdtyPerCert[8]}%</b ></td >
 					`:``}
 					${(nbMaxCertifs>9) ? `
-					<td ><b >${meanMembersReachedByIdtyPerCert[9]}%</b ></td >
+					<td ><b >   ${meanMembersReachedByIdtyPerCert[9]}%</b ></td >
 					`:``}
 				</tr >
 			</table >
@@ -272,9 +275,9 @@ function deroule(champ, valeur) {
 	</div >
 
 	<!-- Afficher le currentBlockchainTimestamp et le nombre d'identités au dossier complet -->
-	${LANG["BLOCKCHAIN_TIME"]} : <b >${timestampToDatetime(currentBlockchainTimestamp)}</b >
-	(#<b >${currentBlockNumber}</b >).<br >
-	${LANG["COUNT_READY_MEMBERS"]} : <b >${countMembersWithSigQtyValidCert}</b >.<br >
+	${LANG["BLOCKCHAIN_TIME"]} : <b >   ${timestampToDatetime(currentBlockchainTimestamp)}</b >
+	(#<b >   ${currentBlockNumber}</b >).<br >
+	${LANG["COUNT_READY_MEMBERS"]} : <b >   ${countMembersWithSigQtyValidCert}</b >.<br >
 
 	<!-- Tableau de toutes les identités en piscine -->
 	<table
@@ -283,7 +286,7 @@ function deroule(champ, valeur) {
 		<tr >
 			<td
 					align='center'
-					colspan='${nbMaxCertifs+4}' >${LANG["TABLE_TITLE1"]} <b >${days}</b > ${LANG["TABLE_TITLE2"]}
+					colspan='${nbMaxCertifs+4}' >   ${LANG["TABLE_TITLE1"]} <b >   ${days}</b > ${LANG["TABLE_TITLE2"]}
 			</td >
 		</tr >
 		<!-- Printer les nom des colonnes -->
@@ -291,13 +294,13 @@ function deroule(champ, valeur) {
 			<td
 					align='center'
 					style='display :none' ></td >
-			<td align='center' >${LANG['IDENTITY']}</td >
-			<td align='center' >${LANG['MEMBERSHIP_CASE_FULL']}</td >
-			<td align='center' >${LANG['DISTANCE_RULE']}</td >
+			<td align='center' >   ${LANG['IDENTITY']}</td >
+			<td align='center' >   ${LANG['MEMBERSHIP_CASE_FULL']}</td >
+			<td align='center' >   ${LANG['DISTANCE_RULE']}</td >
 			<td style='background:#000000' >-</td >
 			<td
 					align='center'
-					colspan='${nbMaxCertifs}' >${sortSig == "Availability"
+					colspan='${nbMaxCertifs}' >   ${sortSig == "Availability"
 			                               ? LANG['COL_4_WITH_AVAIlABILITY_SORT']
 			                               : LANG['COL_4']}
 			</td >
@@ -310,14 +313,14 @@ function deroule(champ, valeur) {
 		<tr >
 			<td
 					align='center'
-					style='display :none' >${idty['uid']}
+					style='display :none' >   ${idty['uid']}
 			</td >
 			<td
 					align='center'
 					style="background:${(idty.validBlockStamp) ? ((idty.expires_on > 0) ? idty.colorPending=color(idty.expires_on,idtyWindow,250):idty.colorPending='#FF0000'): idty.colorPending='#FF8000'}" >
-				<a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${idty['uid']}${idty['wotexId']}&pending=on&mode=undefined" >${idty['uid'].substring(0,
+				<a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${idty['uid']}${idty['wotexId']}&pending=on&mode=undefined" >   ${idty['uid'].substring(0,
 				                                                                                                                                                                     25)}</a >
-				<br ><span data-tip="${LANG['PUBKEY_PART']} " >${idty['pubkey'].substring(0, 16)}</span >
+				<br ><span data-tip="${LANG['PUBKEY_PART']} " >   ${idty['pubkey'].substring(0, 16)}</span >
 				<br ><b ><span data-tip="${LANG['EMITTED_ON']} ${timestampToDatetime(idty['creationTimestamp'])}" >#${idty['BlockNumber']}</span ></b >
 				${(idty.expires_on > 0) ? '<br ><b ><span data-tip="'+LANG['EXPIRE_TIME']+'" >'+timestampToDatetime(idty.expires_on)+'</span ></b >':``}
 				${(!idty.validBlockStamp) ? `
@@ -329,29 +332,29 @@ function deroule(champ, valeur) {
 					align='center'
 					style='background:${idty.colorPending}' >
 				${(idty.membership && !idty.detailedDistance.isOutdistanced && idty.nbValidPendingCert >= sigQty) ? `
-				<font color='green' >${LANG['YES']}
+				<font color='green' >   ${LANG['YES']}
 				                     `:`
-					<font color='DarkRed' >${LANG['NO']}
-					                       ${!idty.membership? `<br >${LANG['MEMBERSHIP_NOT_ASKED']}`:``}
-					                       ${(idty.nbValidPendingCert < sigQty) ? `<br >${LANG['MISS']} <b >${(sigQty-idty.nbValidPendingCert)}</b >
+					<font color='DarkRed' >   ${LANG['NO']}
+					                       ${!idty.membership? `<br >   ${LANG['MEMBERSHIP_NOT_ASKED']}`:``}
+					                       ${(idty.nbValidPendingCert < sigQty) ? `<br >   ${LANG['MISS']} <b >   ${(sigQty-idty.nbValidPendingCert)}</b >
 					                       ${LANG['CERTS']}`:``}
-					                       ${idty.detailedDistance.isOutdistanced? `<br >${LANG['DISTANCE']} ${LANG['KO']}`:``}
+					                       ${idty.detailedDistance.isOutdistanced? `<br >   ${LANG['DISTANCE']} ${LANG['KO']}`:``}
 					</font >
 				                     `}
 			</td >
 			<td
 					align='center'
 					style='background:${idty.colorPending}' >
-				<font color="${idty.detailedDistance.isOutdistanced ? 'DarkRed' : 'blue' }" >${idty.percentSentriesReached}%
+				<font color="${idty.detailedDistance.isOutdistanced ? 'DarkRed' : 'blue' }" >   ${idty.percentSentriesReached}%
 				                                                                             (${idty.detailedDistance.nbSuccess}/${idty.detailedDistance.nbSentries})
-					<br >${LANG['QUALITY_CERTIFIERS']} : <b >${(idty.validBlockStamp) ?
+					<br >   ${LANG['QUALITY_CERTIFIERS']} : <b >   ${(idty.validBlockStamp) ?
 					                                         ((idty.detailedDistance.nbSuccess/idty.detailedDistance.nbSentries)/xpercent).toFixed(2):`0.00`}</b ></font >
 			</td >
 			`:`
 			<td
 					align='center'
 					colspan='2'
-					style='background:#FF0000' ><b >${LANG['IDTY_REVOKED']}</b ></td >
+					style='background:#FF0000' ><b >   ${LANG['IDTY_REVOKED']}</b ></td >
 			`}
 			<td style='background:#000000' >-</td >
 
@@ -364,12 +367,12 @@ function deroule(champ, valeur) {
 					align='center'
 					style="background:${(cert.validBlockStamp) ? color(cert.timestampExpire,sigWindow,250) : '#FF8000'}" >
 				${cert.issuerIsSentry ? '<b >':''}
-				<a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${cert['from']}&pending=on&mode=undefined" >${cert['from']}</a >
+				<a href="wotex?lg=${MENU_LANG['LG']}${(typeof(help) != 'undefined' && help == 'no') ? '&help=no':''}&to=${cert['from']}&pending=on&mode=undefined" >   ${cert['from']}</a >
 				                             ${cert.issuerIsSentry ? '</b >':''}
-				<br >${LANG['QUALITY']} : <b >${(typeof(membersQualityExt[cert.from])=='undefined' || !cert.validBlockStamp) ?
+				<br >   ${LANG['QUALITY']} : <b >   ${(typeof(membersQualityExt[cert.from])=='undefined' || !cert.validBlockStamp) ?
 				                              `0.00`:membersQualityExt[cert.from]}</b >
 				<br ><b ><span data-tip="${LANG['EMITTED_ON']}  ${timestampToDatetime(cert['creationTimestamp'])}" >#${cert['blockNumber']}</span ></b >
-				<br ><span data-tip="${LANG['EXPIRE_TIME']}" >${timestampToDatetime(cert.timestampExpire)}</span >
+				<br ><span data-tip="${LANG['EXPIRE_TIME']}" >   ${timestampToDatetime(cert.timestampExpire)}</span >
 				${j==(4+idty.pendingCertifications.length-idty.nbValidPendingCert)?'<b >':''}
 				                                                                        ${ ( !cert.validBlockStamp ||
 				                                                                        cert['timestampWritable'] >
@@ -392,7 +395,7 @@ function deroule(champ, valeur) {
 			<td
 					align='center'
 					colspan='${nbMaxCertifs+4}' >
-				${LANG['LAST_TR1']} : <b >${idtysListFiltered.length}</b > ${LANG['LAST_TR2']}.
+				${LANG['LAST_TR1']} : <b >   ${idtysListFiltered.length}</b > ${LANG['LAST_TR2']}.
 			</td >
 		</tr >
 	</table >
