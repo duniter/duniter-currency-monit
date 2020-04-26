@@ -70,10 +70,12 @@ ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
   }
 </script >
 </head>
+<body>
+<!-- Afficher le menu -->
+${printMenu(MENU_LANG, help, "WOTEX")}
 <main onload='onLoadedPage()' >
 
-	<!-- Afficher le menu -->
-	${printMenu(MENU_LANG, help, "WOTEX")}
+
 
 	<!-- Afficher le titre et le formulaire -->
 	<h1 >${LANG['TITLE']}</h1 >
