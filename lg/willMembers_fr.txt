@@ -15,7 +15,7 @@ SIG_PERIOD_LEGEND2 green : [disponible] : signifie que cette certification pourr
 HOW_TO_BECOME_MEMBER_TITLE À quel moment une identité devient membre ?
 HOW_TO_BECOME_MEMBER_TEXT Une identité devient membre dès qu'elle bénéficie d'au moins <b>5</b> certifications à l'état <font color='green'>[disponible]</font> <b>au même moment <u>et</u></b> qu'elle respecte la règle de distance.<br>Vous pouvez cliquer directement sur une identité pour arriver sur la page wotex correspondante afin de vérifier si elle respecte la règle de distance.
 DISTANCE_RULE_TITLE C'est quoi la règle de distance ?
-DISTANCE_RULE_TXT Il faut qu'il existe un chemin de 5 pas maximum d'au moins <font color='blue'><b>80% des membres référents</b></font> vers l'identité qui souhaite devenir membre.<br>Tout membre devient automatiquement référent dès lors qu'il a émis <b><u>et</u></b> reçu Y[n] certifications. (Y[n] = CEILING(N(t)^(1/5))).<br>Actuellement, Yn = 
+DISTANCE_RULE_TXT Il faut qu'il existe un chemin de 5 pas maximum d'au moins <font color='blue'><b>80% des membres référents</b></font> vers l'identité qui souhaite devenir membre.<br>Tout membre devient automatiquement référent dès lors qu'il a émis <b><u>et</u></b> reçu Y[n] certifications. (Y[n] = CEILING(N(t)^(1/5))).<br>Actuellement, Yn =
 WHAT_IS_CENTRALITY_TITLE Qu'est ce que le degré de centralité ?
 WHAT_IS_CENTRALITY_TEXT Le degré de centralité d'un membre est le nombre de couples orientés (membre->membre) pour lesquels il fait parti d'un des plus court chemin reliant ce couple.
 QUALITY_MEMBER_TITLE Qu'est ce que la qualité d'un membre ?
@@ -26,9 +26,9 @@ TABLE_TITLE2 jours
 COUNT_READY_MEMBERS Identités avec au moins 5 certifications valides reçues
 WOT_TENSION_STATE Qualité moyenne des dossiers d'adhésion en fonction du nombre de certifications valides reçues
 NUMBER_OF_RECEIVED_CERTS Nombre de certifications reçues
-MEAN_SENTRIES_REACHED Taux moyen de membres référents joiniables
+MEAN_SENTRIES_REACHED Taux moyen de membres référents joignables
 MEAN_QUALITY_CERTS Qualité moyenne par groupe de certifications reçues
-MEAN_MEMBERS_REACHED Taux moyen de membres joiniables
+MEAN_MEMBERS_REACHED Taux moyen de membres joignables
 IDENTITY Identité
 MEMBERSHIP_CASE_FULL dossier complet ?
 DISTANCE_RULE distance
