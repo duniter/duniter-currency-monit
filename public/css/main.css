@@ -133,8 +133,23 @@ span[data-tip] {
     color: #ffc55a;
     font-weight: bold;
 }
+.members-page input[type=number]{
+    max-width: 15em;
+    display:inline-block;
+    margin-right: 1em;
+}
+.dataTables_wrapper thead tr td,
+thead thead tr td
+{
+    background: #ecf0f3;
+}
 td {
     text-align: center;
+}
+td.bordering-element{
+    width: 3px !important;
+    background: #000;
+    padding: 0 !important;
 }
 .x-scroll{
     max-width: 100%;

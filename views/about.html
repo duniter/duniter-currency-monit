@@ -1,7 +1,7 @@
 ${(host.substr(host.length-6,6) == '.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 <title >${currencyName}-monit : ${MENU_LANG['ABOUT']}</title >
 </head>
-<body >
+<body>
 
 <!-- Afficher le menu -->
 ${printMenu(MENU_LANG, help, "ABOUT")}
@@ -9,7 +9,7 @@ ${printMenu(MENU_LANG, help, "ABOUT")}
 </form>
 <main >
 	<div class='tile is-ancestor' >
-		<div class='tile is-4 is-vertical is-parent' >
+		<div class='tile is-2 is-vertical is-parent' >
 			<div class='tile is-child box  notification is-success' >
 				<p class='title' > ${LANG['VERSION']} :</p >
 				<p >
@@ -18,7 +18,8 @@ ${printMenu(MENU_LANG, help, "ABOUT")}
 			</div >
 			<div class='tile is-child  notification is-warning box' >
 				<p class='title' >${LANG['AUTHOR']} :</p >
-				<p ><a href='https://github.com/librelois' >Éloïs Librelois</a ></p >
+				<p ><a href='https://github.com/librelois' >Éloïs Librelois</a >
+					<a href='https://github.com/c-geek' >Cgeek</a ></p >
 			</div >
 		</div >
 		<div class='tile is-parent' >
@@ -27,9 +28,10 @@ ${printMenu(MENU_LANG, help, "ABOUT")}
 				<p >
 					<a href='https://github.com/jytou' >jytou</a >
 					(translator),
-					<a href='https://github.com/devingfx' >devingfx</a > (frontend)
+					<a href='https://github.com/devingfx' >devingfx</a >
 					<a href='https://www.cipherbliss.com' >tykayn</a >
-					, <a href='https://github.com/c-geek' >cgeek</a >
+					(frontend),
+					<a href='https://github.com/c-geek' >cgeek</a >
 					(willMembers and wotex),<a href='https://github.com/M5oul' >M5oul</a >
 					(adjustments)
 
@@ -39,6 +41,9 @@ ${printMenu(MENU_LANG, help, "ABOUT")}
 				${LANG['LICENSE']} : <a href='https://github.com/duniter/duniter-currency-monit/blob/master/LICENSE' >
 				AGPL V3.0</a >
 
+				<a href='https://forum.duniter.org/t/currency-monit-monitoring-dune-monnaie-et-de-sa-toile-de-confiance/2770' >
+					Duniter Forum topic
+				</a >
 				<a href='https://git.duniter.org/nodes/typescript/modules/duniter-currency-monit' >${LANG['GIT_REPOSITORY']}</a >
 				<div >
 					${LANG['IF_YOU_WANT']} <a href="?lg=${MENU_LANG['LG']}&help=no" >${LANG['DISABLE_HELP']}</a >.
@@ -61,3 +66,4 @@ ${printMenu(MENU_LANG, help, "ABOUT")}
 	</div >
 
 </main >
+</body>
