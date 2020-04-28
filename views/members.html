@@ -14,7 +14,7 @@ ${ (host.substr(host.length-6,6) =='.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 <script type='text/javascript' >
 
   $(document).ready(function () {
-    // $('.table').DataTable();
+    $('.table').DataTable({pagination:false});
     // $('#tableMmembersExpiracy').DataTable();
   });
 </script >
@@ -47,173 +47,158 @@ function filterRows(tableElem, rowIndex, colIndex, filterString) {
 
 <!-- Afficher le menu -->
 ${ printMenu(MENU_LANG, help, "MEMBERS")}
-<main >
+<main class='members-page'>
 
 	<!-- Afficher le formulaire -->
 	<div class='columns form-fields' >
 		<div class='column' >
-			${ LANG["ORDER_BY"]} ${ LANG["FORM1"]}
-			<input
-					autofocus
-					class='input'
-					name='d'
-					type='number'
-					value='${ days}' />
-			<hr >
 
-			<select
-					class='input select'
-					name='sort_by' >
-				<option
-						name='sort_by'
-						value='idtyWritten' >
-					${ LANG["SORT_BY_IDTY_WRITTEN"]}
-				<option
-						name='sort_by'
-						value='expireMembership'
-						${
-						sort_by=='expireMembership'
-						?
-				'selected' : '' } >
-				${ LANG["SORT_BY_EXPIRE_MEMBERSHIP"]}
-				<option
-						name='sort_by'
-						value='lastRenewal'
-						${
-						sort_by=='lastRenewal'
-						?
-				'selected' : '' } >
-				${ LANG["SORT_LAST_RENEWAL"]}
-				<option
-						name='sort_by'
-						value='oldestSig'
-						${
-						sort_by=='oldestSig'
-						?
-				'selected' : '' } >
-				${ LANG["SORT_BY_OLDEST_SIG"]}
-				<option
-						name='sort_by'
-						value='lastSig'
-						${
-						sort_by=='lastSig'
-						?
-				'selected' : '' } >
-				${ LANG["SORT_BY_LAST_SIG"]}
-				${ (sort_by == `centrality` ? `selected` : `` }
-				<option
-						name='sort_by'
-						selected='
-						${
-						(sort_by=="centrality"
-						?
-						`selected`
-						:
-						``
-						}'
-						value='centrality'
-				>
-					${ LANG["SORT_BY_CENTRALITY"]}
-				<option
-						name='sort_by'
-						value='quality'
-						${
-						sort_by=='quality'
-						?
-				'selected' : '' } >
-				${ LANG["SORT_BY_QUALITY"]}
-				<option
-						name='sort_by'
-						value='sigCount'
-						${
-						sort_by=='sigCount'
-						?
-				'selected' : '' } >
-				${ LANG["SORT_BY_SIG_COUNT"]}
-			</select >
-			<select
-					class='input select'
-					name='order' >
-				<option
-						name='order'
-						value='asc' > ${ LANG["ASC"]}
-				<option
-						name='order'
-						value='desc'
-						${
-						order=='desc'
-						?
-				'selected' : '' } > ${ LANG["DESC"]}
-			</select >
+			<div class='field'>
+				<div class='control'>
+					<input
+							autofocus
+							class='input'
+							id='days_counter'
+							name='d'
+							type='number'
+							value='${ days}' />
+				</div>
+			</div>
+		<div class='field'>
+			<label class="label" for='days_counter' >
+				${ LANG["FORM1"]}
+			</label >
+			<div class='control'>
+				<!--			jour tri par-->
+				<div class='select'>
+
+
+					<select
+
+							name='sort_by' >
+						<option
+								name='sort_by'
+								value='idtyWritten' >
+							${ LANG["SORT_BY_IDTY_WRITTEN"]}
+						<option
+								name='sort_by'
+								value='expireMembership'
+								${ sort_by=='expireMembership' ? 'selected' : '' } >
+						                                     ${ LANG["SORT_BY_EXPIRE_MEMBERSHIP"]}
+						<option
+								name='sort_by'
+								value='lastRenewal'
+								${ sort_by=='lastRenewal' ? 'selected' : '' } >
+						                                     ${ LANG["SORT_LAST_RENEWAL"]}
+						<option
+								name='sort_by'
+								value='oldestSig'
+								${ sort_by=='oldestSig' ? 'selected' : '' } >
+						                                     ${ LANG["SORT_BY_OLDEST_SIG"]}
+						<option
+								name='sort_by'
+								value='lastSig'
+								${ sort_by=='lastSig' ? 'selected' : '' } >
+						                                     ${ LANG["SORT_BY_LAST_SIG"]}
+						<option
+								name='sort_by'
+								value='centrality'
+								${ sort_by== 'centrality' ? 'selected' : '' } >
+						                                     ${ LANG["SORT_BY_CENTRALITY"]}
+						<option
+								name='sort_by'
+								value='quality'
+								${ sort_by =='quality' ? 'selected' : '' } >
+						                                     ${ LANG["SORT_BY_QUALITY"]}
+						<option
+								name='sort_by'
+								value='sigCount'
+								${ sort_by=='sigCount' ? 'selected' : '' } >
+						                                     ${ LANG["SORT_BY_SIG_COUNT"]}
+					</select >
+					<!--			dans l'ordre-->
+				</div>
+			</div>
+		</div>
+
+			<label for='select_order' >
+				${ LANG["ORDER_BY"]}
+			</label >
+			<div class='select'>
+				<select
+
+						id='select_order'
+						name='order' >
+					<option
+							name='order'
+							value='asc' > ${ LANG["ASC"]}
+					<option
+							name='order'
+							value='desc'
+							${ order=='desc' ? 'selected' : '' } > ${ LANG["DESC"]}
+				</select >
+			</div>
+
 		</div >
 		<div class='column' >
 
-			<input
-					class='button is-primary is-fullwidth'
-					type='submit'
-					value="${ LANG['SUBMIT_BUTTON']}" ><br >
+
 			<input
 					name='centrality'
 					type='checkbox'
 					value='yes' >
 			${ LANG["CHECKBOX_CENTRALITY"]}.<br >
 			<input
-					name='pendingSigs'
-					type='checkbox'
-					value='yes'
-					${
-					pendingSigs=='yes'
-					? 'checked' : '' } >
-			${ LANG["CHECKBOX_PENDING_SIGS"]}.<br >
+			       name='pendingSigs'
+			       type='checkbox'
+			       value='yes'
+			       ${ pendingSigs=='yes' ? 'checked' : '' } >
+ 					${ LANG["CHECKBOX_PENDING_SIGS"]}.<br >
 			<input
-					name='mode'
-					type='checkbox'
-					value='emitted'
-					${
-					mode=='emitted'
-					? 'checked' : '' } >
-			${ LANG["CHECKBOX_MODE_SIG"]}.<br >
+			       name='mode'
+			       type='checkbox'
+			       value='emitted'
+			       ${ mode=='emitted' ? 'checked' : '' } >
+ 					${ LANG["CHECKBOX_MODE_SIG"]}.<br >
 			<input
-					name='nextYn'
-					type='checkbox'
-					value='yes'
-					${
-					nextYn=='yes'
-					? 'checked' : '' } >
-			${ LANG["NEXT_YN"]}<br >
+			       name='nextYn'
+			       type='checkbox'
+			       value='yes'
+			       ${ nextYn =='yes' ? 'checked' : '' } >
+					${ LANG["NEXT_YN"]}<br >
 			<input
-					name='randomList'
-					type='checkbox'
-					value='yes'
-					${
-					randomList=='yes'
-					? 'checked' : '' } >
-			${ LANG["RANDOM_LIST"]}
+			       name='randomList'
+			       type='checkbox'
+			       value='yes'
+			       ${ randomList =='yes' ? 'checked' : '' } >
+					${ LANG["RANDOM_LIST"]}
 			<input
 					name='randomCounts'
 					type='number'
 					value='${ numberOfRandomMembers}' />
-			${ LANG["RANDOM_LIST_END"]}.<br >
-			<input ${
-			       uidOrPubList=='checked'
-			       ? 'checked' : '' }
-			name='uidOrPubList'
-			type='checkbox'
-			value='yes' >
-			${ LANG["UID_OR_PUB_LIST"]}
+					${ LANG["RANDOM_LIST_END"]}.<br >
+			<input ${ uidOrPubList =='checked' ? 'checked' : '' }
+			       name='uidOrPubList'
+			       type='checkbox'
+			       value='yes'  >
+          ${ LANG["UID_OR_PUB_LIST"]}
 			<input
 					name='uidOrPubValue'
 					type='search'
 					value="${ uidOrPubValue || '' }" /> ${ LANG["UID_OR_PUB_LIST_END"]}.<br >
-			<hr >
+			<input
+					class='button is-primary is-fullwidth'
+					type='submit'
+					value="${ LANG['SUBMIT_BUTTON']}" ><br >
+
 		</div >
 	</div >
-
+	<hr >
 	<!-- Afficher la légende et l'aide -->
 
 	${ (help != 'no') ? `
 	<div class='columns legend-and-help' >
-		<div class='column' >
+		<div class='column is-one-fifth' >
 			<b >
 				${ LANG["LEGEND"]}
 			</b >
@@ -227,7 +212,7 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 			<br >
 			${ LANG["WHAT_IS_CENTRALITY_TEXT"]}
 		</div >
-		<div class='column' >
+		<div class='column is-one-third' >
 			<b >
 				${ LANG["QUALITY_MEMBER_TITLE"]}</b >
 			<br >
@@ -256,38 +241,38 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 			<table class='table is-striped is-hoverable is-outlined' >
 
 				<tr >
-					<td align='center' >
+					<td   >
 						${ LANG["MEAN_LENGTH_PATH"]}
 					</td >
-					<td align='center' ><b >
+					<td   ><b >
 						${ (meanShortestsPathLength).toFixed(2)}</b ></td >
 				</tr >
 				<tr >
-					<td align='center' >
+					<td   >
 						${ LANG["MEAN_CENTRALITY"]}
 					</td >
-					<td align='center' ><b >
+					<td   ><b >
 						${ meanCentrality.toFixed(2)}</b ></td >
 				</tr >
 				<tr >
-					<td align='center' >
+					<td   >
 						${ LANG["NUMBER_OF_PAIRS_MEMBER"]}
 					</td >
-					<td align='center' >
+					<td   >
 						${ (membersListFiltered.length*(membersListFiltered.length-1))}
 					</td >
 				</tr >
 				<tr >
-					<td align='center' >
+					<td   >
 						${ LANG["NUMBER_OF_EXIST_PATH"]}
 					</td >
-					<td align='center' ><b >
+					<td   ><b >
 						${ nbShortestsPath}</b ></td >
 				</tr >
 				<tr >
-					<td align='center' ><b >
+					<td   ><b >
 						${ LANG["PROPORTION_OF_EXIST_PATH"]}</b ></td >
-					<td align='center' >
+					<td   >
 						<font color='red' >
 							<b >
 								${ ((nbShortestsPath/(membersListFiltered.length*(membersListFiltered.length-1)))*100).toFixed(2) }%
@@ -301,26 +286,25 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 			`}
 		</div >
 		<div class='column' >
-
 			<table class='table is-hoverable is-stripped is-bordered' >
 				<thead >
 				<tr >
 					<td
-							align='center'
+
 							colspan='3' >
-						<h2 class='title is-2' >
+						<h4 class='title is-4' >
 							${ LANG["DATA_AT"]} ${ timestampToDatetime(membersLastUptime)}
-						</h2 >
+						</h4 >
 					</td >
 				</tr >
 				<tr >
-					<td align='center' >
+					<td   >
 						${ LANG["meanMembersReachedByMembers"]}
 					</td >
-					<td align='center' >
+					<td   >
 						${ LANG["SENTRIES_REACHED"]}
 					</td >
-					<td align='center' >
+					<td   >
 						${ LANG["MEMBERS_REACHED"]}
 					</td >
 				</tr >
@@ -328,46 +312,46 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 				<tbody >
 
 				<tr >
-					<td align='center' >
+					<td   >
 						${ LANG["SENTRY_CERT"]}
 					</td >
-					<td align='center' >
+					<td   >
 						${ (meansMembersQuality.meanSentriesReachedBySentries).toFixed(2)}%
 					</td >
-					<td align='center' >
+					<td   >
 						${ (meansMembersQuality.meanMembersReachedBySentries).toFixed(2)}%
 					</td >
 				</tr >
 				<tr >
-					<td align='center' >
+					<td   >
 						${ LANG["MEMBER_CERT"]}
 					</td >
-					<td align='center' ><font ${
+					<td   ><font ${
 					                          (meansMembersQuality.meanSentriesReachedByMembers
 						<xpercent )
 						          ?
 						'color="DarkRed"' : 'color="blue"' } ><b >
 							${ meansMembersQuality.meanSentriesReachedByMembers}%</b ></font></td >
-					<td align='center' ><b >
+					<td   ><b >
 						${ meansMembersQuality.meanMembersReachedByMembers}%</b ></td >
 				</tr >
 				<tr >
-					<td align='center' ><b >
+					<td   ><b >
 						${ LANG["MEAN_QUALITY"]}</b ></td >
-					<td align='center' ><font color='red' ><b >
+					<td   ><font color='red' ><b >
 						${ (meansMembersQuality.meanSentriesReachedByMembers/(xpercent*100)).toFixed(2)}</b ></font >
 					</td >
-					<td align='center' ><b >
+					<td   ><b >
 						${ (meansMembersQuality.meanMembersReachedByMembers/(xpercent*100)).toFixed(2)}</b >
 					</td >
 				</tr >
 				<tr >
-					<td align='center' ><b >
+					<td   ><b >
 						${ LANG["PROPORTION_MEMBERS_WITH_QUALITY_UPPER_1"]}</b ></td >
-					<td align='center' >
+					<td   >
 						<font color='red' ><b >
 							${ (proportionMembersWithQualityUpper1*100).toFixed(2)}%</b ></font ></td >
-					<td align='center' ><b >
+					<td   ><b >
 						${ (proportionMembersWithQualityUpper1IfNoSentries*100).toFixed(2)}%</b ></td >
 				</tr >
 				</tbody >
@@ -401,6 +385,7 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 		oninput='this.onchange();'
 		onkeypress='this.onchange();'
 		onpaste='this.onchange();'
+		placeholder='Chuck Norris'
 		type='text'
 		value='' /><br >
 	</form>
@@ -415,26 +400,25 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 		<thead >
 		<tr >
 			<td
-					align='center'
+
 					style='display :none' ></td >
-			<td align='center' >
+			<td   >
 				${ LANG["COL_UID"]}
 			</td >
-			<td align='center' >
+			<td   >
 				${ LANG["COL_IDTY_WRITTEN_TIME"]}
 			</td >
-			<td align='center' >
+			<td   >
 				${ LANG["COL_LAST_RENEWAL"]}
 			</td >
-			<td align='center' >
+			<td   >
 				${ LANG["COL_EXPIRE_MEMBERSHIP"]}
 			</td >
-			<td align='center' >
+			<td   >
 				${ LANG['COL_DISTANCE']}
 			</td >
 			<td
-					style='background:#000000;'
-					width='3px' >-
+					class='bordering-element' >
 			</td >
 			<td
 					colspan='${ nbMaxCertifs}'
@@ -452,12 +436,12 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 		<tr >
 			${ (member.proportion = proportion(member.expireMembershipTimestamp,msValidity,0,120),'')}
 			<td
-					align='center'
+
 					style='display :none' >
 				${ member.uid}
 			</td >
 			<td
-					align='center'
+
 					style='background:hsla(${ member.proportion}, 80%, 70%, 1)' ><b >
 				${ member.uid}</b ><br >
 
@@ -480,22 +464,22 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 					: '' }
 			</td >
 			<td
-					align='center'
+
 					style='background:hsla(${ member.proportion}, 80%, 70%, 1)' >
 				<span data-tip='${ timestampToDatetime(member.idtyWrittenTimestamp)}' >#${ member.idtyWrittenBloc}</span >
 			</td >
 			<td
-					align='center'
+
 					style='background:hsla(${ member.proportion}, 80%, 70%, 1)' >
 				<span data-tip='${ timestampToDatetime(member.lastRenewalTimestamp)}' >#${ member.lastRenewalWrittenBloc}</span >
 			</td >
 			<td
-					align='center'
+
 					style='background:hsla(${ member.proportion}, 80%, 70%, 1)' >
 				${ timestampToDatetime(member.expireMembershipTimestamp)}
 			</td >
 			<td
-					align='center'
+
 					style='background:hsla(${ member.proportion}, 80%, 70%, 1)' >
 
 				<font color="${ member.detailedDistance.isOutdistanced ? 'red' : 'blue' }" >
@@ -506,14 +490,14 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 					(${ member.detailedDistance.nbSuccess}/${ member.detailedDistance.nbSentries})
 				</font >
 			</td >
-			<td style='background:#000000' >-</td >
+			<td class='bordering-element' ></td >
 
 			<!-- Printer les certifications en piscine -->
 			${ pendingSigs =="yes" && typeof(member.pendingCertifications) != 'undefined' ?
 			member.pendingCertifications.map( cert=> `
 			<!-- Printer la certification -->
 			<td
-					align='center'
+
 					style="background:${ (cert.validBlockStamp) ? cert.colorPending=color(cert.expires_on,idtyWindow,250) : cert.colorPending='#FF8000'}" >
 				<b >
 					${ cert.protagonist}</b ><br >
@@ -536,7 +520,7 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 			${ member.certifications.map( cert=> `
 			<!-- Printer la certification -->
 			<td
-					align='center'
+
 					style='background:hsla(${ proportion(cert.timestampExpire,sigValidity,0,120)}, 80%, 70%, 1 )' >
 				<b >
 					${ (mode=='emitted') ? cert.receiver:cert.issuer}</b ><br >
