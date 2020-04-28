@@ -351,16 +351,16 @@ module.exports = async (req, res, next) => {
                         barPercentage: 1.0
                     }
                 },
-                form: `${LANG['BEGIN']} #<input type="number" name="begin" value="${begin}" size="7" style="width:60px;"> - ${LANG['END']} #<input type="number" name="end" value="${end}" size="7" style="width:60px;">
-            <select name="data">
-              <option name="data" value ="nbBlocks">${LANG["NB_BLOCKS"]}
-              <option name="data" value ="writtenPercent" ${data == 'writtenPercent' ? 'selected' : ''}>${LANG["PERCENT_OF_WRITTEN_BLOCKS"]}
-              <option name="data" value ="writtenPercentSinceBecomeMember" ${data == 'writtenPercentSinceBecomeMember' ? 'selected' : ''}>${LANG["PERCENT_OF_WRITTEN_BLOCKS"]} ${LANG["SINCE_BECOME_MEMBER"]}
-              <option name="data" value ="meanNonce" ${data == 'meanNonce' ? 'selected' : ''}>${LANG['MEAN_NONCE']}
-              <option name="data" value ="currentFrame" ${data == 'currentFrame' ? 'selected' : ''}>${LANG['CURRENT_FRAME']}
+                form: `${LANG['BEGIN']} #<input type='number' name='begin' value='${begin}' size='7' style='width:60px;'> - ${LANG['END']} #<input type='number' name='end' value='${end}' size='7' style='width:60px;'>
+            <select name='data'>
+              <option name='data' value ='nbBlocks'>${LANG["NB_BLOCKS"]}
+              <option name='data' value ='writtenPercent' ${data == 'writtenPercent' ? 'selected' : ''}>${LANG["PERCENT_OF_WRITTEN_BLOCKS"]}
+              <option name='data' value ='writtenPercentSinceBecomeMember' ${data == 'writtenPercentSinceBecomeMember' ? 'selected' : ''}>${LANG["PERCENT_OF_WRITTEN_BLOCKS"]} ${LANG["SINCE_BECOME_MEMBER"]}
+              <option name='data' value ='meanNonce' ${data == 'meanNonce' ? 'selected' : ''}>${LANG['MEAN_NONCE']}
+              <option name='data' value ='currentFrame' ${data == 'currentFrame' ? 'selected' : ''}>${LANG['CURRENT_FRAME']}
             </select>
-            <input type="checkbox" name="perNode" value="yes" ${perNode == 'yes' ? 'checked' : ''}>${LANG['DETAIL_BY_NODE']} - 
-            ${LANG['SIGNIFICANT_LIMIT']} <input type="number" name="significantPercent" value="${significantPercent}" size="2" style="width:30px;">${LANG['PERCENT_OF_BLOCKS']}`
+            <input type='checkbox' name='perNode' value='yes' ${perNode == 'yes' ? 'checked' : ''}>${LANG['DETAIL_BY_NODE']} - 
+            ${LANG['SIGNIFICANT_LIMIT']} <input type='number' name='significantPercent' value='${significantPercent}' size='2' style='width:30px;'>${LANG['PERCENT_OF_BLOCKS']}`
             };
             next();
         }

@@ -1,6 +1,6 @@
 ${ (host.substr(host.length-6,6) =='.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 <title >
- ${ currencyName}-monit : ${ MENU_LANG['MEMBERS']}</title >
+	${ currencyName}-monit : ${ MENU_LANG['MEMBERS']}</title >
 
 <link
 		href='//cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css'
@@ -20,6 +20,7 @@ ${ (host.substr(host.length-6,6) =='.onion') ? HTML_TOR_HEAD:HTML_HEAD}
 </script >
 <script type='text/javascript' >// <![CDATA[
 var table = document.getElementById('tableMmembersExpiracy');
+
 /**
  * filter the member table with the search input
  * @param tableElem HTMLElement
@@ -31,10 +32,9 @@ var table = document.getElementById('tableMmembersExpiracy');
 function filterRows(tableElem, rowIndex, colIndex, filterString) {
   for (var i = rowIndex, val; i < tableElem.rows.length; ++i) {
     val = tableElem.rows[i].cells[colIndex].firstChild.nodeValue;
-    if (!val.includes( filterString.toLowerCase())){
+    if (!val.includes(filterString.toLowerCase())) {
       tableElem.rows[i].style.display = 'none';
-    }
-    else{
+    } else {
       tableElem.rows[i].style.display = '';
     }
   }
@@ -50,7 +50,7 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 <main >
 
 	<!-- Afficher le formulaire -->
-	<div class='columns' >
+	<div class='columns form-fields' >
 		<div class='column' >
 			${ LANG["ORDER_BY"]} ${ LANG["FORM1"]}
 			<input
@@ -67,41 +67,68 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 				<option
 						name='sort_by'
 						value='idtyWritten' >
- ${ LANG["SORT_BY_IDTY_WRITTEN"]}
+					${ LANG["SORT_BY_IDTY_WRITTEN"]}
 				<option
-				        name='sort_by'
-				        value='expireMembership'
-				        ${ sort_by=='expireMembership' ? 'selected' : '' } >
- ${ LANG["SORT_BY_EXPIRE_MEMBERSHIP"]}
+						name='sort_by'
+						value='expireMembership'
+						${
+						sort_by=='expireMembership'
+						?
+				'selected' : '' } >
+				${ LANG["SORT_BY_EXPIRE_MEMBERSHIP"]}
 				<option
-				        name='sort_by'
-				        value='lastRenewal'
-				        ${ sort_by=='lastRenewal' ? 'selected' : '' } >
- ${ LANG["SORT_LAST_RENEWAL"]}
+						name='sort_by'
+						value='lastRenewal'
+						${
+						sort_by=='lastRenewal'
+						?
+				'selected' : '' } >
+				${ LANG["SORT_LAST_RENEWAL"]}
 				<option
-				        name='sort_by'
-				        value='oldestSig'
-				        ${ sort_by=='oldestSig' ? 'selected' : '' } >
- ${ LANG["SORT_BY_OLDEST_SIG"]}
+						name='sort_by'
+						value='oldestSig'
+						${
+						sort_by=='oldestSig'
+						?
+				'selected' : '' } >
+				${ LANG["SORT_BY_OLDEST_SIG"]}
 				<option
-				        name='sort_by'
-				        value='lastSig'
-				        ${ sort_by=='lastSig' ? 'selected' : '' } >
- ${ LANG["SORT_BY_LAST_SIG"]}
+						name='sort_by'
+						value='lastSig'
+						${
+						sort_by=='lastSig'
+						?
+				'selected' : '' } >
+				${ LANG["SORT_BY_LAST_SIG"]}
+				${ (sort_by == `centrality` ? `selected` : `` }
 				<option
-				        name='sort_by'
-				         value='centrality'
-				        ${ sort_by== 'centrality' ? 'selected' : '' } >
- ${ LANG["SORT_BY_CENTRALITY"]}
+						name='sort_by'
+						selected='
+						${
+						(sort_by=="centrality"
+						?
+						`selected`
+						:
+						``
+						}'
+						value='centrality'
+				>
+					${ LANG["SORT_BY_CENTRALITY"]}
 				<option
-				        name='sort_by'
-				        value='quality'
-				        ${ sort_by =='quality' ? 'selected' : '' } >
- ${ LANG["SORT_BY_QUALITY"]}
+						name='sort_by'
+						value='quality'
+						${
+						sort_by=='quality'
+						?
+				'selected' : '' } >
+				${ LANG["SORT_BY_QUALITY"]}
 				<option
-				        name='sort_by'
-				        value='sigCount'
-				        ${ sort_by=='sigCount' ? 'selected' : '' } >
+						name='sort_by'
+						value='sigCount'
+						${
+						sort_by=='sigCount'
+						?
+				'selected' : '' } >
 				${ LANG["SORT_BY_SIG_COUNT"]}
 			</select >
 			<select
@@ -111,9 +138,12 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 						name='order'
 						value='asc' > ${ LANG["ASC"]}
 				<option
-				        name='order'
-				        value='desc'
-				        ${ order=='desc' ? 'selected' : '' } > ${ LANG["DESC"]}
+						name='order'
+						value='desc'
+						${
+						order=='desc'
+						?
+				'selected' : '' } > ${ LANG["DESC"]}
 			</select >
 		</div >
 		<div class='column' >
@@ -126,41 +156,51 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 					name='centrality'
 					type='checkbox'
 					value='yes' >
-					${ LANG["CHECKBOX_CENTRALITY"]}.<br >
+			${ LANG["CHECKBOX_CENTRALITY"]}.<br >
 			<input
-			       name='pendingSigs'
-			       type='checkbox'
-			       value='yes'
-			       ${ pendingSigs=='yes' ? 'checked' : '' } >
- 					${ LANG["CHECKBOX_PENDING_SIGS"]}.<br >
+					name='pendingSigs'
+					type='checkbox'
+					value='yes'
+					${
+					pendingSigs=='yes'
+					? 'checked' : '' } >
+			${ LANG["CHECKBOX_PENDING_SIGS"]}.<br >
 			<input
-			       name='mode'
-			       type='checkbox'
-			       value='emitted'
-			       ${ mode=='emitted' ? 'checked' : '' } >
- 					${ LANG["CHECKBOX_MODE_SIG"]}.<br >
+					name='mode'
+					type='checkbox'
+					value='emitted'
+					${
+					mode=='emitted'
+					? 'checked' : '' } >
+			${ LANG["CHECKBOX_MODE_SIG"]}.<br >
 			<input
-			       name='nextYn'
-			       type='checkbox'
-			       value='yes'
-			       ${ nextYn =='yes' ? 'checked' : '' } >
-					${ LANG["NEXT_YN"]}<br >
+					name='nextYn'
+					type='checkbox'
+					value='yes'
+					${
+					nextYn=='yes'
+					? 'checked' : '' } >
+			${ LANG["NEXT_YN"]}<br >
 			<input
-			       name='randomList'
-			       type='checkbox'
-			       value='yes'
-			       ${ randomList =='yes' ? 'checked' : '' } >
-					${ LANG["RANDOM_LIST"]}
+					name='randomList'
+					type='checkbox'
+					value='yes'
+					${
+					randomList=='yes'
+					? 'checked' : '' } >
+			${ LANG["RANDOM_LIST"]}
 			<input
 					name='randomCounts'
 					type='number'
 					value='${ numberOfRandomMembers}' />
-					${ LANG["RANDOM_LIST_END"]}.<br >
-			<input ${ uidOrPubList =='checked' ? 'checked' : '' }
-			       name='uidOrPubList'
-			       type='checkbox'
-			       value='yes'  >
-          ${ LANG["UID_OR_PUB_LIST"]}
+			${ LANG["RANDOM_LIST_END"]}.<br >
+			<input ${
+			       uidOrPubList=='checked'
+			       ? 'checked' : '' }
+			name='uidOrPubList'
+			type='checkbox'
+			value='yes' >
+			${ LANG["UID_OR_PUB_LIST"]}
 			<input
 					name='uidOrPubValue'
 					type='search'
@@ -172,11 +212,10 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 	<!-- Afficher la légende et l'aide -->
 
 	${ (help != 'no') ? `
-	<div class='columns' >
+	<div class='columns legend-and-help' >
 		<div class='column' >
-
 			<b >
-          ${ LANG["LEGEND"]}
+				${ LANG["LEGEND"]}
 			</b >
 			<br >
 			${ (pendingSigs =='yes') ? ` ${ LANG["LEGEND_AVAILABILITY"]}<br >` : '' }
@@ -190,7 +229,8 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 		</div >
 		<div class='column' >
 			<b >
- ${ LANG["QUALITY_MEMBER_TITLE"]}</b ><br >
+				${ LANG["QUALITY_MEMBER_TITLE"]}</b >
+			<br >
 			${ LANG["QUALITY_MEMBER_TXT"]}<br >
 		</div >
 	</div >
@@ -199,7 +239,7 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 
 	<!-- Afficher l'état de tension de la toile de confiance -->
 	<h3 class='title is-3' >
- ${ LANG["WOT_TENSION_STATE"]}</h3 >
+		${ LANG["WOT_TENSION_STATE"]}</h3 >
 
 	<div class='columns' >
 		<div class='column' >
@@ -217,33 +257,42 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 
 				<tr >
 					<td align='center' >
- ${ LANG["MEAN_LENGTH_PATH"]}</td >
+						${ LANG["MEAN_LENGTH_PATH"]}
+					</td >
 					<td align='center' ><b >
- ${ (meanShortestsPathLength).toFixed(2)}</b ></td >
+						${ (meanShortestsPathLength).toFixed(2)}</b ></td >
 				</tr >
 				<tr >
 					<td align='center' >
- ${ LANG["MEAN_CENTRALITY"]}</td >
+						${ LANG["MEAN_CENTRALITY"]}
+					</td >
 					<td align='center' ><b >
- ${ meanCentrality.toFixed(2)}</b ></td >
+						${ meanCentrality.toFixed(2)}</b ></td >
 				</tr >
 				<tr >
 					<td align='center' >
- ${ LANG["NUMBER_OF_PAIRS_MEMBER"]}</td >
+						${ LANG["NUMBER_OF_PAIRS_MEMBER"]}
+					</td >
 					<td align='center' >
- ${ (membersListFiltered.length*(membersListFiltered.length-1))}</td >
+						${ (membersListFiltered.length*(membersListFiltered.length-1))}
+					</td >
 				</tr >
 				<tr >
 					<td align='center' >
- ${ LANG["NUMBER_OF_EXIST_PATH"]}</td >
+						${ LANG["NUMBER_OF_EXIST_PATH"]}
+					</td >
 					<td align='center' ><b >
- ${ nbShortestsPath}</b ></td >
+						${ nbShortestsPath}</b ></td >
 				</tr >
 				<tr >
 					<td align='center' ><b >
- ${ LANG["PROPORTION_OF_EXIST_PATH"]}</b ></td >
-					<td align='center' ><font color='red' ><b >
- ${ ((nbShortestsPath/(membersListFiltered.length*(membersListFiltered.length-1)))*100).toFixed(2)}%</b ></font >
+						${ LANG["PROPORTION_OF_EXIST_PATH"]}</b ></td >
+					<td align='center' >
+						<font color='red' >
+							<b >
+								${ ((nbShortestsPath/(membersListFiltered.length*(membersListFiltered.length-1)))*100).toFixed(2) }%
+							</b >
+						</font >
 					</td >
 				</tr >
 			</table >
@@ -253,61 +302,73 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 		</div >
 		<div class='column' >
 
-			<table class='table is-hoverable is-stripped' >
+			<table class='table is-hoverable is-stripped is-bordered' >
 				<thead >
 				<tr >
 					<td
 							align='center'
 							colspan='3' >
- ${ LANG["DATA_AT"]} ${ timestampToDatetime(membersLastUptime)}
+						<h2 class='title is-2' >
+							${ LANG["DATA_AT"]} ${ timestampToDatetime(membersLastUptime)}
+						</h2 >
 					</td >
 				</tr >
 				<tr >
 					<td align='center' >
- ${ LANG["meanMembersReachedByMembers"]}</td >
+						${ LANG["meanMembersReachedByMembers"]}
+					</td >
 					<td align='center' >
- ${ LANG["SENTRIES_REACHED"]}</td >
+						${ LANG["SENTRIES_REACHED"]}
+					</td >
 					<td align='center' >
- ${ LANG["MEMBERS_REACHED"]}</td >
+						${ LANG["MEMBERS_REACHED"]}
+					</td >
 				</tr >
 				</thead >
 				<tbody >
 
 				<tr >
 					<td align='center' >
- ${ LANG["SENTRY_CERT"]}</td >
+						${ LANG["SENTRY_CERT"]}
+					</td >
 					<td align='center' >
- ${ (meansMembersQuality.meanSentriesReachedBySentries).toFixed(2)}%</td >
+						${ (meansMembersQuality.meanSentriesReachedBySentries).toFixed(2)}%
+					</td >
 					<td align='center' >
- ${ (meansMembersQuality.meanMembersReachedBySentries).toFixed(2)}%</td >
+						${ (meansMembersQuality.meanMembersReachedBySentries).toFixed(2)}%
+					</td >
 				</tr >
 				<tr >
 					<td align='center' >
- ${ LANG["MEMBER_CERT"]}</td >
-					<td align='center' ><font ${ (meansMembersQuality.meanSentriesReachedByMembers
-						<xpercent ) ? 'color="DarkRed"' : 'color="blue"' 	} ><b >
- ${ meansMembersQuality.meanSentriesReachedByMembers}%</b ></font></td >
+						${ LANG["MEMBER_CERT"]}
+					</td >
+					<td align='center' ><font ${
+					                          (meansMembersQuality.meanSentriesReachedByMembers
+						<xpercent )
+						          ?
+						'color="DarkRed"' : 'color="blue"' } ><b >
+							${ meansMembersQuality.meanSentriesReachedByMembers}%</b ></font></td >
 					<td align='center' ><b >
- ${ meansMembersQuality.meanMembersReachedByMembers}%</b ></td >
+						${ meansMembersQuality.meanMembersReachedByMembers}%</b ></td >
 				</tr >
 				<tr >
 					<td align='center' ><b >
- ${ LANG["MEAN_QUALITY"]}</b ></td >
+						${ LANG["MEAN_QUALITY"]}</b ></td >
 					<td align='center' ><font color='red' ><b >
- ${ (meansMembersQuality.meanSentriesReachedByMembers/(xpercent*100)).toFixed(2)}</b ></font >
+						${ (meansMembersQuality.meanSentriesReachedByMembers/(xpercent*100)).toFixed(2)}</b ></font >
 					</td >
 					<td align='center' ><b >
- ${ (meansMembersQuality.meanMembersReachedByMembers/(xpercent*100)).toFixed(2)}</b >
+						${ (meansMembersQuality.meanMembersReachedByMembers/(xpercent*100)).toFixed(2)}</b >
 					</td >
 				</tr >
 				<tr >
 					<td align='center' ><b >
- ${ LANG["PROPORTION_MEMBERS_WITH_QUALITY_UPPER_1"]}</b ></td >
+						${ LANG["PROPORTION_MEMBERS_WITH_QUALITY_UPPER_1"]}</b ></td >
 					<td align='center' >
 						<font color='red' ><b >
- ${ (proportionMembersWithQualityUpper1*100).toFixed(2)}%</b ></font ></td >
+							${ (proportionMembersWithQualityUpper1*100).toFixed(2)}%</b ></font ></td >
 					<td align='center' ><b >
- ${ (proportionMembersWithQualityUpper1IfNoSentries*100).toFixed(2)}%</b ></td >
+						${ (proportionMembersWithQualityUpper1IfNoSentries*100).toFixed(2)}%</b ></td >
 				</tr >
 				</tbody >
 
@@ -320,14 +381,14 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 
 	<!-- Afficher le currentBlockchainTimestamp -->
 	<i >
- ${ LANG["CURRENT_BLOCKCHAIN_TIME"]} : ${ timestampToDatetime(currentBlockchainTimestamp)}.<br >
-	    <!-- Afficher le nombre de membres et de membres référents -->
+		${ LANG["CURRENT_BLOCKCHAIN_TIME"]} : ${ timestampToDatetime(currentBlockchainTimestamp)}.<br >
+		<!-- Afficher le nombre de membres et de membres référents -->
 		<b >
- ${ membersListFiltered.length}</b > ${ LANG["MEMBERS"]} ${ LANG["OF_WHICH"]} <b >
- ${ countSentries}</b >
-	    ${ LANG['ARE_REFERRING_MEMBERS']}
-	    (<b >
- ${ ((countSentries/membersListFiltered.length)*100).toFixed(2)}%</b >).</i ><br >
+			${ membersListFiltered.length}</b > ${ LANG["MEMBERS"]} ${ LANG["OF_WHICH"]} <b >
+		${ countSentries}</b >
+		${ LANG['ARE_REFERRING_MEMBERS']}
+		(<b >
+		${ ((countSentries/membersListFiltered.length)*100).toFixed(2)}%</b >).</i ><br >
 	<br >
 	<!-- Afficher le filtre des membres -->
 	<label for='filter' >
@@ -346,7 +407,7 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 
 	<!-- On parcour tout les membres pour afficher ceux dont la date d'expiration est dans moins de 'd' jours -->
 	<b >
- ${ LANG["TABLE_TITLE"]} ${ days} ${ LANG["DAYS"]} :</b >
+		${ LANG["TABLE_TITLE"]} ${ days} ${ LANG["DAYS"]} :</b >
 	<table
 			class='table is-striped is-hoverable is-outlined x-scroll'
 			id='tableMmembersExpiracy' >
@@ -357,15 +418,20 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 					align='center'
 					style='display :none' ></td >
 			<td align='center' >
- ${ LANG["COL_UID"]}</td >
+				${ LANG["COL_UID"]}
+			</td >
 			<td align='center' >
- ${ LANG["COL_IDTY_WRITTEN_TIME"]}</td >
+				${ LANG["COL_IDTY_WRITTEN_TIME"]}
+			</td >
 			<td align='center' >
- ${ LANG["COL_LAST_RENEWAL"]}</td >
+				${ LANG["COL_LAST_RENEWAL"]}
+			</td >
 			<td align='center' >
- ${ LANG["COL_EXPIRE_MEMBERSHIP"]}</td >
+				${ LANG["COL_EXPIRE_MEMBERSHIP"]}
+			</td >
 			<td align='center' >
- ${ LANG['COL_DISTANCE']}</td >
+				${ LANG['COL_DISTANCE']}
+			</td >
 			<td
 					style='background:#000000;'
 					width='3px' >-
@@ -373,8 +439,8 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 			<td
 					colspan='${ nbMaxCertifs}'
 					style='text-align:left; padding-left: 1em;' >
- ${ (mode=='emitted') ? LANG['COL_LIST_EMITTED_CERT']:LANG['COL_LIST_RECEIVED_CERT']}
-			                               (${ sort_by =='lastSig' ? LANG["LAST2OLDEST"] : LANG["OLDEST2LAST"]})
+				${ (mode=='emitted') ? LANG['COL_LIST_EMITTED_CERT']:LANG['COL_LIST_RECEIVED_CERT']}
+				(${ sort_by =='lastSig' ? LANG["LAST2OLDEST"] : LANG["OLDEST2LAST"]})
 			</td >
 		</tr >
 		</thead >
@@ -388,30 +454,30 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 			<td
 					align='center'
 					style='display :none' >
- ${ member.uid}
+				${ member.uid}
 			</td >
 			<td
 					align='center'
 					style='background:hsla(${ member.proportion}, 80%, 70%, 1)' ><b >
- ${ member.uid}</b ><br >
+				${ member.uid}</b ><br >
 
 				${ (member.isSentry) ? `<font color='blue' >
- ${ LANG['REFERRING_MEMBER']} : ${ LANG['YES']}</font >`:`${ LANG['REFERRING_MEMBER']}
+					${ LANG['REFERRING_MEMBER']} : ${ LANG['YES']}</font >`:`${ LANG['REFERRING_MEMBER']}
 				: ${ LANG['NO']}`}<br >
 				${ LANG['QUALITY_EXT']} : <b >
- ${ (typeof(membersQuality(0, member.wotb_id))=='undefined') ?
-				                             `0.00`:membersQuality(0, member.wotb_id)}</b ><br >
+					${ (typeof(membersQuality(0, member.wotb_id))=='undefined') ?
+					`0.00`:membersQuality(0, member.wotb_id)}</b ><br >
 				<b >
- ${ (membersLastCentralityCalcTime==0) ? `${ LANG['CENTRALITY']} : ?`:`
-				    ${ LANG['CENTRALITY']} : <b >
- ${ (typeof(membersCentrality[member.wotb_id])=='undefined') ?
-				                                `0`:membersCentrality[member.wotb_id]}
-				                                `}</b ><br >
-				    ->
- ${ member.certifications.length}
-				    ${ pendingSigs =="yes" && typeof(member.pendingCertifications) != 'undefined'
-				    ? ` (+${ member.pendingCertifications.length})`
-				    : '' }
+					${ (membersLastCentralityCalcTime==0) ? `${ LANG['CENTRALITY']} : ?`:`
+					${ LANG['CENTRALITY']} : <b >
+					${ (typeof(membersCentrality[member.wotb_id])=='undefined') ?
+					`0`:membersCentrality[member.wotb_id]}
+					`}</b ><br >
+					->
+					${ member.certifications.length}
+					${ pendingSigs =="yes" && typeof(member.pendingCertifications) != 'undefined'
+					? ` (+${ member.pendingCertifications.length})`
+					: '' }
 			</td >
 			<td
 					align='center'
@@ -436,7 +502,7 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 					${ member.detailedDistance.isOutdistanced ? LANG['COL_DISTANCE_isOutdistanced'] :
 					LANG['COL_DISTANCE_isNotOutdistanced'] }
 					<br >
- ${ member.percentSentriesReached}%
+					${ member.percentSentriesReached}%
 					(${ member.detailedDistance.nbSuccess}/${ member.detailedDistance.nbSentries})
 				</font >
 			</td >
@@ -450,7 +516,7 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 					align='center'
 					style="background:${ (cert.validBlockStamp) ? cert.colorPending=color(cert.expires_on,idtyWindow,250) : cert.colorPending='#FF8000'}" >
 				<b >
- ${ cert.protagonist}</b ><br >
+					${ cert.protagonist}</b ><br >
 				<span data-tip="${ LANG['EXPIRE_TIME']}" >
  ${ timestampToDatetime(cert.timestampExpire)}</span ><br >
 
@@ -473,7 +539,7 @@ ${ printMenu(MENU_LANG, help, "MEMBERS")}
 					align='center'
 					style='background:hsla(${ proportion(cert.timestampExpire,sigValidity,0,120)}, 80%, 70%, 1 )' >
 				<b >
- ${ (mode=='emitted') ? cert.receiver:cert.issuer}</b ><br >
+					${ (mode=='emitted') ? cert.receiver:cert.issuer}</b ><br >
 				<span data-tip="${ LANG['EXPIRE_TIME']}" >
  ${ timestampToDatetime(cert.timestampExpire)}</span ><br >
 				${ LANG["WRITTEN"]} #${ cert.writtenBloc}

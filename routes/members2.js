@@ -248,7 +248,7 @@ module.exports = async (req, res, next) => {
                 let nbWrittenCertifs = tmpQueryCertifsList.length;
                 // Récupérer les uid des émetteurs/receveurs des certifications reçus/émises par l'utilisateur
                 // Et stocker les uid et dates d'expiration dans un tableau
-                membersCertifsList[m] = new Array();
+                membersCertifsList[m] = [];
                 for (var i = 0; i < nbWrittenCertifs; i++) {
                     let tmpQueryGetUidProtagonistCert;
                     if (mode == 'emitted') {
@@ -283,7 +283,7 @@ module.exports = async (req, res, next) => {
                 }
                 // Récupérer les uid des émetteurs des certifications reçus par l'utilisateur
                 // Et stocker les uid et dates d'expiration dans un tableau
-                membersPendingCertifsList[m] = new Array();
+                membersPendingCertifsList[m] = [];
                 for (var i = 0; i < tmpQueryPendingCertifsList.length; i++) {
                     // Récupérer le medianTime et le hash du bloc d'émission de la certification
                     let emittedBlock = await dataFinder.getBlock(tmpQueryPendingCertifsList[i].block_number);
@@ -351,7 +351,7 @@ module.exports = async (req, res, next) => {
                                 let shortestPathLength = paths[paths.length - 1].length;
                                 meanShortestsPathLength += shortestPathLength;
                                 nbShortestsPath++;
-                                let indexMembersPresent = new Array();
+                                let indexMembersPresent = [];
                                 /*for (const path of paths)
                                 {
                                     if (path.length < shortestPathLength) { shortestPathLength = path.length; }
