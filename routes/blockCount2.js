@@ -1,19 +1,28 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const DataFinder_1 = require("../lib/DataFinder");
 const MonitorExecutionTime_1 = require("../lib/MonitorExecutionTime");
-const constants2_1 = require("../lib/constants2");
 const fs = require('fs');
 const timestampToDatetime = require(__dirname + '/../lib/timestampToDatetime');
 const colorScale = require(__dirname + '/../lib/colorScale');
 const getLang = require(__dirname + '/../lib/getLang');
+const constants = require(__dirname + '/../lib/constants');
 // Garder l'index des blocs en mémoire vive
 var blockchain = [];
 var hashPreviousCurrentblock = '';
 var previousBlockchainTime = 0;
-module.exports = async (req, res, next) => {
-    var { monitDatasPath } = req.app.locals;
-    const dataFinder = await DataFinder_1.DataFinder.getInstanceReindexedIfNecessary();
+module.exports = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var { duniterServer, monitDatasPath } = req.app.locals;
+    const dataFinder = new DataFinder_1.DataFinder(duniterServer);
     try {
         // get GET parameters
         var begin = req.query.begin >= 0 && req.query.begin || 0; // Default begin Value is zero
@@ -24,10 +33,10 @@ module.exports = async (req, res, next) => {
         var perNode = (req.query.perNode == 'yes') ? 'yes' : 'no';
         var significantPercent = req.query.significantPercent || 3;
         // get lg file
-        const LANG = getLang(`${__dirname}/../lg/blockCount_${req.query.lg || constants2_1.MonitConstants.DEFAULT_LANGUAGE}.txt`);
+        const LANG = getLang(`${__dirname}/../lg/blockCount_${req.query.lg || constants.DEFAULT_LANGUAGE}.txt`);
         // detect fork
         if (blockchain.length > 0) {
-            let newHashPreviousCurrentblock = (await dataFinder.getCurrentBlockOrNull()).hash;
+            let newHashPreviousCurrentblock = (yield dataFinder.getCurrentBlockOrNull()).hash;
             if (hashPreviousCurrentblock != newHashPreviousCurrentblock) {
                 blockchain.splice(0, blockchain.length);
                 hashPreviousCurrentblock = '';
@@ -35,21 +44,21 @@ module.exports = async (req, res, next) => {
             }
         }
         // get endBlock
-        var endBlock = await dataFinder.getBlock(end); // Sure?
+        var endBlock = yield dataFinder.getBlock(end); // Sure?
         // get new blocks
         var newBlocks = [];
         if (end < 0) {
-            newBlocks = await dataFinder.getBlockWhereMedianTimeGt(previousBlockchainTime);
+            newBlocks = yield dataFinder.getBlockWhereMedianTimeGt(previousBlockchainTime);
             blockchain = blockchain.concat(newBlocks);
         }
         else if (end > blockchain.length) {
-            newBlocks = await dataFinder.getBlockWhereMedianTimeLteAndGt(endBlock.medianTime, previousBlockchainTime);
+            newBlocks = yield dataFinder.getBlockWhereMedianTimeLteAnd(endBlock.medianTime, previousBlockchainTime);
             for (let i = 0; i < newBlocks.length; i++) {
                 blockchain.push(newBlocks[i]);
             }
         }
         // stock hashPreviousCurrentblock and previousBlockchainTime
-        let tmpCurrentBlock = await dataFinder.getCurrentBlockOrNull();
+        let tmpCurrentBlock = yield dataFinder.getCurrentBlockOrNull();
         hashPreviousCurrentblock = tmpCurrentBlock.hash;
         previousBlockchainTime = tmpCurrentBlock.medianTime;
         // fix end
@@ -57,7 +66,7 @@ module.exports = async (req, res, next) => {
             end = blockchain.length - 1;
         }
         // get idtys list
-        var idtys = await dataFinder.getMembers();
+        var idtys = yield dataFinder.getMembers();
         // create and initialize tabBlockMembers, tabBlockCountPerNode and tabDataPerNode
         var tabBlockMembers = [];
         var tabCoreCountPerNode = [];
@@ -370,5 +379,5 @@ module.exports = async (req, res, next) => {
         console.error(e);
         res.status(500).send(`<pre>${e.stack || e.message}</pre>`);
     }
-};
+});
 //# sourceMappingURL=blockCount2.js.map

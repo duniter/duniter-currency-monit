@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const DataFinder_1 = require("../lib/DataFinder");
 const constants2_1 = require("../lib/constants2");
@@ -38,13 +47,13 @@ var membersCentrality = [];
 var meanCentrality = 0;
 var meanShortestsPathLength = 0;
 var nbShortestsPath = 0;
-module.exports = async (req, res, next) => {
+module.exports = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var { duniterServer } = req.app.locals;
-    const dataFinder = await DataFinder_1.DataFinder.getInstanceReindexedIfNecessary();
+    const dataFinder = new DataFinder_1.DataFinder(duniterServer);
     try {
         // Initaliser les constantes
         const conf = duniterServer.conf;
-        const head = await duniterServer.dal.getCurrentBlockOrNull();
+        const head = yield duniterServer.dal.getCurrentBlockOrNull();
         const currentBlockchainTimestamp = head ? head.medianTime : 0;
         const membersCount = head ? head.membersCount : 0;
         var dSen = Math.ceil(Math.pow(membersCount, 1 / conf.stepMax));
@@ -160,7 +169,7 @@ module.exports = async (req, res, next) => {
             // Récupérer la liste des membres référents
             sentries = wotbInstance.getSentries(dSen);
             // Récupérer la liste des identités ayant actuellement le statut de membre
-            membersList = await dataFinder.getMembers();
+            membersList = yield dataFinder.getMembers();
             if (randomList == "yes") {
                 // Tirer au sort randomCounts membres
                 const maxLengthRandomMembers = Math.min(numberOfRandomMembers, membersList.length);
@@ -183,7 +192,7 @@ module.exports = async (req, res, next) => {
             // Ainsi que la première ou dernière certification
             for (let m = 0; m < membersList.length; m++) {
                 // Récupérer les blockstamp d'écriture et date d'expiration du membership courant du membre m
-                let tmpQueryResult = [await dataFinder.membershipWrittenOnExpiresOn(membersList[m].pub)];
+                let tmpQueryResult = [yield dataFinder.membershipWrittenOnExpiresOn(membersList[m].pub)];
                 membershipsExpireTimeList.push(tmpQueryResult[0].expires_on);
                 // Extraire le numéro de bloc du blockstamp d'écriture du membership courant
                 let blockstampMembershipWritten = tmpQueryResult[0].written_on.split("-"); // Separate blockNumber and blockHash
@@ -191,7 +200,7 @@ module.exports = async (req, res, next) => {
                 // Extraire le numéro de bloc du blockstamp d'écriture de l'identité du membre
                 let blockstampIdtyWritten = membersList[m].written_on.split("-"); // Separate blockNumber and blockHash
                 // Récupérer le champ medianTime du bloc d'écriture de l'identité du membre
-                let resultQueryTimeWrittenIdty = await dataFinder.getBlock(blockstampIdtyWritten[0]);
+                let resultQueryTimeWrittenIdty = yield dataFinder.getBlock(blockstampIdtyWritten[0]);
                 // Vérifier si le membre est référent
                 let currentMemberIsSentry = false;
                 sentriesIndex[membersList[m].uid] = false;
@@ -239,23 +248,23 @@ module.exports = async (req, res, next) => {
                 let tmpQueryCertifsList = [];
                 let tmpOrder = (sort_by == "lastSig") ? 'DESC' : 'ASC';
                 if (mode == 'emitted') {
-                    tmpQueryCertifsList = await dataFinder.findCertsOfIssuer(membersList[m].pub, tmpOrder);
+                    tmpQueryCertifsList = yield dataFinder.findCertsOfIssuer(membersList[m].pub, tmpOrder);
                 }
                 else {
-                    tmpQueryCertifsList = await dataFinder.findCertsOfReceiver(membersList[m].pub, tmpOrder);
+                    tmpQueryCertifsList = yield dataFinder.findCertsOfReceiver(membersList[m].pub, tmpOrder);
                 }
                 // Calculer le nombre de certifications reçus/émises par le membre courant
                 let nbWrittenCertifs = tmpQueryCertifsList.length;
                 // Récupérer les uid des émetteurs/receveurs des certifications reçus/émises par l'utilisateur
                 // Et stocker les uid et dates d'expiration dans un tableau
-                membersCertifsList[m] = [];
+                membersCertifsList[m] = new Array();
                 for (var i = 0; i < nbWrittenCertifs; i++) {
                     let tmpQueryGetUidProtagonistCert;
                     if (mode == 'emitted') {
-                        tmpQueryGetUidProtagonistCert = [await dataFinder.getProtagonist(tmpQueryCertifsList[i].receiver)];
+                        tmpQueryGetUidProtagonistCert = [yield dataFinder.getProtagonist(tmpQueryCertifsList[i].receiver)];
                     }
                     else {
-                        tmpQueryGetUidProtagonistCert = [await dataFinder.getProtagonist(tmpQueryCertifsList[i].issuer)];
+                        tmpQueryGetUidProtagonistCert = [yield dataFinder.getProtagonist(tmpQueryCertifsList[i].issuer)];
                     }
                     let tmpBlockWrittenOn = tmpQueryCertifsList[i].written_on.split("-");
                     // Stoker la liste des certifications qui n'ont pas encore expirées
@@ -276,19 +285,19 @@ module.exports = async (req, res, next) => {
                 let nbValidPendingCertifs = 0;
                 let tmpQueryPendingCertifsList = [];
                 if (mode == 'emitted') {
-                    tmpQueryPendingCertifsList = await dataFinder.getCertsPending(membersList[m].pub, tmpOrder);
+                    tmpQueryPendingCertifsList = yield dataFinder.getCertsPending(membersList[m].pub, tmpOrder);
                 }
                 else {
-                    tmpQueryPendingCertifsList = await dataFinder.getCertsPendingFromTo(membersList[m].pub, tmpOrder);
+                    tmpQueryPendingCertifsList = yield dataFinder.getCertsPendingFromTo(membersList[m].pub, tmpOrder);
                 }
                 // Récupérer les uid des émetteurs des certifications reçus par l'utilisateur
                 // Et stocker les uid et dates d'expiration dans un tableau
-                membersPendingCertifsList[m] = [];
+                membersPendingCertifsList[m] = new Array();
                 for (var i = 0; i < tmpQueryPendingCertifsList.length; i++) {
                     // Récupérer le medianTime et le hash du bloc d'émission de la certification
-                    let emittedBlock = await dataFinder.getBlock(tmpQueryPendingCertifsList[i].block_number);
+                    let emittedBlock = yield dataFinder.getBlock(tmpQueryPendingCertifsList[i].block_number);
                     let tmpPub = (mode == 'emitted') ? tmpQueryPendingCertifsList[i].to : tmpQueryPendingCertifsList[i].from;
-                    let tmpQueryGetUidProtagonistPendingCert = await dataFinder.getUidOfPub(tmpPub);
+                    let tmpQueryGetUidProtagonistPendingCert = yield dataFinder.getUidOfPub(tmpPub);
                     // Vérifier que l'émetteur de la certification correspond à une identié connue
                     if (tmpQueryGetUidProtagonistPendingCert.length > 0) {
                         // Vérifier la validité du blockStamp de la certification en piscine
@@ -305,7 +314,7 @@ module.exports = async (req, res, next) => {
                         }
                         if (!doubloonPendingCertif) {
                             // récupérer le timestamp d'écriture de la dernière certification écrite par l'émetteur
-                            let tmpQueryLastIssuerCert = await dataFinder.getChainableOnByIssuerPubkeyByExpOn(tmpQueryPendingCertifsList[i].from);
+                            let tmpQueryLastIssuerCert = yield dataFinder.getChainableOnByIssuerPubkeyByExpOn(tmpQueryPendingCertifsList[i].from);
                             // Stoker la liste des certifications en piscine qui n'ont pas encore expirées
                             if (tmpQueryPendingCertifsList[i].expires_on > currentBlockchainTimestamp) {
                                 membersPendingCertifsList[m].push({
@@ -329,7 +338,7 @@ module.exports = async (req, res, next) => {
             } // END of members loop
             // Convertir chaque blockNumber (de membership) en timestamp
             for (const membershipBlockNumber of membershipsBlockNumberList) {
-                membershipsTimeList.push(await dataFinder.getBlock(membershipBlockNumber));
+                membershipsTimeList.push(yield dataFinder.getBlock(membershipBlockNumber));
             }
             // Traiter les cas ou expires_on est indéfini
             for (let i = 0; i < membershipsExpireTimeList.length; i++) {
@@ -351,7 +360,7 @@ module.exports = async (req, res, next) => {
                                 let shortestPathLength = paths[paths.length - 1].length;
                                 meanShortestsPathLength += shortestPathLength;
                                 nbShortestsPath++;
-                                let indexMembersPresent = [];
+                                let indexMembersPresent = new Array();
                                 /*for (const path of paths)
                                 {
                                     if (path.length < shortestPathLength) { shortestPathLength = path.length; }
@@ -573,5 +582,5 @@ module.exports = async (req, res, next) => {
         // En cas d'exception, afficher le message
         res.status(500).send(`<pre>${e.stack || e.message}</pre>`);
     }
-};
+});
 //# sourceMappingURL=members2.js.map
