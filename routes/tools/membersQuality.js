@@ -1,7 +1,5 @@
 const constants = require(__dirname + '/../../lib/constants2').MonitConstants
 
-var $ = require( 'jquery' );
-
 // membersQuality cache
 var lastUpgradeTime = 0;
 var wot = null;
