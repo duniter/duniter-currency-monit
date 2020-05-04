@@ -1,2 +1,10 @@
 node_modules
 yarn.lock
+.idea
+routes/*.js.map
+routes/*.d.ts
+lib/*.js.map
+lib/*.d.ts
+modules/*.js.map
+modules/*.d.ts
+/**/*.map

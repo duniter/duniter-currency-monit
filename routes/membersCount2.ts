@@ -1,5 +1,3 @@
-"use strict";
-
 import {DataFinder} from "../lib/DataFinder";
 import {MonitConstants} from "../lib/constants2";
 
@@ -10,33 +8,33 @@ const getLang = require(__dirname + '/../lib/getLang')
 //const STEP_COUNT_MAX = 150;
 
 module.exports = async (req: any, res: any, next: any) => {
-  
+
   var { cache } = req.app.locals
 
 	const dataFinder = await DataFinder.getInstanceReindexedIfNecessary()
-  
+
   try {
     // get GET parameters
     var format = req.query.format || 'HTML';
 		var pow = req.query.pow || 'no';
-    
+
     // get lg file
 		const LANG = getLang(`${__dirname}/../lg/membersCount_${req.query.lg||MonitConstants.DEFAULT_LANGUAGE}.txt`);
-    
+
     // get blockchain
     var blockchain = await dataFinder.getBlockWhereMedianTimeLteNoLimit(cache.endBlock[0].medianTime);
 
-    
+
     // Get blockchain timestamp
     const currentBlockNumber = cache.beginBlock[0].number+blockchain.length-1;
     const currentBlockchainTimestamp = blockchain[blockchain.length-1].medianTime;
-    
+
     // Initialize nextStepTime, stepIssuerCount and bStep
     var nextStepTime = cache.beginBlock[0].medianTime;
     let stepIssuerCount = 0;
 		let stepPowMin = 0;
     let bStep = 0;
-    
+
     // Adapt nextStepTime initial value
     switch (cache.stepUnit)
     {
@@ -57,7 +55,7 @@ module.exports = async (req: any, res: any, next: any) => {
       stepIssuerCount += blockchain[b].issuersCount;
 			stepPowMin += blockchain[b].powMin;
 			bStep++;
-      
+
       // If achieve next step
 		if ( b==cache.beginBlock[0].number || (cache.stepUnit == "blocks" && bStep == cache.step) || (cache.stepUnit != "blocks" && blockchain[b].medianTime >= nextStepTime/*(tabMembersCount[tabMembersCount.length-1].timestamp+cache.stepTime)*/))
       {
@@ -91,10 +89,10 @@ module.exports = async (req: any, res: any, next: any) => {
 					}
 					else
 					{
-						dateTime = previousDateTime; 
+						dateTime = previousDateTime;
 					}
 				}
-				
+
 				// push tabMembersCount
 				tabMembersCount.push({
 						blockNumber: blockchain[blockIndex].number,
@@ -105,14 +103,14 @@ module.exports = async (req: any, res: any, next: any) => {
 						issuersCount: parseInt(String(stepIssuerCount/bStep)),
 						powMin: parseInt(String(stepPowMin/bStep))
 				});
-					
+
 				if (cache.stepUnit != "blocks") { nextStepTime += cache.stepTime; }
 				stepIssuerCount = 0;
 				stepPowMin = 0;
 				bStep = 0;
       }
     }
-    
+
     // Add current block data (only if end parameter is undefined or negative)
     if (typeof(req.query.end) == 'undefined' || req.query.end <= 0)
 		{
@@ -126,10 +124,10 @@ module.exports = async (req: any, res: any, next: any) => {
 				powMin: blockchain[blockchain.length-1].powMin
 			});
 		}
-		
+
 		// Delete first tabMembersCount cell
 		tabMembersCount.splice(0, 1);
-    
+
     if (format == 'JSON')
       res.status(200).jsonp( tabMembersCount )
     else
@@ -137,7 +135,7 @@ module.exports = async (req: any, res: any, next: any) => {
       // GET parameters
       var unit = req.query.unit == 'relative' ? 'relative' : 'quantitative';
       var massByMembers = req.query.massByMembers == 'no' ? 'no' : 'yes';
-			
+
 			// Define datasets
 			let datasets = [{
 				label: `${LANG["MEMBERS_COUNT"]}`,
@@ -163,7 +161,7 @@ module.exports = async (req: any, res: any, next: any) => {
 				borderColor: 'rgba(255, 0, 0, 1)',
 				borderWidth: 1
 			}];
-			
+
 			if (pow == 'yes')
 			{
 				datasets.push({
@@ -175,7 +173,7 @@ module.exports = async (req: any, res: any, next: any) => {
 					borderWidth: 1
 				});
 			}
-      
+
       res.locals = {
 	host: req.headers.host.toString(),
         tabMembersCount,
@@ -230,7 +228,7 @@ module.exports = async (req: any, res: any, next: any) => {
       }
       next()
     }
-    
+
   } catch (e) {
     // En cas d'exception, afficher le message
     res.status(500).send(`<pre>${e.stack || e.message}</pre>`);

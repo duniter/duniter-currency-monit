@@ -1,0 +1,183 @@
+
+html {
+    overflow-y: scroll;
+}
+
+main {
+    min-height: 80vh;
+    padding: 0 4rem;
+    margin-bottom:5rem;
+}
+
+footer {
+    margin-top: 2em;
+    text-align: center;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+}
+
+.menu li {
+    float: left;
+}
+
+li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+li a:hover:not(.active) {
+    background-color: #111;
+}
+
+.active {
+    background-color: #4CAF50;
+}
+
+span[data-tip] {
+    border-bottom: 1px dotted #000;
+}
+
+[data-tip] {
+    display: inline-block;
+    position: relative;
+}
+
+[data-tip]:hover:before {
+    content: attr(data-tip);
+    position: absolute;
+    padding: 0 8px;
+    height: 28px;
+    line-height: 28px;
+    background-color: rgba(0, 0, 0, 0.8);
+    left: -10px;
+    top: -38px;
+    border-radius: 3px;
+    white-space: nowrap;
+    color: #fff;
+    font-size: 11px;
+}
+
+[data-tip]:hover:after {
+    content: "";
+    position: absolute;
+    border-top: 8px solid rgba(0, 0, 0, 0.8);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    left: 0;
+    top: -10px;
+}
+
+
+.sentry {
+    float: left;
+    width: 200px;
+    height: 21px;
+    overflow: hidden;
+}
+.arrow {
+    width: 50px;
+}
+.isMax {
+    border-right: 1px dashed gray;
+}
+.isSentry, .isSentry a {
+    text-decoration: none;
+    color: #6f93ff;
+}
+.isSentry, .isSentry a:visited {
+    text-decoration: none;
+    color: #6f93ff;
+}
+.isPending, .isPending a {
+    text-decoration: none;
+    color: #ffc55a !important;
+    font-weight: bold;
+}
+.isMember, .isMember a {
+    text-decoration: none;
+    color: black !important;
+}
+.isNonMember, .isNonMember a {
+    text-decoration: none;
+    color: #FF596A !important;
+}
+.isPendingCert, .isPendingCert a {
+    text-decoration: none;
+    color: #ffc55a;
+    font-weight: bold;
+}
+.isPending, .isPending a:visited {
+    text-decoration: none;
+    color: #ffc55a !important;
+    font-weight: bold;
+}
+.isMember, .isMember a:visited {
+    text-decoration: none;
+    color: black !important;
+}
+.isNonMember, .isNonMember a:visited {
+    text-decoration: none;
+    color: #ff596a !important;
+}
+.isPendingCert, .isPendingCert a:visited {
+    text-decoration: none;
+    color: #ffc55a;
+    font-weight: bold;
+}
+.members-page input[type=number]{
+    max-width: 15em;
+    display:inline-block;
+    margin-right: 1em;
+}
+.dataTables_wrapper thead tr td,
+thead thead tr td
+{
+    background: #ecf0f3;
+}
+td {
+    text-align: center;
+}
+td.bordering-element{
+    width: 3px !important;
+    background: #000;
+    padding: 0 !important;
+}
+.x-scroll{
+    max-width: 100%;
+    display: block;
+    overflow-x: scroll;
+}
+
+input {
+
+    margin-bottom: 0.5em;
+    margin-top: 0.5em;
+}
+input[type=number],
+input[type=text]
+{
+    min-width: 15em;
+}
+input[type=checkbox],
+input[type=radio]
+{
+    margin: 0 1ch;
+    width: 1em;
+    height: 1em;
+}
+
+.sentry a {
+    display: block;
+}
+.sentry a:hover {
+    background: #dedede;
+}

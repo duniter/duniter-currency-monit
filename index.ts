@@ -1,0 +1,114 @@
+"use strict";
+
+const co = require('co');
+const fs = require('fs');
+const path = require('path');
+const main = require(__dirname + '/lib/main.js');
+const indexing = require(__dirname + '/lib/indexing.js');
+const initMonitDB = require('./lib/DataFinder').initMonitDB;
+
+/****************************************
+ * TECHNICAL CONFIGURATION
+ ***************************************/
+
+// Default Duniter node's database
+//const DEFAULT_DUNITER_DATA_FOLDER = 'currency-monit-dev';
+
+
+// host on which UI is available
+const DEFAULT_ACTION = 'start';
+
+// host on which UI is available
+const DEFAULT_HOST = 'localhost';
+
+// port on which UI is available
+const DEFAULT_PORT = 10500;
+
+/****************************************
+ * SPECIALIZATION
+ ***************************************/
+
+/*const stack = duniter.statics.autoStack([{
+  name: 'currency-monit',
+  required: {*/
+module.exports = {
+    duniter: {
+
+      config: {
+        onLoading: (conf:any, program:any) => co(function*() {
+
+          // Define duniter-currency-monit parameters namespace
+          const obj = conf['duniter-currency-monit'] = conf['duniter-currency-monit'] || {}
+        })
+      },
+
+      cliOptions: [
+        { value: '--monitor', desc: 'Enable performance monitoring of DB access'},
+        { value: '--reset-data', desc: 'Forces Monit to reset its indexed data on startup'},
+      ],
+
+      cli: [{
+        name: 'currency-monit [start|indexing] [host] [port]',
+        desc: 'Start duniter with module currency-monit or Indexing blockchain history',
+        preventIfRunning: true,
+        logs: false,
+        onDatabaseExecute: (server:any, conf:any, program:any, params:any, startServices:any) => co(function*() {
+
+          // currency-monit parameters
+          const ACTION = params[0] || DEFAULT_ACTION;
+          const SERVER_HOST = params[1] || DEFAULT_HOST;
+          const SERVER_PORT = parseInt(params[2]) || DEFAULT_PORT;
+
+          if (ACTION == "start")
+          {
+            // IMPORTANT: release Duniter services from "sleep" mode
+            yield startServices();
+
+            // Main Loop
+            yield main(server, SERVER_HOST, SERVER_PORT, null, program);
+
+            // Wait forever, this is a permanent program
+            yield new Promise(() => null);
+          }
+          else if (ACTION == "indexing")
+          {
+            try {
+              indexing(server, conf, program, params);
+            } catch (err) {
+              console.error('Error during blockchain indexing ', err);
+            }
+            // Close the DB connection properly
+            return server && server.disconnect()
+          }
+          else
+          {
+            console.error('Error unknow action "%s" !', ACTION);
+            // Close the DB connection properly
+            return server && server.disconnect()
+          }
+        })
+      }, {
+        name: 'reindex',
+        desc: 'Reset indexed Monit data and rebuild index',
+        preventIfRunning: true,
+        logs: false,
+        async onDatabaseExecute(server:any, conf:any, program:any, params:any, startServices:any) {
+          await initMonitDB(server, true);
+        }
+      }]
+    },
+    duniterUI: {
+      inject: {
+	menu: fs.readFileSync(path.join(__dirname, 'injection/menu.js'), 'utf8')
+      },
+
+      route: (app:any, server:any, conf:any, program:any, params:any) => {
+        // Main Loop
+        //main(server, SERVER_HOST, SERVER_PORT);
+	main(server, null, null, app, program);  // `app` est un serveur HTTP Express
+
+        // Wait forever, this is a permanent program
+        new Promise(() => null);
+      }
+    }
+  }
