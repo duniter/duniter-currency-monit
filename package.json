@@ -1,11 +1,11 @@
 {
   "name": "duniter-currency-monit",
   "version": "0.4.15",
-  "main": "index.js",
+  "main": "index.ts",
   "license": "AGPLv3",
   "scripts": {
     "installation": "yarn --pure-lockfile && npm start",
-    "start": "node run.js currency-monit",
+    "start": "nodemon run.js currency-monit",
     "clean": "bash clean_generated_typescript.sh",
     "sync": "node run.js sync g1.duniter.org 1000",
     "sync-full": "node run.js sync g1.duniter.org",
@@ -22,6 +22,7 @@
     "jquery": "^3.5.0",
     "morgan": "1.8.1",
     "node-pre-gyp": "0.6.34",
+    "nodemon": "^2.0.3",
     "q": "1.5.0",
     "request": "^2.81.0",
     "request-promise": "4.2.0",
@@ -29,13 +30,13 @@
     "underscore": "^1.9.1"
   },
   "devDependencies": {
-    "@types/node": "^11.9.3",
     "@types/mocha": "^2.2.41",
+    "@types/node": "^11.9.3",
     "duniter": "1.7.x",
-    "typescript": "^3.3.3",
     "mocha": "^3.4.2",
     "should": "*",
-    "ts-node": "^3.3.0"
+    "ts-node": "^3.3.0",
+    "typescript": "^3.3.3"
   },
   "peerDependencies": {
     "duniter": "1.7.x"
