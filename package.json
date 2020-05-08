@@ -4,9 +4,11 @@
   "main": "index.js",
   "license": "AGPLv3",
   "scripts": {
+    "installation": "yarn --pure-lockfile && npm start",
+    "start": "node run.js currency-monit",
+    "clean": "bash clean_generated_typescript.sh",
     "sync": "node run.js sync g1.duniter.org 1000",
     "sync-full": "node run.js sync g1.duniter.org",
-    "start": "nodemon run.js currency-monit",
     "prepublish": "tsc",
     "test": "mocha"
   },
